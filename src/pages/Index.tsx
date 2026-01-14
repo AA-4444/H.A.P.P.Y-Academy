@@ -9,6 +9,8 @@ import CTA from "@/components/landing/CTA";
 import Footer from "@/components/landing/Footer";
 import HappyAcademySection from "@/components/landing/HappyAcademySection";
 import TechnologySection from "@/components/landing/TechnologySection";
+import InsideSystem from "@/components/landing/InsideSystem";
+import ParticipationFormat from "@/components/landing/ParticipationFormat";
 
 const Index = () => {
   return (
@@ -17,13 +19,12 @@ const Index = () => {
       <Hero />
       <HappyAcademySection />
       <TechnologySection />
+        <Pillars />
+        <Testimonials />
+        <ParticipationFormat />
         <About />
-          <Testimonials />
-     
-     
-    
-     
       <Programs />
+      <Testimonials />
       <CTA />
       <Footer />
     </main>

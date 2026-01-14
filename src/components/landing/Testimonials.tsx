@@ -96,7 +96,7 @@ export default function Testimonials() {
   const t = testimonials[active];
 
   return (
-    <section id="reviews" className="bg-white">
+    <section id="reviews" className="bg-[#F7F3EE]">
       <div className="mx-auto max-w-7xl px-6 sm:px-8 lg:px-12 py-16 sm:py-20">
         {/* верхний маркер (как у Tony) */}
         <div className="flex justify-center">

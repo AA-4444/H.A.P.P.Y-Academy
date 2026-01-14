@@ -2,69 +2,67 @@ import { motion } from "framer-motion";
 
 const TechnologySection = () => {
   return (
-	<section className="bg-black">
+	<section className="bg-[#F6F1E7]">
 	  <div className="mx-auto w-full px-3 sm:px-4 lg:px-6 py-10 sm:py-12 space-y-10 sm:space-y-12">
 		{/* =========================
-			БЛОК 1: "Технология, а не мотивация."
+			БЛОК 1: МИКРО-БЛОК ЭКСПЕРТА (как hero-карточка)
 		   ========================= */}
-		<div className="rounded-[28px] sm:rounded-[36px] lg:rounded-[44px] overflow-hidden bg-white">
+		<div className="rounded-[28px] sm:rounded-[36px] lg:rounded-[44px] overflow-hidden bg-white shadow-[0_30px_100px_rgba(0,0,0,0.08)]">
 		  <div className="px-6 sm:px-10 lg:px-14 py-14 sm:py-16 lg:py-20">
-			<div className="grid lg:grid-cols-[1.15fr_0.85fr] gap-10 lg:gap-14 items-start">
-			  {/* Title */}
-			  <motion.h2
+			<div className="grid lg:grid-cols-[1.1fr_0.9fr] gap-10 lg:gap-14 items-start">
+			  {/* LEFT */}
+			  <motion.div
 				initial={{ opacity: 0, y: 16 }}
 				whileInView={{ opacity: 1, y: 0 }}
 				viewport={{ once: true, amount: 0.35 }}
 				transition={{ duration: 0.55 }}
-				className="font-sans font-extrabold tracking-tight text-black text-4xl sm:text-5xl md:text-6xl lg:text-7xl leading-[1.02]"
 			  >
-				Технология,
-				<br />
-				а не мотивация.
-			  </motion.h2>
+				<h2 className="font-sans font-extrabold tracking-tight text-black text-4xl sm:text-5xl md:text-6xl lg:text-7xl leading-[1.02]">
+				  Кто выстроил
+				  <br />
+				  эту систему
+				</h2>
 
-			  {/* Cards */}
+				<p className="mt-7 font-sans text-black/70 text-base sm:text-lg leading-relaxed max-w-xl">
+				  Архитектор Счастья —{" "}
+				  <span className="font-semibold text-black/80">
+					Ицхак Пинтосевич
+				  </span>
+				</p>
+			  </motion.div>
+
+			  {/* RIGHT: cards */}
 			  <motion.div
 				initial={{ opacity: 0, y: 16 }}
 				whileInView={{ opacity: 1, y: 0 }}
 				viewport={{ once: true, amount: 0.35 }}
 				transition={{ duration: 0.55, delay: 0.05 }}
-				className="space-y-6"
+				className="space-y-4"
 			  >
-				<div className="grid sm:grid-cols-3 gap-4">
+				<div className="grid sm:grid-cols-2 gap-4">
 				  <InfoCard>
-					<span className="text-black/70 font-sans font-semibold text-lg leading-snug">
-					  Научная позитивная психология Мартина Селигмана.
-					</span>
+					<div className="font-sans font-semibold text-black/80 text-lg leading-snug">
+					  15+ лет практики
+					</div>
 				  </InfoCard>
 
 				  <InfoCard>
-					<span className="text-black/70 font-sans font-semibold text-lg leading-snug">
-					  15 лет опыта коучинга и обучения наставников.
-					</span>
-				  </InfoCard>
-
-				  <InfoCard>
-					<span className="text-black/70 font-sans font-semibold text-lg leading-snug">
-					  25 лет преподавания Торы.
-					</span>
+					<div className="font-sans font-semibold text-black/80 text-lg leading-snug">
+					  250 000+ учеников
+					</div>
 				  </InfoCard>
 				</div>
 
-				<div className="grid sm:grid-cols-[1.4fr_1fr] gap-4">
-				  <InfoCard className="min-h-[112px] flex items-center">
-					<span className="text-black/70 font-sans font-semibold text-lg leading-snug">
-					  Внедрение навыков в жизнь, а не просто изучение теории.
-					</span>
-				  </InfoCard>
+				<InfoCard className="min-h-[96px] flex items-center">
+				  <div className="font-sans font-semibold text-black/75 text-lg leading-snug">
+					Системный подход вместо мотивации
+				  </div>
+				</InfoCard>
 
-				  {/* dark emphasis card (как на скрине справа) */}
-				  <div className="rounded-2xl sm:rounded-3xl bg-black/70 text-white border border-black/10 px-6 py-6 flex items-center justify-center text-center min-h-[112px]">
-					<span className="font-sans font-semibold text-lg leading-snug">
-					  Более 250 тысяч
-					  <br />
-					  учеников за 15 лет.
-					</span>
+				{/* dark emphasis (как "next event" по ощущению) */}
+				<div className="rounded-2xl sm:rounded-3xl bg-black text-white border border-black/10 px-6 sm:px-7 py-6 sm:py-7">
+				  <div className="font-sans font-semibold text-lg sm:text-xl leading-snug">
+					«Я не мотивирую. Я проектирую систему жизни.»
 				  </div>
 				</div>
 			  </motion.div>
@@ -73,9 +71,9 @@ const TechnologySection = () => {
 		</div>
 
 		{/* =========================
-			БЛОК 2: статистика (как на втором скрине)
+			БЛОК 2: статистика (оставил твою структуру)
 		   ========================= */}
-		<div className="rounded-[28px] sm:rounded-[36px] lg:rounded-[44px] overflow-hidden bg-white">
+		<div className="rounded-[28px] sm:rounded-[36px] lg:rounded-[44px] overflow-hidden bg-white shadow-[0_30px_100px_rgba(0,0,0,0.08)]">
 		  <div className="px-6 sm:px-10 lg:px-14 py-12 sm:py-14 lg:py-16">
 			<motion.p
 			  initial={{ opacity: 0, y: 16 }}
@@ -126,7 +124,6 @@ const TechnologySection = () => {
 			  />
 			</div>
 
-			{/* bottom big line */}
 			<div className="mt-14 sm:mt-16 rounded-2xl sm:rounded-3xl bg-black/5 border border-black/10 px-6 sm:px-10 py-10 sm:py-12">
 			  <div className="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-6">
 				<div className="font-sans font-extrabold tracking-tight text-4xl sm:text-5xl md:text-6xl leading-[1.02]">
@@ -145,7 +142,7 @@ const TechnologySection = () => {
 			</div>
 		  </div>
 		</div>
-	  </div> 
+	  </div>
 	</section>
   );
 };
@@ -163,10 +160,10 @@ function InfoCard({
 }) {
   return (
 	<div
-	  className={
-		"rounded-2xl sm:rounded-3xl bg-black/5 border border-black/10 px-6 py-6 " +
-		className
-	  }
+	  className={[
+		"rounded-2xl sm:rounded-3xl bg-black/5 border border-black/10 px-6 py-6",
+		className,
+	  ].join(" ")}
 	>
 	  {children}
 	</div>

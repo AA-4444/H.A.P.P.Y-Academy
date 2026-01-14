@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Menu, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -16,7 +16,7 @@ const Header = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   return (
-    <header className="fixed top-0 left-0 right-0 z-50 bg-black">
+    <header className="fixed top-0 left-0 right-0 z-50 bg-[#F6F1E7]">
       <div className="mx-auto max-w-7xl px-6 h-16 md:h-20 flex items-center justify-between">
         {/* Logo */}
         <motion.a
@@ -29,7 +29,7 @@ const Header = () => {
           <img
             src={logo}
             alt="H.A.P.P.Y Academy"
-            className="h-8 md:h-10 brightness-0 invert"
+            className="h-8 md:h-10"
           />
         </motion.a>
 
@@ -42,7 +42,7 @@ const Header = () => {
               initial={{ opacity: 0, y: -10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.4, delay: i * 0.1 }}
-              className="text-sm font-medium text-white/80 hover:text-white transition-colors"
+              className="text-sm font-medium text-black/70 hover:text-black transition-colors"
             >
               {item.label}
             </motion.a>
@@ -57,9 +57,9 @@ const Header = () => {
           className="hidden md:flex items-center"
         >
           <Button
-            variant="hero"
             size="default"
             onClick={() => window.open(TELEGRAM_BOT_URL, "_blank")}
+            className="bg-yellow-400 text-black hover:bg-yellow-300 font-semibold rounded-full px-6"
           >
             Начать сейчас
           </Button>
@@ -67,7 +67,7 @@ const Header = () => {
 
         {/* Mobile Menu Button */}
         <button
-          className="md:hidden p-2 text-white"
+          className="md:hidden p-2 text-black"
           onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
           aria-label="Toggle menu"
         >
@@ -83,7 +83,7 @@ const Header = () => {
             animate={{ opacity: 1, height: "auto" }}
             exit={{ opacity: 0, height: 0 }}
             transition={{ duration: 0.25 }}
-            className="md:hidden bg-black border-t border-white/10"
+            className="md:hidden bg-[#F6F1E7] border-t border-black/10"
           >
             <nav className="px-6 py-6 flex flex-col gap-4">
               {navItems.map((item) => (
@@ -91,16 +91,15 @@ const Header = () => {
                   key={item.href}
                   href={item.href}
                   onClick={() => setIsMobileMenuOpen(false)}
-                  className="text-base font-medium text-white/80 hover:text-white transition-colors py-2"
+                  className="text-base font-medium text-black/70 hover:text-black transition-colors py-2"
                 >
                   {item.label}
                 </a>
               ))}
 
               <Button
-                variant="hero"
                 size="lg"
-                className="mt-4"
+                className="mt-4 bg-yellow-400 text-black hover:bg-yellow-300 font-semibold rounded-full"
                 onClick={() => window.open(TELEGRAM_BOT_URL, "_blank")}
               >
                 Начать сейчас

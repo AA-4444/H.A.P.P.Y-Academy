@@ -1,104 +1,98 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 
-/* =========================
-   АССЕТЫ (подставь свои)
-   ========================= */
-// круглые аватарки (как на скринах сверху)
-import avaNatalya from "@/assets/v1.png";
-import avaOlga from "@/assets/v2.png";
-import avaGalina from "@/assets/v3.png";
-import avaVera from "@/assets/v4.png";
-import avaVer from "@/assets/v5.png";
-import avaVe from "@/assets/v6.png";
-import avaV from "@/assets/v7.png";
+import avaNatalya from "@/assets/v01.png";
+import avaOlga from "@/assets/v02.png";
+import avaGalina from "@/assets/v03.png";
 
-// нижние “карточки/фото” (как на скрине с ТЕХНОНИКОЛЬ / BIG MONEY / KUPIVIP.RU)
-import reel1 from "@/assets/t1.jpg";
-import reel2 from "@/assets/t2.png";
-import reel3 from "@/assets/t3.jpg";
-import reel4 from "@/assets/t4.png";
-import reel5 from "@/assets/t5.jpg";
-import reel6 from "@/assets/t6.png";
+type Testimonial = {
+  id: string;
+  avatar: string;
+  name: string;
+  subtitle: string;
+  text: string;
+};
 
 export default function Testimonials() {
-  const testimonials = useMemo(
+  const testimonials = useMemo<Testimonial[]>(
     () => [
       {
-        id: "natalya",
+        id: "rybakov",
         avatar: avaNatalya,
-        name: "Наталья Себало",
-        text: `Программа очень крутая. Вспоминаю себя до программы. Ни одно дело или сделку я не могла провести легко и с первого раза: то документа не хватает, то срок вышел, то ещё какая-то причина. Мне всё надо было идеально и я копала себе проблемы и, конечно, находила их. По той же причине всю работу взваливала на себя, так как другим не доверяла и как следствие не делегировала. В итоге уставала и ...`,
+        name: "Игорь Рыбаков",
+        subtitle: "Долларовый миллиардер. В ТОП-100 Forbes России.",
+        text: `«Ицхак спасибо! Ты первый человек, который так мощно сделал заход в «духовно-материальные планы». Все думают, что в духовном и материальном плане у меня все амбиции удовлетворены. Но конечно же не все))) Спасибо тебе мой дорогой друг!».`,
       },
       {
-        id: "olga",
+        id: "chernyak",
         avatar: avaOlga,
-        name: "Ольга Антонова",
-        text: `В 2017 году я столкнулась с серьезным заболеванием — системной красной волчанкой. Болезнь порядком меня шокировала. Но вся “красота процесса” раскрылась мне только на 5–7-й год болезни. На тот момент я уже перепробовала все диеты. Но не могу сказать, что прям увидела взаимосвязь с моим состоянием. Единственное, что я знала точно, что до болезни я испытывала состояние счастья. А с волчанкой потеряла его.`,
+        name: "Евгений Черняк",
+        subtitle: "Долларовый мультимиллионер.",
+        text: `«Ицхак — тренер №1, по нашим замерам, после которого растет эффективность торговой команды».`,
       },
       {
-        id: "galina",
+        id: "hartmann",
         avatar: avaGalina,
-        name: "Галина Косенко",
-        text: `Сегодня я закончила курс МАСТЕР СЧАСТЬЯ. Благодарю Господа, что он свел меня с Ицхаком! Благодарю Господа, что он наделил такой миссией Ицхака, делать людей счастливее, не смотря ни на что. Это большое счастье встретится и общаться с таким счастливым человеком, как Ицхак. Курс МАСТЕР СЧАСТЬЯ я зашла в самый тяжелый момент своей жизни, когда у меня обнаружили онкологию и мир потух, паника и ...`,
-      },
-      {
-        id: "vera",
-        avatar: avaVera,
-        name: "Вера Воробьева",
-        text: `До курса моя проблема была в том, что не было ощущения радости. Я воспитываю троих детей, являюсь руководителем агентства недвижимости — но радости в тот момент очень не хватало. Как только я начала проходить курс, с первых 4 дней бесплатно, моя жизнь начала меняться в лучшую сторону! Произошли большие изменения, и я теперь за все благодарю и делаю комплименты людям. С благодарностью принимаю все, что приносит мне радость и ...`,
-      },
-      {
-        id: "vera",
-        avatar: avaVer,
-        name: "Вера Воробьева",
-        text: `До курса моя проблема была в том, что не было ощущения радости. Я воспитываю троих детей, являюсь руководителем агентства недвижимости — но радости в тот момент очень не хватало. Как только я начала проходить курс, с первых 4 дней бесплатно, моя жизнь начала меняться в лучшую сторону! Произошли большие изменения, и я теперь за все благодарю и делаю комплименты людям. С благодарностью принимаю все, что приносит мне радость и ...`,
-      },
-      {
-        id: "vera",
-        avatar: avaVe,
-        name: "Вера Воробьева",
-        text: `До курса моя проблема была в том, что не было ощущения радости. Я воспитываю троих детей, являюсь руководителем агентства недвижимости — но радости в тот момент очень не хватало. Как только я начала проходить курс, с первых 4 дней бесплатно, моя жизнь начала меняться в лучшую сторону! Произошли большие изменения, и я теперь за все благодарю и делаю комплименты людям. С благодарностью принимаю все, что приносит мне радость и ...`,
-      },
-      {
-        id: "vera",
-        avatar: avaV,
-        name: "Вера Воробьева",
-        text: `До курса моя проблема была в том, что не было ощущения радости. Я воспитываю троих детей, являюсь руководителем агентства недвижимости — но радости в тот момент очень не хватало. Как только я начала проходить курс, с первых 4 дней бесплатно, моя жизнь начала меняться в лучшую сторону! Произошли большие изменения, и я теперь за все благодарю и делаю комплименты людям. С благодарностью принимаю все, что приносит мне радость и ...`,
-      },
+        name: "Оскар Хартманн",
+        subtitle: "Долларовый мультимиллионер. Серийный предприниматель.",
+        text: `«Ицхак — один из лидирующих людей, который говорит про все вопросы, про которые не говорят в школе».
 
-
-
-      // можно оставить “мужские” как отдельные цитаты — они будут в нижней ленте фото
+Предисловие из книги «Делай Просто. Просто делай»:
+«Если бы не Ицхак, этой книги бы не было».`,
+      },
     ],
     []
   );
 
-  // нижняя лента фото — “как на референсе”, бесконечно и плавно
-  const reel = useMemo(() => [reel1, reel2, reel3, reel4, reel5, reel6], []);
-
   const [active, setActive] = useState(0);
   const [isHovering, setIsHovering] = useState(false);
-  const intervalRef = useRef<number | null>(null);
+
+  // пауза автопереключения после ручного действия
+  const [pausedUntil, setPausedUntil] = useState<number>(0);
+
+  // фиксируем высоту блока, чтобы секция не "прыгала"
+  const [fixedHeight, setFixedHeight] = useState<number | null>(null);
+  const measureRefs = useRef<(HTMLDivElement | null)[]>([]);
+
+  const AUTOPLAY_MS = 9000; // было слишком быстро
+  const MANUAL_PAUSE_MS = 10000; // после ручного переключения
+
+  const goTo = (i: number) => {
+    setActive(i);
+    setPausedUntil(Date.now() + MANUAL_PAUSE_MS);
+  };
 
   useEffect(() => {
     if (isHovering) return;
 
-    intervalRef.current = window.setInterval(() => {
+    const t = window.setInterval(() => {
+      if (Date.now() < pausedUntil) return;
       setActive((i) => (i + 1) % testimonials.length);
-    }, 5200);
+    }, AUTOPLAY_MS);
 
-    return () => {
-      if (intervalRef.current) window.clearInterval(intervalRef.current);
+    return () => window.clearInterval(t);
+  }, [isHovering, pausedUntil, testimonials.length]);
+
+  useLayoutEffect(() => {
+    const calc = () => {
+      let max = 0;
+      for (const el of measureRefs.current) {
+        if (!el) continue;
+        max = Math.max(max, el.getBoundingClientRect().height);
+      }
+      setFixedHeight(max > 0 ? Math.ceil(max) : null);
     };
-  }, [isHovering, testimonials.length]);
+
+    calc();
+    window.addEventListener("resize", calc);
+    return () => window.removeEventListener("resize", calc);
+  }, [testimonials]);
 
   const t = testimonials[active];
 
   return (
     <section id="reviews" className="bg-[#F7F3EE]">
       <div className="mx-auto max-w-7xl px-6 sm:px-8 lg:px-12 py-16 sm:py-20">
-        {/* верхний маркер (как у Tony) */}
         <div className="flex justify-center">
           <div className="flex items-center gap-2 text-xs tracking-[0.22em] font-semibold text-black/60">
             <span className="h-1.5 w-1.5 rounded-full bg-accent" />
@@ -106,8 +100,34 @@ export default function Testimonials() {
           </div>
         </div>
 
-        {/* центральный текст */}
-        <div className="mt-10 sm:mt-12 text-center">
+        {/* измеритель: скрытый, но участвует в расчёте высоты */}
+        <div className="pointer-events-none absolute opacity-0 -z-10">
+          {testimonials.map((x, i) => (
+            <div
+              key={x.id}
+              ref={(el) => {
+                measureRefs.current[i] = el;
+              }}
+              className="text-center max-w-4xl"
+            >
+              <h3 className="font-sans font-extrabold tracking-tight text-3xl sm:text-4xl md:text-5xl leading-[1.05]">
+                {x.name}
+              </h3>
+              <p className="mt-3 font-sans text-base sm:text-lg">
+                {x.subtitle}
+              </p>
+              <p className="mt-6 font-sans text-base sm:text-lg md:text-xl leading-relaxed whitespace-pre-line">
+                {x.text}
+              </p>
+            </div>
+          ))}
+        </div>
+
+        {/* центральный текст (фикс высоты, чтобы не прыгало) */}
+        <div
+          className="mt-10 sm:mt-12 text-center mx-auto max-w-4xl"
+          style={fixedHeight ? { minHeight: fixedHeight } : undefined}
+        >
           <AnimatePresence mode="wait">
             <motion.div
               key={t.id}
@@ -120,39 +140,45 @@ export default function Testimonials() {
                 {t.name}
               </h3>
 
-              <p className="mt-6 mx-auto max-w-4xl font-sans text-black/80 text-base sm:text-lg md:text-xl leading-relaxed">
+              <p className="mt-3 font-sans text-black/70 text-base sm:text-lg">
+                {t.subtitle}
+              </p>
+
+              <p className="mt-6 font-sans text-black/80 text-base sm:text-lg md:text-xl leading-relaxed whitespace-pre-line">
                 {t.text}
               </p>
             </motion.div>
           </AnimatePresence>
         </div>
 
-        {/* ряд “людей” — hover меняет отзыв + автопереключение */}
+        {/* аватарки */}
         <div
           className="mt-10 sm:mt-12"
           onMouseEnter={() => setIsHovering(true)}
           onMouseLeave={() => setIsHovering(false)}
         >
-          <div className="mx-auto max-w-5xl overflow-x-auto no-scrollbar">
-            <div className="flex items-center justify-center gap-8 sm:gap-10 min-w-max px-2">
+          <div className="mx-auto max-w-5xl overflow-x-auto overflow-y-visible no-scrollbar">
+          <div className="flex items-center justify-center gap-10 sm:gap-14 min-w-max px-2 py-3">
               {testimonials.map((p, i) => {
                 const isActive = i === active;
                 return (
                   <button
                     key={p.id}
                     type="button"
-                    onMouseEnter={() => setActive(i)}
-                    onFocus={() => setActive(i)}
-                    className="group flex flex-col items-center gap-3 focus:outline-none"
+                    onMouseEnter={() => goTo(i)}
+                    onFocus={() => goTo(i)}
+                    onClick={() => goTo(i)}
+                    className="group flex flex-col items-center gap-4 focus:outline-none"
                     aria-label={`Показать отзыв: ${p.name}`}
                   >
-                    <div
-                      className={[
-                        "h-14 w-14 sm:h-16 sm:w-16 rounded-full overflow-hidden",
-                        "ring-2 transition",
-                        isActive ? "ring-accent" : "ring-black/10 group-hover:ring-black/25",
-                      ].join(" ")}
-                    >
+<div
+                    className={[
+                      "rounded-full transition",
+                      "ring-[3px] ring-offset-4 ring-offset-[#F7F3EE]", // чтобы кольцо не сливалось с фоном
+                      isActive ? "ring-accent" : "ring-black/10 group-hover:ring-black/25",
+                    ].join(" ")}
+                  >
+                    <div className="h-20 w-20 sm:h-24 sm:w-24 rounded-full overflow-hidden">
                       <img
                         src={p.avatar}
                         alt={p.name}
@@ -160,11 +186,13 @@ export default function Testimonials() {
                         draggable={false}
                       />
                     </div>
-
+                  </div>
                     <div
                       className={[
-                        "text-center font-sans font-semibold text-xs sm:text-sm leading-tight transition",
-                        isActive ? "text-black" : "text-black/55 group-hover:text-black/75",
+                        "text-center font-sans font-semibold text-sm sm:text-base leading-tight transition",
+                        isActive
+                          ? "text-black"
+                          : "text-black/55 group-hover:text-black/75",
                       ].join(" ")}
                     >
                       {p.name}
@@ -176,8 +204,6 @@ export default function Testimonials() {
           </div>
         </div>
       </div>
-
-    
     </section>
   );
 }

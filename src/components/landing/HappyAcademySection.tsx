@@ -1,66 +1,134 @@
-import { useEffect, useMemo, useState } from "react";
-import { motion } from "framer-motion";
+import {
+  motion,
+  useMotionValue,
+  useSpring,
+  useTransform,
+} from "framer-motion";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { ArrowDown, ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
-import slide1 from "@/assets/bg3.png";
-import slide2 from "@/assets/bg4.png";
+import slide1 from "@/assets/bg8.png";
 import slide3 from "@/assets/bg5.png";
 import slide4 from "@/assets/bg6.png";
 import slide5 from "@/assets/bg7.png";
 
 const HappyAcademySection = () => {
-  const slides = useMemo(
-	() => [slide1, slide2, slide3, slide4, slide5],
-	[]
-  );
+  const slides = useMemo(() => [slide1,  slide3, slide4, slide5], []);
+
+  const rootRef = useRef<HTMLDivElement | null>(null);
+  const prefersReducedMotion = usePrefersReducedMotion();
+
+  const mx = useMotionValue(0);
+  const my = useMotionValue(0);
+  const sx = useSpring(mx, { stiffness: 180, damping: 26, mass: 0.7 });
+  const sy = useSpring(my, { stiffness: 180, damping: 26, mass: 0.7 });
+
+  const glowX = useTransform(sx, (v) => `${v}px`);
+  const glowY = useTransform(sy, (v) => `${v}px`);
+
+  const onMove = (e: React.MouseEvent) => {
+	if (!rootRef.current) return;
+	const r = rootRef.current.getBoundingClientRect();
+	mx.set(e.clientX - (r.left + r.width / 2));
+	my.set(e.clientY - (r.top + r.height / 2));
+  };
+
+  const onLeave = () => {
+	mx.set(0);
+	my.set(0);
+  };
 
   return (
 	<section className="bg-[#F6F1E7]">
 	  <div className="mx-auto w-full px-3 sm:px-4 lg:px-6 py-10 sm:py-12 space-y-10 sm:space-y-12">
+		<motion.div
+		  ref={rootRef}
+		  onMouseMove={prefersReducedMotion ? undefined : onMove}
+		  onMouseLeave={prefersReducedMotion ? undefined : onLeave}
+		  className="relative rounded-[28px] sm:rounded-[36px] lg:rounded-[44px] bg-white overflow-hidden shadow-[0_30px_100px_rgba(0,0,0,0.10)]"
+		>
+		  <div className="pointer-events-none absolute inset-0">
+			<div className="absolute -top-24 -left-24 h-64 w-64 rounded-full bg-black/5 blur-2xl" />
+			<div className="absolute -bottom-28 -right-28 h-72 w-72 rounded-full bg-black/5 blur-2xl" />
+			<div className="absolute left-0 top-0 h-full w-px bg-black/10" />
+			{!prefersReducedMotion ? (
+			  <motion.div
+				className="absolute h-[520px] w-[520px] rounded-full blur-3xl opacity-35"
+				style={{
+				  left: "50%",
+				  top: "50%",
+				  translateX: "-50%",
+				  translateY: "-50%",
+				  x: glowX,
+				  y: glowY,
+				  background:
+					"radial-gradient(circle at 30% 30%, rgba(255, 214, 0, 0.55), rgba(230, 75, 30, 0.28), rgba(0,0,0,0))",
+				}}
+			  />
+			) : null}
+		  </div>
 
-		{/* =========================
-			1) ВЕРХНИЙ БЕЛЫЙ БЛОК (ТЕКСТ)
-		   ========================= */}
-		<div className="rounded-[28px] sm:rounded-[36px] lg:rounded-[44px] bg-white overflow-hidden">
-		  <div className="px-6 sm:px-10 lg:px-14 py-12 sm:py-14 lg:py-16">
+		  <div className="relative px-6 sm:px-10 lg:px-14 py-12 sm:py-14 lg:py-16">
 			<div className="grid lg:grid-cols-2 gap-10 lg:gap-14 items-start">
-
-			  {/* LEFT — ЗАГОЛОВОК */}
 			  <div className="max-w-xl">
-				<h2 className="font-sans font-extrabold tracking-tight text-[38px] leading-[1.05] sm:text-5xl md:text-6xl text-black">
+				<motion.h2
+				  initial={{ opacity: 0, y: 14, filter: "blur(10px)" }}
+				  whileInView={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+				  viewport={{ once: true, amount: 0.45 }}
+				  transition={{ duration: 0.65, ease: "easeOut" }}
+				  className="font-sans font-extrabold tracking-tight text-[38px] leading-[1.05] sm:text-5xl md:text-6xl text-black"
+				>
 				  Если честно,
 				  <br />
 				  ты здесь потому что…
-				</h2>
+				</motion.h2>
 			  </div>
 
-			  {/* RIGHT — СПИСОК */}
 			  <div className="max-w-2xl">
-				<ul className="space-y-4 font-sans text-black/70 text-base sm:text-lg leading-relaxed">
-				  <li>— Ты много знаешь, но это не превращается в стабильные результаты</li>
-				  <li>— Ты устал начинать сначала</li>
-				  <li>— Есть ощущение, что потенциал больше, чем текущая жизнь</li>
-				  <li>— Нет ясности, куда идти и что делать дальше</li>
-				</ul>
+				<motion.div
+				  initial="hidden"
+				  whileInView="show"
+				  viewport={{ once: true, amount: 0.55 }}
+				  variants={{
+					hidden: {},
+					show: {
+					  transition: { staggerChildren: 0.08, delayChildren: 0.12 },
+					},
+				  }}
+				  className="space-y-4 font-sans text-black text-base sm:text-lg leading-relaxed"
+				>
+				  <MotionArrowLine>
+					Ты много знаешь, но это не превращается в стабильные результаты
+				  </MotionArrowLine>
+				  <MotionArrowLine>Ты устал начинать сначала</MotionArrowLine>
+				  <MotionArrowLine>
+					Есть ощущение, что потенциал больше, чем текущая жизнь
+				  </MotionArrowLine>
+				  <MotionArrowLine>
+					Нет ясности, куда идти и что делать дальше
+				  </MotionArrowLine>
+				</motion.div>
 
-				<div className="mt-8">
+				<motion.div
+				  initial={{ opacity: 0, y: 10, filter: "blur(8px)" }}
+				  whileInView={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+				  viewport={{ once: true, amount: 0.55 }}
+				  transition={{ duration: 0.55, ease: "easeOut", delay: 0.22 }}
+				  className="mt-8"
+				>
 				  <Button
 					size="lg"
 					className="h-12 px-10 rounded-full bg-yellow-400 text-black hover:bg-yellow-300 font-semibold"
 				  >
 					Узнать подробнее
 				  </Button>
-				</div>
+				</motion.div>
 			  </div>
-
 			</div>
 		  </div>
-		</div>
+		</motion.div>
 
-		{/* =========================
-			2) ОРАНЖЕВЫЙ БЛОК
-		   ========================= */}
 		<div className="rounded-[28px] sm:rounded-[36px] lg:rounded-[44px] bg-accent overflow-hidden">
 		  <div className="px-6 sm:px-10 lg:px-14 py-16 sm:py-20 lg:py-24">
 			<div className="mx-auto max-w-5xl text-center">
@@ -79,11 +147,11 @@ const HappyAcademySection = () => {
 				whileInView={{ opacity: 1, y: 0 }}
 				viewport={{ once: true, amount: 0.35 }}
 				transition={{ duration: 0.6, delay: 0.08 }}
-				className="mt-8 text-white/90 font-sans text-base sm:text-lg md:text-xl leading-relaxed max-w-4xl mx-auto"
+				className="mt-8 text-white font-sans text-base sm:text-lg md:text-xl leading-relaxed max-w-4xl mx-auto"
 			  >
 				Это путь к устойчивому состоянию, ясным решениям и действиям,
-				которые дают реальные результаты — без мотивационных иллюзий
-				и бесконечных стартов с нуля.
+				которые дают реальные результаты — без мотивационных иллюзий и
+				бесконечных стартов с нуля.
 			  </motion.p>
 
 			  <div className="mt-14 sm:mt-16 flex justify-center">
@@ -92,12 +160,8 @@ const HappyAcademySection = () => {
 			</div>
 		  </div>
 		</div>
-
 	  </div>
 
-	  {/* =========================
-		  3) FULLSCREEN СЛАЙДЕР
-		 ========================= */}
 	  <FullScreenSlider slides={slides} />
 	</section>
   );
@@ -105,22 +169,14 @@ const HappyAcademySection = () => {
 
 export default HappyAcademySection;
 
-/* =========================
-   FULLSCREEN SLIDER
-   ========================= */
 function FullScreenSlider({ slides }: { slides: string[] }) {
   const [index, setIndex] = useState(0);
 
-  const prev = () =>
-	setIndex((i) => (i - 1 + slides.length) % slides.length);
-  const next = () =>
-	setIndex((i) => (i + 1) % slides.length);
+  const prev = () => setIndex((i) => (i - 1 + slides.length) % slides.length);
+  const next = () => setIndex((i) => (i + 1) % slides.length);
 
   useEffect(() => {
-	const t = setInterval(
-	  () => setIndex((i) => (i + 1) % slides.length),
-	  6000
-	);
+	const t = setInterval(() => setIndex((i) => (i + 1) % slides.length), 6000);
 	return () => clearInterval(t);
   }, [slides.length]);
 
@@ -142,6 +198,7 @@ function FullScreenSlider({ slides }: { slides: string[] }) {
 	  <button
 		onClick={prev}
 		className="absolute left-4 sm:left-8 top-1/2 -translate-y-1/2 h-12 w-12 sm:h-14 sm:w-14 rounded-full bg-white/85 hover:bg-white text-black flex items-center justify-center shadow-md transition"
+		aria-label="Предыдущий слайд"
 	  >
 		<ChevronLeft className="h-6 w-6" />
 	  </button>
@@ -149,6 +206,7 @@ function FullScreenSlider({ slides }: { slides: string[] }) {
 	  <button
 		onClick={next}
 		className="absolute right-4 sm:right-8 top-1/2 -translate-y-1/2 h-12 w-12 sm:h-14 sm:w-14 rounded-full bg-white/85 hover:bg-white text-black flex items-center justify-center shadow-md transition"
+		aria-label="Следующий слайд"
 	  >
 		<ChevronRight className="h-6 w-6" />
 	  </button>
@@ -159,10 +217,9 @@ function FullScreenSlider({ slides }: { slides: string[] }) {
 			key={i}
 			onClick={() => setIndex(i)}
 			className={`h-2.5 w-2.5 rounded-full transition ${
-			  i === index
-				? "bg-white"
-				: "bg-white/40 hover:bg-white/70"
+			  i === index ? "bg-white" : "bg-white/40 hover:bg-white/70"
 			}`}
+			aria-label={`Перейти к слайду ${i + 1}`}
 		  />
 		))}
 	  </div>
@@ -170,9 +227,6 @@ function FullScreenSlider({ slides }: { slides: string[] }) {
   );
 }
 
-/* =========================
-   SCROLL BADGE
-   ========================= */
 function ScrollBadge() {
   const text = "узнать подробнее • узнать подробнее • ";
 
@@ -190,14 +244,8 @@ function ScrollBadge() {
 			  d="M 100,100 m -78,0 a 78,78 0 1,1 156,0 a 78,78 0 1,1 -156,0"
 			/>
 		  </defs>
-		  <text
-			fill="rgba(255,255,255,0.85)"
-			fontSize="13"
-			letterSpacing="2.5"
-		  >
-			<textPath href="#circlePath">
-			  {text.repeat(2)}
-			</textPath>
+		  <text fill="rgba(255,255,255,0.85)" fontSize="13" letterSpacing="2.5">
+			<textPath href="#circlePath">{text.repeat(2)}</textPath>
 		  </text>
 		</svg>
 	  </motion.div>
@@ -209,4 +257,38 @@ function ScrollBadge() {
 	  </div>
 	</div>
   );
+}
+
+function MotionArrowLine({ children }: { children: React.ReactNode }) {
+  return (
+	<motion.div
+	  variants={{
+		hidden: { opacity: 0, y: 8, filter: "blur(8px)" },
+		show: { opacity: 1, y: 0, filter: "blur(0px)" },
+	  }}
+	  transition={{ duration: 0.5, ease: "easeOut" }}
+	  className="flex items-start gap-3"
+	>
+	  <span className="mt-[3px] text-black/70 font-semibold">→</span>
+	  <span className="text-black">{children}</span>
+	</motion.div>
+  );
+}
+
+function usePrefersReducedMotion() {
+  const [reduced, setReduced] = useState(false);
+
+  useEffect(() => {
+	const mq = window.matchMedia("(prefers-reduced-motion: reduce)");
+	const onChange = () => setReduced(!!mq.matches);
+	onChange();
+	if ("addEventListener" in mq) mq.addEventListener("change", onChange);
+	else mq.addListener(onChange);
+	return () => {
+	  if ("removeEventListener" in mq) mq.removeEventListener("change", onChange);
+	  else mq.removeListener(onChange);
+	};
+  }, []);
+
+  return reduced;
 }

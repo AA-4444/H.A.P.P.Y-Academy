@@ -1,148 +1,121 @@
-import { motion, useInView } from "framer-motion";
-import { useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import {
+  motion,
+  useInView,
+  useScroll,
+  useSpring,
+  useTransform,
+  MotionValue,
+} from "framer-motion";
 import { ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
-import img1 from "@/assets/bg2.png";
-import img2 from "@/assets/bg3.png";
-import img3 from "@/assets/bg4.png";
-import img4 from "@/assets/bg5.png";
-import img5 from "@/assets/bg6.png";
-
 const TELEGRAM_BOT_URL = "https://t.me/happiness4people_bot";
 
-const items = [
-  { label: "архитектуру мышления", image: img1 },
-  { label: "понимание истинных целей", image: img2 },
-  { label: "порядок в решениях", image: img3 },
-  { label: "инструменты внедрения в реальной жизни", image: img4 },
-  { label: "логику: что делать, зачем и в каком порядке", image: img5 },
+const itemsBase = [
+  { label: "архитектуру мышления" },
+  { label: "понимание истинных целей" },
+  { label: "порядок в решениях" },
+  { label: "инструменты внедрения в реальной жизни" },
+  { label: "логику: что делать, зачем и в каком порядке" },
 ];
 
 const Pillars = () => {
-  const ref = useRef(null);
-  const isInView = useInView(ref, { once: true, margin: "-100px" });
+  const sectionRef = useRef<HTMLElement | null>(null);
+  const stickyRef = useRef<HTMLDivElement | null>(null);
+
+  const items = useMemo(() => itemsBase, []);
+  const isInView = useInView(stickyRef, { once: true, margin: "-100px" });
+
+  const { scrollYProgress } = useScroll({
+    target: sectionRef,
+    offset: ["start start", "end end"],
+  });
+
+  const progress = useSpring(scrollYProgress, {
+    stiffness: 140,
+    damping: 24,
+    mass: 0.8,
+  });
+
   const [activeIndex, setActiveIndex] = useState(0);
 
+  useEffect(() => {
+    const unsub = progress.on("change", (v) => {
+      const idx = Math.max(
+        0,
+        Math.min(items.length - 1, Math.floor(v * items.length))
+      );
+      setActiveIndex(idx);
+    });
+    return () => unsub();
+  }, [progress, items.length]);
+
   return (
-    <section className="py-20 md:py-24 bg-[#F6F1E7]" ref={ref}>
-      <div className="container max-w-7xl mx-auto px-6">
-        <div className="grid lg:grid-cols-[1fr_1.25fr] gap-16 items-center">
-          {/* LEFT */}
-          <motion.div
-            initial={{ opacity: 0, x: -32 }}
-            animate={isInView ? { opacity: 1, x: 0 } : {}}
-            transition={{ duration: 0.7 }}
-          >
-            <span className="inline-flex items-center gap-2 text-[11px] font-semibold tracking-widest text-black/45 uppercase mb-6">
-              <span className="w-2 h-2 rounded-full bg-accent" />
-              4) Что внутри системы
-            </span>
+    <section
+      ref={sectionRef}
+      className="bg-[#F6F1E7]"
+      style={{
+        minHeight: `calc(100vh + ${items.length * 220}px)`,
+      }}
+    >
+      {/* ✅ sticky НЕ трогаем overflow’ами */}
+      <div ref={stickyRef} className="sticky top-0 h-screen flex items-center">
+        {/* ✅ на мобиле чуть меньше padding чтобы не давило */}
+        <div className="container max-w-7xl mx-auto px-4 sm:px-6">
+          {/* ✅ min-w-0 чтобы текст мог сжиматься внутри grid */}
+          <div className="grid lg:grid-cols-[1fr_1.25fr] gap-16 items-center min-w-0">
+            <motion.div
+              initial={{ opacity: 0, x: -22, filter: "blur(10px)" }}
+              animate={isInView ? { opacity: 1, x: 0, filter: "blur(0px)" } : {}}
+              transition={{ duration: 0.7, ease: "easeOut" }}
+              className="min-w-0"
+            >
+              <span className="inline-flex items-center gap-2 text-[11px] font-semibold tracking-widest text-black/45 uppercase mb-6">
+                <span className="w-2 h-2 rounded-full bg-accent" />
+                Что внутри системы
+              </span>
 
-            <h2 className="font-sans font-extrabold tracking-tight text-black text-3xl sm:text-4xl md:text-5xl leading-[1.05] mb-8">
-              Что ты получаешь
-            </h2>
+              <h2 className="font-sans font-extrabold tracking-tight text-black text-3xl sm:text-4xl md:text-5xl leading-[1.05] mb-8">
+                Что ты получаешь
+              </h2>
 
-            {/* ✅ отступ + нумерация */}
-            <div className="space-y-3">
-              {items.map((it, index) => (
-                <motion.button
-                  key={it.label}
-                  initial={{ opacity: 0, x: -16 }}
-                  animate={isInView ? { opacity: 1, x: 0 } : {}}
-                  transition={{ duration: 0.4, delay: index * 0.08 }}
-                  onMouseEnter={() => setActiveIndex(index)}
-                  onFocus={() => setActiveIndex(index)}
-                  className="block text-left w-full group"
+              <div className="space-y-3 min-w-0">
+                {items.map((it, index) => (
+                  <PillarRow
+                    key={it.label}
+                    index={index}
+                    label={it.label}
+                    progress={progress}
+                    total={items.length}
+                    active={activeIndex === index}
+                  />
+                ))}
+              </div>
+
+              {/* ✅ КНОПКИ: на мобиле w-full, на sm+ как было */}
+              <div className="mt-10 flex flex-col sm:flex-row gap-4">
+                <Button
+                  size="lg"
+                  onClick={() => window.open(TELEGRAM_BOT_URL, "_blank")}
+                  className="w-full sm:w-auto rounded-full px-8 bg-yellow-400 text-black hover:bg-yellow-300 font-semibold"
                 >
-                  <div className="flex items-baseline gap-4">
-                    {/* номер */}
-                    <span
-                      className={`font-sans text-xs tracking-widest ${
-                        activeIndex === index
-                          ? "text-black/70"
-                          : "text-black/30"
-                      }`}
-                    >
-                      {String(index + 1).padStart(2, "0")}
-                    </span>
+                  Принять участие
+                </Button>
 
-                    {/* текст */}
-                    <span
-                      className={`font-serif text-3xl sm:text-4xl md:text-5xl leading-tight transition-colors duration-300 ${
-                        activeIndex === index
-                          ? "text-black"
-                          : "text-black/35"
-                      }`}
-                    >
-                      {it.label}
-                    </span>
+                <Button
+                  size="lg"
+                  onClick={() => window.open(TELEGRAM_BOT_URL, "_blank")}
+                  className="w-full sm:w-auto rounded-full px-8 bg-accent text-white hover:opacity-95 font-semibold"
+                >
+                  Записаться FREE на вводный урок
+                </Button>
+              </div>
+            </motion.div>
 
-                    {/* кнопка */}
-                    {activeIndex === index && (
-                      <motion.span
-                        initial={{ opacity: 0, x: -8 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        className="inline-flex ml-2"
-                      >
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          className="rounded-full text-xs font-sans"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            window.open(TELEGRAM_BOT_URL, "_blank");
-                          }}
-                        >
-                          Узнать
-                          <ArrowRight className="w-3.5 h-3.5 ml-1" />
-                        </Button>
-                      </motion.span>
-                    )}
-                  </div>
-                </motion.button>
-              ))}
-            </div>
-
-            {/* buttons */}
-            <div className="mt-10 flex flex-col sm:flex-row gap-4">
-              <Button
-                size="lg"
-                onClick={() => window.open(TELEGRAM_BOT_URL, "_blank")}
-                className="rounded-full px-8 bg-yellow-400 text-black hover:bg-yellow-300 font-semibold"
-              >
-                Принять участие
-              </Button>
-
-              <Button
-                size="lg"
-                onClick={() => window.open(TELEGRAM_BOT_URL, "_blank")}
-                className="rounded-full px-8 bg-accent text-white hover:opacity-95 font-semibold"
-              >
-                Записаться FREE на вводный урок
-              </Button>
-            </div>
-          </motion.div>
-
-          {/* RIGHT */}
-          <motion.div
-            initial={{ opacity: 0, x: 32 }}
-            animate={isInView ? { opacity: 1, x: 0 } : {}}
-            transition={{ duration: 0.7 }}
-          >
-            <div className="rounded-[28px] overflow-hidden shadow-[0_30px_80px_rgba(0,0,0,0.25)]">
-              <motion.img
-                key={items[activeIndex].image}
-                src={items[activeIndex].image}
-                alt={items[activeIndex].label}
-                className="w-full h-[520px] md:h-[600px] object-cover"
-                initial={{ opacity: 0, scale: 1.02 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ duration: 0.45, ease: "easeOut" }}
-                draggable={false}
-              />
-            </div>
-          </motion.div>
+            {/* ✅ ФОТО УБРАЛИ. СТРУКТУРА GRID НЕ ТРОНУТА. */}
+            <div className="hidden lg:block" />
+          </div>
         </div>
       </div>
     </section>
@@ -150,3 +123,82 @@ const Pillars = () => {
 };
 
 export default Pillars;
+
+function PillarRow({
+  index,
+  label,
+  progress,
+  total,
+  active,
+}: {
+  index: number;
+  label: string;
+  progress: MotionValue<number>;
+  total: number;
+  active: boolean;
+}) {
+  const step = 1 / total;
+  const start = index * step;
+  const end = start + step * 0.85;
+
+  const y = useTransform(progress, [start, end], [26, 0]);
+  const opacity = useTransform(progress, [start, end], [0, 1]);
+  const blur = useTransform(progress, [start, end], [10, 0]);
+
+  const ctaY = useTransform(progress, [start + step * 0.12, end], [14, 0]);
+  const ctaOpacity = useTransform(progress, [start + step * 0.12, end], [0, 1]);
+  const ctaBlur = useTransform(progress, [start + step * 0.12, end], [10, 0]);
+
+  return (
+    <motion.div style={{ opacity, y, filter: blur as unknown as string }}>
+      <div className="flex items-center gap-4 min-w-0">
+        <span
+          className={[
+            "font-sans text-xs tracking-widest shrink-0",
+            active ? "text-black/70" : "text-black/30",
+          ].join(" ")}
+        >
+          {String(index + 1).padStart(2, "0")}
+        </span>
+
+        {/* ✅ МОБИЛА: разрешаем перенос и не даём вылезать
+            ✅ SM+: возвращаем твоё nowrap+truncate */}
+        <span
+          className={[
+            "min-w-0 flex-1",
+            "font-serif leading-tight",
+            "text-3xl sm:text-4xl md:text-5xl",
+            "transition-colors duration-300",
+            active ? "text-black" : "text-black/35",
+            "whitespace-normal break-words",     // mobile
+            "sm:whitespace-nowrap sm:truncate",  // sm+
+          ].join(" ")}
+        >
+          {label}
+        </span>
+
+        {/* ✅ ГЛАВНЫЙ ФИКС: на мобиле НЕ резервируем 110px,
+            иначе вся строка уезжает/вылезает */}
+        <span className="shrink-0 hidden sm:flex w-[110px] justify-end">
+          <motion.span
+            style={{
+              opacity: ctaOpacity,
+              y: ctaY,
+              filter: ctaBlur as unknown as string,
+            }}
+          >
+            <Button
+              variant="outline"
+              size="sm"
+              className="rounded-full text-xs font-sans px-3"
+              onClick={() => window.open(TELEGRAM_BOT_URL, "_blank")}
+            >
+              Узнать
+              <ArrowRight className="w-3.5 h-3.5 ml-1" />
+            </Button>
+          </motion.span>
+        </span>
+      </div>
+    </motion.div>
+  );
+}

@@ -105,7 +105,8 @@
   html {
     scroll-behavior: smooth;
   }
-
+  
+html, body { overflow-x: clip; }
   body {
     @apply bg-background text-foreground antialiased;
     font-family: 'Inter', system-ui, sans-serif;

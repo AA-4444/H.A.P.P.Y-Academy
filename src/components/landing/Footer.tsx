@@ -1,149 +1,134 @@
-import { Instagram, Youtube, Send } from "lucide-react";
+import { Instagram, Youtube, Send, Linkedin, ArrowUp } from "lucide-react";
 import logo from "@/assets/logo.svg";
 
 const TELEGRAM_BOT_URL = "https://t.me/happiness4people_bot";
 
-const footerLinks = [
+const socials = [
   {
-    title: "Программы",
-    links: [
-      { label: "О нас", href: "#about" },
-      { label: "События", href: "#programs" },
-      { label: "Программы", href: "#programs" },
-      { label: "Начать сейчас", href: TELEGRAM_BOT_URL },
-    ],
-  },
-  {
-    title: "Ресурсы",
-    links: [
-      { label: "Блог", href: TELEGRAM_BOT_URL },
-      { label: "Бесплатные материалы", href: TELEGRAM_BOT_URL },
-      { label: "Магазин", href: TELEGRAM_BOT_URL },
-    ],
-  },
-  {
-    title: "Сообщество",
-    links: [
-      { label: "Отзывы", href: "#reviews" },
-      { label: "Карьера", href: TELEGRAM_BOT_URL },
-    ],
-  },
-];
-
-const socialLinks = [
-  {
-    icon: Instagram,
-    href: "https://instagram.com/isaacpintosevich",
     label: "Instagram",
+    href: "https://instagram.com/isaacpintosevich",
+    icon: Instagram,
   },
-  { icon: Youtube, href: "https://youtube.com", label: "YouTube" },
-  { icon: Send, href: TELEGRAM_BOT_URL, label: "Telegram" },
+  {
+    label: "YouTube",
+    href: "https://youtube.com",
+    icon: Youtube,
+  },
+  {
+    label: "Telegram",
+    href: TELEGRAM_BOT_URL,
+    icon: Send,
+  },
+  {
+    label: "LinkedIn",
+    href: "https://linkedin.com",
+    icon: Linkedin,
+  },
 ];
 
 const Footer = () => {
-  return (
-    // ✅ кремовый фон страницы (как у Hero/CTA)
-    <footer className="bg-[#F7F3EE]">
-      {/* ✅ небольшие отступы по краям как у фото в CTA */}
-      <div className="mx-auto w-full px-3 sm:px-4 lg:px-6 pb-6 sm:pb-8">
-        {/* ✅ белая скруглённая “карточка” */}
-        <div className="rounded-[28px] sm:rounded-[36px] lg:rounded-[44px] bg-white shadow-[0_30px_100px_rgba(0,0,0,0.10)] overflow-hidden">
-          <div className="mx-auto max-w-7xl px-6 sm:px-8 lg:px-12 py-14 sm:py-16">
-            <div className="grid md:grid-cols-2 lg:grid-cols-5 gap-12 mb-14">
-              {/* Links */}
-              {footerLinks.map((section) => (
-                <div key={section.title}>
-                  <h4 className="font-semibold text-black mb-4">
-                    {section.title}
-                  </h4>
-                  <ul className="space-y-3">
-                    {section.links.map((link) => (
-                      <li key={link.label}>
-                        <a
-                          href={link.href}
-                          target={link.href.startsWith("http") ? "_blank" : undefined}
-                          rel={
-                            link.href.startsWith("http")
-                              ? "noopener noreferrer"
-                              : undefined
-                          }
-                          className="text-sm text-black/60 hover:text-black transition-colors"
-                        >
-                          {link.label}
-                        </a>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              ))}
+  const scrollToTop = () =>
+    window.scrollTo({ top: 0, behavior: "smooth" });
 
-              {/* Support */}
-              <div className="lg:col-span-2">
-                <h4 className="font-semibold text-black mb-4 flex items-center gap-2">
-                  Поддержка
-                  <span className="text-black/40">→</span>
-                </h4>
-                <p className="text-sm text-black/60 mb-4">
-                  Свяжитесь с поддержкой по вопросам о программах, коучинге или
-                  событиях.
-                </p>
+  return (
+    <footer className="bg-[#F7F3EE]">
+      <div className="mx-auto w-full px-3 sm:px-4 lg:px-6 pb-8">
+        <div className="rounded-[32px] sm:rounded-[40px] lg:rounded-[48px] bg-[#F6B800] overflow-hidden">
+          <div className="mx-auto max-w-7xl px-6 sm:px-10 lg:px-14 py-24">
+
+            {/* TOP */}
+            <div className="relative">
+              <button
+                onClick={scrollToTop}
+                className="absolute right-0 top-0 h-14 w-14 rounded-full border border-white/70
+                           flex items-center justify-center text-white
+                           hover:bg-white/10 transition"
+                aria-label="Наверх"
+              >
+                <ArrowUp className="w-6 h-6" />
+              </button>
+
+              <p className="text-white/80 text-xl mb-6">
+                Напиши нам
+              </p>
+
+           <a
+             href={TELEGRAM_BOT_URL}
+             target="_blank"
+             rel="noopener noreferrer"
+             className="
+               block font-sans font-extrabold text-white
+               text-3xl sm:text-5xl md:text-6xl lg:text-8xl
+               leading-tight sm:leading-[0.95]
+               break-words
+               max-w-full
+             "
+           >
+             @HappyacademyTeam
+           </a>
+              <div className="mt-10 grid sm:grid-cols-2 gap-10">
+                <div className="text-white text-xl">
+                  Isaac Pintosevich
+                </div>
+
+                <div className="text-white/85">
+                  <div className="font-semibold">
+                    Остались вопросы?
+                  </div>
+                  <div className="mt-2 text-sm sm:text-base">
+                    Напиши их в личные сообщения Ицхаку.
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* SOCIALS — СНИЗУ, В РЯД, БЕЛЫЕ */}
+            <div className="mt-20 flex flex-wrap justify-center gap-4">
+              {socials.map((s) => (
                 <a
-                  href={TELEGRAM_BOT_URL}
+                  key={s.label}
+                  href={s.href}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-sm text-black hover:text-black/70 transition-colors underline underline-offset-4"
+                  className="
+                    flex items-center justify-center gap-3
+                    h-14 px-8 min-w-[180px]
+                    rounded-full
+                    bg-white text-black
+                    font-semibold text-sm
+                    hover:bg-white/90 transition
+                  "
                 >
-                  Написать в Telegram
+                  <s.icon className="w-5 h-5" />
+                  {s.label}
                 </a>
-              </div>
+              ))}
             </div>
 
-            {/* Bottom row */}
-            <div className="pt-8 border-t border-black/10 flex flex-col md:flex-row justify-between items-center gap-6">
-              {/* small logo */}
-              <div className="flex items-center gap-6">
-                <img src={logo} alt="H.A.P.P.Y Academy" className="h-8" />
-              </div>
-
-              <div className="flex flex-wrap items-center gap-4 text-sm text-black/45 justify-center">
-                <a href="#" className="hover:text-black transition-colors">
-                  Политика конфиденциальности
-                </a>
-                <span className="text-black/25">|</span>
-                <a href="#" className="hover:text-black transition-colors">
-                  Условия использования
-                </a>
-                <span className="text-black/25">|</span>
-                <span>© {new Date().getFullYear()}. Все права защищены.</span>
-              </div>
-
-              {/* Social */}
-              <div className="flex items-center gap-4">
-                {socialLinks.map((social) => (
-                  <a
-                    key={social.label}
-                    href={social.href}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-black/55 hover:text-black transition-colors"
-                    aria-label={social.label}
-                  >
-                    <social.icon className="w-5 h-5" />
-                  </a>
-                ))}
-              </div>
-            </div>
-          </div>
-
-          <div className="border-t border-black/10 bg-white">
-            <div className="px-6 sm:px-8 lg:px-12 py-10 sm:py-12">
+            {/* BOTTOM */}
+            <div className="mt-20 pt-10 border-t border-white/30
+                            flex flex-col md:flex-row items-center
+                            justify-between gap-6 text-white/85 text-sm">
               <img
                 src={logo}
                 alt="H.A.P.P.Y Academy"
-                className="w-full h-auto opacity-[0.92]"
+                className="h-8"
                 draggable={false}
               />
+
+              <div className="flex flex-wrap items-center gap-4 justify-center">
+                <a href="#" className="hover:text-white">
+                  Политика конфиденциальности
+                </a>
+                <span className="opacity-50">|</span>
+                <a href="#" className="hover:text-white">
+                  Условия использования
+                </a>
+                <span className="opacity-50">|</span>
+                <span>© 2026. Все права защищены.</span>
+              </div>
             </div>
+
           </div>
         </div>
       </div>

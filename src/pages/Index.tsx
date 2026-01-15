@@ -11,16 +11,17 @@ import HappyAcademySection from "@/components/landing/HappyAcademySection";
 import TechnologySection from "@/components/landing/TechnologySection";
 import InsideSystem from "@/components/landing/InsideSystem";
 import ParticipationFormat from "@/components/landing/ParticipationFormat";
+import QuickReviews from "@/components/landing/QuickReviews";
 
 const Index = () => {
   return (
-    <main className="overflow-x-hidden">
+    <main>
       <Header />
       <Hero />
       <HappyAcademySection />
       <TechnologySection />
         <Pillars />
-        <Testimonials />
+        <QuickReviews />
         <ParticipationFormat />
         <About />
       <Programs />

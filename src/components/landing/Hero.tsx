@@ -6,9 +6,102 @@ import heroImage from "@/assets/bg1.png";
 const TELEGRAM_BOT_URL = "https://t.me/happiness4people_bot";
 const HEADER_H = 88;
 
-const Hero = () => {
+/**
+ * ✅ MOBILE-ONLY HERO
+ * Полностью новая секция для телефона. Никаких grid/justify-self.
+ * Центрирование кнопок: mx-auto + w-full + max-w.
+ */
+const MobileHero = () => {
   return (
-    <section className="bg-[#F7F3EE]">
+    <section className="lg:hidden bg-[#F7F3EE]">
+      <div style={{ paddingTop: HEADER_H }} className="bg-[#F7F3EE]">
+        <div className="mx-auto w-full px-3 sm:px-4">
+          <div className="relative overflow-hidden rounded-[28px] bg-transparent shadow-[0_30px_100px_rgba(0,0,0,0.25)]">
+            <div
+              className="relative"
+              style={{
+                height: `calc(100vh - ${HEADER_H}px - 24px)`,
+                minHeight: 520,
+              }}
+            >
+              {/* фон */}
+              <img
+                src={heroImage}
+                alt=""
+                className="absolute inset-0 h-full w-full object-cover object-[center_18%]"
+                draggable={false}
+              />
+
+              {/* лучи */}
+              <div className="pointer-events-none absolute -top-16 left-[6%] h-[120%] w-[900px] -skew-x-12 bg-gradient-to-b from-sky-400/28 via-blue-500/12 to-transparent blur-2xl" />
+              <div className="pointer-events-none absolute -top-16 left-[42%] h-[120%] w-[650px] -skew-x-12 bg-gradient-to-b from-cyan-300/18 via-cyan-500/6 to-transparent blur-2xl" />
+
+              {/* контент */}
+              <div className="relative z-10 h-full">
+                <div className="h-full px-5 pt-10 pb-8 flex flex-col justify-end">
+                  <motion.div
+                    initial={{ opacity: 0, y: 18 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.6 }}
+                    className="w-full"
+                  >
+                    <h1 className="font-sans font-extrabold text-4xl text-white leading-[1.06] mb-5">
+                      Ты не застрял.
+                      <br />
+                      У твоей жизни просто нет архитектуры
+                      <span className="text-accent">.</span>
+                    </h1>
+
+                    <p className="font-sans text-base text-white/80 leading-relaxed mb-8 max-w-[46ch]">
+                      Система, которая помогает навести порядок в мышлении, решениях и действиях.
+                      <br />
+                      <span className="block mt-3 font-semibold text-white">Без мотивации.</span>
+                      <span className="block font-semibold text-white">Без иллюзий.</span>
+                      <span className="block font-semibold text-white">Только работающая структура.</span>
+                    </p>
+
+                    {/* ✅ КНОПКИ (МОБИЛА): новый контейнер, центр через mx-auto */}
+                    <div className="w-full">
+                      <div className="mx-auto w-full max-w-[520px] space-y-4">
+                        <Button
+                          size="xl"
+                          onClick={() => window.open(TELEGRAM_BOT_URL, "_blank")}
+                          className="mx-auto block w-full rounded-full px-10 bg-yellow-400 text-black hover:bg-yellow-300 font-semibold"
+                        >
+                          Принять участие
+                        </Button>
+
+                        <Button
+                          size="xl"
+                          onClick={() => window.open(TELEGRAM_BOT_URL, "_blank")}
+                          className="mx-auto block w-full rounded-full px-10 bg-accent text-white hover:opacity-95 font-semibold"
+                        >
+                          Записаться FREE на вводный урок
+                        </Button>
+                      </div>
+                    </div>
+                  </motion.div>
+                </div>
+              </div>
+
+              <div className="pointer-events-none absolute inset-0 ring-1 ring-black/10" />
+            </div>
+          </div>
+        </div>
+
+        <div className="h-6 sm:h-8" />
+      </div>
+    </section>
+  );
+};
+
+/**
+ * ✅ DESKTOP HERO (твоя старая секция)
+ * Показывается только на lg+
+ */
+const DesktopHero = () => {
+  return (
+    <section className="hidden lg:block bg-[#F7F3EE]">
       <div style={{ paddingTop: HEADER_H }} className="bg-[#F7F3EE]">
         <div className="mx-auto w-full px-3 sm:px-4 lg:px-6">
           <div className="relative overflow-hidden rounded-[28px] sm:rounded-[36px] lg:rounded-[44px] bg-transparent shadow-[0_30px_100px_rgba(0,0,0,0.25)]">
@@ -35,7 +128,6 @@ const Hero = () => {
               <div className="relative z-10 h-full">
                 <div className="h-full px-6 sm:px-10 lg:px-14">
                   <div className="h-full grid lg:grid-cols-[1.15fr_0.85fr] gap-10 lg:gap-12 items-end">
-
                     {/* LEFT */}
                     <motion.div
                       initial={{ opacity: 0, y: 24 }}
@@ -61,27 +153,32 @@ const Hero = () => {
                           mb-10
                         "
                       >
-                        Система, которая помогает навести порядок в мышлении,
-                        решениях и действиях. Без мотивации. Без иллюзий.
-                        Только работающая структура.
+                        Система, которая помогает навести порядок в мышлении, решениях и действиях.
+                        <br />
+                        <span className="block mt-3 font-semibold text-white">Без мотивации.</span>
+                        <span className="block font-semibold text-white">Без иллюзий.</span>
+                        <span className="block font-semibold text-white">Только работающая структура.</span>
                       </p>
 
-                      <div className="flex flex-col sm:flex-row gap-4">
-                        <Button
-                          size="xl"
-                          onClick={() => window.open(TELEGRAM_BOT_URL, "_blank")}
-                          className="rounded-full px-10 bg-yellow-400 text-black hover:bg-yellow-300 font-semibold"
-                        >
-                          Принять участие
-                        </Button>
+                      {/* Кнопки (как у тебя было) */}
+                      <div className="w-full">
+                        <div className="flex flex-col sm:flex-row gap-4 w-full mx-auto items-center sm:items-start justify-center lg:justify-start">
+                          <Button
+                            size="xl"
+                            onClick={() => window.open(TELEGRAM_BOT_URL, "_blank")}
+                            className="rounded-full px-10 bg-yellow-400 text-black hover:bg-yellow-300 font-semibold w-full sm:w-auto"
+                          >
+                            Принять участие
+                          </Button>
 
-                        <Button
-                          size="xl"
-                          onClick={() => window.open(TELEGRAM_BOT_URL, "_blank")}
-                          className="rounded-full px-10 bg-accent text-white hover:opacity-95 font-semibold"
-                        >
-                          Записаться FREE на вводный урок
-                        </Button>
+                          <Button
+                            size="xl"
+                            onClick={() => window.open(TELEGRAM_BOT_URL, "_blank")}
+                            className="rounded-full px-10 bg-accent text-white hover:opacity-95 font-semibold w-full sm:w-auto"
+                          >
+                            Записаться FREE на вводный урок
+                          </Button>
+                        </div>
                       </div>
                     </motion.div>
 
@@ -120,7 +217,6 @@ const Hero = () => {
                         </div>
                       </div>
                     </motion.div>
-
                   </div>
                 </div>
               </div>
@@ -133,6 +229,15 @@ const Hero = () => {
         <div className="h-6 sm:h-8" />
       </div>
     </section>
+  );
+};
+
+const Hero = () => {
+  return (
+    <>
+      <MobileHero />
+      <DesktopHero />
+    </>
   );
 };
 

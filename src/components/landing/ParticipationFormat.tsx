@@ -39,7 +39,7 @@ export default function ParticipationFormat() {
 		  >
 			<div className="inline-flex items-center gap-2 text-[11px] font-semibold tracking-widest uppercase text-black/45">
 			  <span className="h-2 w-2 rounded-full bg-accent" />
-			  6) ФОРМАТ УЧАСТИЯ
+			  ФОРМАТ УЧАСТИЯ
 			</div>
 
 			<h2 className="mt-5 font-sans font-extrabold tracking-tight text-black text-3xl sm:text-4xl md:text-5xl leading-[1.05]">

@@ -32,20 +32,13 @@ const Pillars = () => {
     offset: ["start start", "end end"],
   });
 
-  const progress = useSpring(scrollYProgress, {
-    stiffness: 140,
-    damping: 24,
-    mass: 0.8,
-  });
+  const progress = useSpring(scrollYProgress, { stiffness: 140, damping: 24, mass: 0.8 });
 
   const [activeIndex, setActiveIndex] = useState(0);
 
   useEffect(() => {
     const unsub = progress.on("change", (v) => {
-      const idx = Math.max(
-        0,
-        Math.min(items.length - 1, Math.floor(v * items.length))
-      );
+      const idx = Math.max(0, Math.min(items.length - 1, Math.floor(v * items.length)));
       setActiveIndex(idx);
     });
     return () => unsub();
@@ -56,20 +49,18 @@ const Pillars = () => {
       ref={sectionRef}
       className="bg-[#F6F1E7]"
       style={{
+        // ✅ Это и есть “скролл-длина” для sticky.
+        // Не бесконечная, но хватает чтобы по очереди показать 5 пунктов.
         minHeight: `calc(100vh + ${items.length * 220}px)`,
       }}
     >
-      {/* ✅ sticky НЕ трогаем overflow’ами */}
       <div ref={stickyRef} className="sticky top-0 h-screen flex items-center">
-        {/* ✅ на мобиле чуть меньше padding чтобы не давило */}
-        <div className="container max-w-7xl mx-auto px-4 sm:px-6">
-          {/* ✅ min-w-0 чтобы текст мог сжиматься внутри grid */}
-          <div className="grid lg:grid-cols-[1fr_1.25fr] gap-16 items-center min-w-0">
+        <div className="container max-w-7xl mx-auto px-6">
+          <div className="grid lg:grid-cols-[1fr_1.25fr] gap-16 items-center">
             <motion.div
               initial={{ opacity: 0, x: -22, filter: "blur(10px)" }}
               animate={isInView ? { opacity: 1, x: 0, filter: "blur(0px)" } : {}}
               transition={{ duration: 0.7, ease: "easeOut" }}
-              className="min-w-0"
             >
               <span className="inline-flex items-center gap-2 text-[11px] font-semibold tracking-widest text-black/45 uppercase mb-6">
                 <span className="w-2 h-2 rounded-full bg-accent" />
@@ -80,7 +71,7 @@ const Pillars = () => {
                 Что ты получаешь
               </h2>
 
-              <div className="space-y-3 min-w-0">
+              <div className="space-y-3">
                 {items.map((it, index) => (
                   <PillarRow
                     key={it.label}
@@ -93,12 +84,11 @@ const Pillars = () => {
                 ))}
               </div>
 
-              {/* ✅ КНОПКИ: на мобиле w-full, на sm+ как было */}
               <div className="mt-10 flex flex-col sm:flex-row gap-4">
                 <Button
                   size="lg"
                   onClick={() => window.open(TELEGRAM_BOT_URL, "_blank")}
-                  className="w-full sm:w-auto rounded-full px-8 bg-yellow-400 text-black hover:bg-yellow-300 font-semibold"
+                  className="rounded-full px-8 bg-yellow-400 text-black hover:bg-yellow-300 font-semibold"
                 >
                   Принять участие
                 </Button>
@@ -106,7 +96,7 @@ const Pillars = () => {
                 <Button
                   size="lg"
                   onClick={() => window.open(TELEGRAM_BOT_URL, "_blank")}
-                  className="w-full sm:w-auto rounded-full px-8 bg-accent text-white hover:opacity-95 font-semibold"
+                  className="rounded-full px-8 bg-accent text-white hover:opacity-95 font-semibold"
                 >
                   Записаться FREE на вводный урок
                 </Button>
@@ -161,8 +151,7 @@ function PillarRow({
           {String(index + 1).padStart(2, "0")}
         </span>
 
-        {/* ✅ МОБИЛА: разрешаем перенос и не даём вылезать
-            ✅ SM+: возвращаем твоё nowrap+truncate */}
+        {/* ⬇️ ЕДИНСТВЕННОЕ ИЗМЕНЕНИЕ — mobile override */}
         <span
           className={[
             "min-w-0 flex-1",
@@ -170,15 +159,13 @@ function PillarRow({
             "text-3xl sm:text-4xl md:text-5xl",
             "transition-colors duration-300",
             active ? "text-black" : "text-black/35",
-            "whitespace-normal break-words",     // mobile
-            "sm:whitespace-nowrap sm:truncate",  // sm+
+            "whitespace-normal break-words sm:whitespace-nowrap sm:truncate",
           ].join(" ")}
         >
           {label}
         </span>
 
-        {/* ✅ ГЛАВНЫЙ ФИКС: на мобиле НЕ резервируем 110px,
-            иначе вся строка уезжает/вылезает */}
+        {/* ⬇️ НА МОБИЛЕ СКРЫТО */}
         <span className="shrink-0 hidden sm:flex w-[110px] justify-end">
           <motion.span
             style={{

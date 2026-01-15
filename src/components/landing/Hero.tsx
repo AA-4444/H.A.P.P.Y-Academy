@@ -72,20 +72,20 @@ const MobileHero = () => {
                      </p>
  
                      {/* кнопки */}
-                     <div className="w-full">
-                       <div className="mx-auto w-full max-w-[520px] space-y-3 pb-2">
+                     <div className="flex justify-center pb-4">
+                       <div className="w-full max-w-[360px] space-y-3">
                          <Button
                            size="xl"
                            onClick={() => window.open(TELEGRAM_BOT_URL, "_blank")}
-                           className="mx-auto block w-full rounded-full px-10 bg-yellow-400 text-black hover:bg-yellow-300 font-semibold"
+                           className="w-full rounded-full px-10 bg-yellow-400 text-black hover:bg-yellow-300 font-semibold"
                          >
                            Принять участие
                          </Button>
- 
+                     
                          <Button
                            size="xl"
                            onClick={() => window.open(TELEGRAM_BOT_URL, "_blank")}
-                           className="mx-auto block w-full rounded-full px-10 bg-accent text-white hover:opacity-95 font-semibold"
+                           className="w-full rounded-full px-10 bg-accent text-white hover:opacity-95 font-semibold"
                          >
                            Записаться FREE на вводный урок
                          </Button>

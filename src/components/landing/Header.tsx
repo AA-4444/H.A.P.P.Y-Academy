@@ -12,21 +12,7 @@ const navItems = [
   { label: "Отзывы", href: "#reviews" },
 ];
 
-const mobilePanel = {
-  hidden: { opacity: 0, y: -10 },
-  show: { opacity: 1, y: 0 },
-  exit: { opacity: 0, y: -10 },
-};
-
-const mobileItem = {
-  hidden: { opacity: 0, y: -6 },
-  show: { opacity: 1, y: 0 },
-  exit: { opacity: 0, y: -6 },
-};
-
 function lockBodyScroll(lock: boolean) {
-  // ВАЖНО: не трогаем overflow-x/html/body (чтобы не ломать sticky секции)
-  // Блокируем только вертикальный скролл на время открытого меню.
   if (lock) {
     document.body.style.overflow = "hidden";
     document.body.style.touchAction = "none";
@@ -45,7 +31,6 @@ const Header = () => {
     return () => lockBodyScroll(false);
   }, [isMobileMenuOpen]);
 
-  // закрыть по клику вне хедера
   useEffect(() => {
     if (!isMobileMenuOpen) return;
 
@@ -59,7 +44,6 @@ const Header = () => {
     return () => window.removeEventListener("pointerdown", onDown);
   }, [isMobileMenuOpen]);
 
-  // закрыть по ESC
   useEffect(() => {
     if (!isMobileMenuOpen) return;
     const onKey = (e: KeyboardEvent) => {
@@ -72,15 +56,10 @@ const Header = () => {
   return (
     <header
       ref={headerRef}
-      className="fixed top-0 left-0 right-0 z-50 bg-[#F6F1E7] overflow-x-clip"
+      className="fixed top-0 left-0 right-0 z-50 overflow-x-clip bg-transparent md:bg-[#F6F1E7]"
     >
-      {/* ВАЖНО:
-          - overflow-x-clip на самом хедере (не на body!)
-          - px меньше на мобиле
-          - min-w-0 на контейнере, чтобы лого могло ужаться
-      */}
       <div className="mx-auto max-w-7xl px-3 sm:px-4 md:px-6 h-16 md:h-20 flex items-center justify-between gap-3 min-w-0">
-        {/* Logo (умеет ужаться) */}
+        {/* Logo */}
         <motion.a
           href="#"
           initial={{ opacity: 0 }}
@@ -135,74 +114,116 @@ const Header = () => {
           </Button>
         </motion.div>
 
-        {/* Mobile Menu Button (фиксированная ширина, чтобы всегда влезало) */}
-        <button
-          className="md:hidden inline-flex items-center justify-center h-10 w-10 rounded-full bg-black/0 hover:bg-black/5 transition text-black shrink-0"
-          onClick={() => setIsMobileMenuOpen((v) => !v)}
-          aria-label="Toggle menu"
+        {/* MOBILE: круг-кнопка, который морфится в меню */}
+        <motion.button
+          layoutId="mobileMenu"
+          className="
+            md:hidden
+            inline-flex items-center justify-center
+            h-11 w-11 rounded-full
+            bg-white
+            shadow-[0_10px_30px_rgba(0,0,0,0.14)]
+            text-black
+            relative z-[60]
+          "
+          onClick={() => setIsMobileMenuOpen(true)}
+          aria-label="Open menu"
+          transition={{ type: "spring", stiffness: 520, damping: 38 }}
         >
-          {isMobileMenuOpen ? <X size={22} /> : <Menu size={22} />}
-        </button>
+          <Menu size={22} />
+        </motion.button>
       </div>
 
-      {/* Mobile Menu */}
       <AnimatePresence>
         {isMobileMenuOpen && (
-          <motion.div
-            key="mobile"
-            variants={mobilePanel}
-            initial="hidden"
-            animate="show"
-            exit="exit"
-            transition={{ duration: 0.22, ease: "easeOut" }}
-            className="md:hidden bg-[#F6F1E7] border-t border-black/10 overflow-x-clip"
-          >
-            <div className="px-3 sm:px-4 py-5">
-              <motion.nav
-                initial="hidden"
-                animate="show"
-                exit="exit"
-                className="flex flex-col gap-2"
-              >
-                {navItems.map((item, idx) => (
-                  <motion.a
-                    key={item.href}
-                    variants={mobileItem}
-                    transition={{
-                      duration: 0.18,
-                      ease: "easeOut",
-                      delay: idx * 0.03,
-                    }}
-                    href={item.href}
-                    onClick={() => setIsMobileMenuOpen(false)}
-                    className="text-[15px] font-semibold text-black/80 hover:text-black transition-colors py-2"
-                  >
-                    {item.label}
-                  </motion.a>
-                ))}
+          <>
+            {/* overlay */}
+            <motion.div
+              key="overlay"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.18, ease: "easeOut" }}
+              className="md:hidden fixed inset-0 bg-black/30 z-[55]"
+              onClick={() => setIsMobileMenuOpen(false)}
+            />
 
-                <motion.div
-                  variants={mobileItem}
-                  transition={{
-                    duration: 0.2,
-                    ease: "easeOut",
-                    delay: navItems.length * 0.03 + 0.05,
-                  }}
-                  className="pt-3"
+            {/* MORPH PANEL: тот же layoutId что и у кружка */}
+            <motion.div
+              layoutId="mobileMenu"
+              key="panel"
+              transition={{ type: "spring", stiffness: 520, damping: 38 }}
+              className="
+                md:hidden
+                fixed right-3 top-3 z-[60]
+                w-[calc(100vw-24px)]
+                max-w-[520px]
+                rounded-3xl
+                bg-white
+                shadow-[0_30px_90px_rgba(0,0,0,0.20)]
+                border border-black/10
+                overflow-hidden
+              "
+            >
+              {/* верхняя полоска с крестиком */}
+              <div className="flex items-center justify-between px-4 py-3 border-b border-black/10">
+                <div className="text-sm font-semibold text-black/70">Меню</div>
+                <button
+                  className="h-10 w-10 rounded-full bg-black/5 hover:bg-black/10 transition flex items-center justify-center"
+                  onClick={() => setIsMobileMenuOpen(false)}
+                  aria-label="Close menu"
                 >
-                  <Button
-                    size="lg"
-                    className="w-full bg-yellow-400 text-black hover:bg-yellow-300 font-semibold rounded-full"
-                    onClick={() => window.open(TELEGRAM_BOT_URL, "_blank")}
-                  >
-                    Начать сейчас
-                  </Button>
-                </motion.div>
-              </motion.nav>
-            </div>
+                  <X size={20} />
+                </button>
+              </div>
 
-            <div className="pointer-events-none h-px bg-black/5" />
-          </motion.div>
+              <div className="px-5 py-5">
+                <motion.nav
+                  initial="hidden"
+                  animate="show"
+                  exit="hidden"
+                  variants={{
+                    hidden: {},
+                    show: { transition: { staggerChildren: 0.06, delayChildren: 0.06 } },
+                  }}
+                  className="flex flex-col gap-2"
+                >
+                  {navItems.map((item) => (
+                    <motion.a
+                      key={item.href}
+                      variants={{
+                        hidden: { opacity: 0, y: -8 },
+                        show: { opacity: 1, y: 0 },
+                      }}
+                      transition={{ duration: 0.22, ease: "easeOut" }}
+                      href={item.href}
+                      onClick={() => setIsMobileMenuOpen(false)}
+                      className="text-[16px] font-semibold text-black/80 hover:text-black transition-colors py-2"
+                    >
+                      {item.label}
+                    </motion.a>
+                  ))}
+
+                  <motion.div
+                    variants={{
+                      hidden: { opacity: 0, y: -8 },
+                      show: { opacity: 1, y: 0 },
+                    }}
+                    transition={{ duration: 0.24, ease: "easeOut" }}
+                    className="pt-3"
+                  >
+                    <Button
+                      size="lg"
+                      className="w-full bg-yellow-400 text-black hover:bg-yellow-300 font-semibold rounded-full"
+                      onClick={() => window.open(TELEGRAM_BOT_URL, "_blank")}
+                    >
+                      Начать сейчас
+                    </Button>
+                  </motion.div>
+                </motion.nav>
+              </div>
+            </motion.div>
+          </>
         )}
       </AnimatePresence>
     </header>

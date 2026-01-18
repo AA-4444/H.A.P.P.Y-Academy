@@ -1,4 +1,6 @@
+import React from "react";
 import { Instagram, Youtube, Send, Linkedin, ArrowUp } from "lucide-react";
+import { motion } from "framer-motion";
 import logo from "@/assets/logo.svg";
 
 const TELEGRAM_BOT_URL = "https://t.me/happiness4people_bot";
@@ -26,6 +28,50 @@ const socials = [
   },
 ];
 
+// Компонент анимированной кнопки "Наверх"
+function ScrollToTopBadge({ onClick }: { onClick: () => void }) {
+  // Повторяем текст больше раз, чтобы он заполнил весь круг без пробелов
+  const text = "наверх • наверх • наверх • наверх • наверх • ";
+
+  return (
+    <button
+      onClick={onClick}
+      // Адаптивные размеры: h-24 (96px) на мобилках, больше на десктопе
+      className="relative h-24 w-24 sm:h-32 sm:w-32 lg:h-36 lg:w-36 transition-transform hover:scale-105 active:scale-95 group"
+    >
+      <motion.div
+        animate={{ rotate: 360 }}
+        transition={{ duration: 12, repeat: Infinity, ease: "linear" }}
+        className="absolute inset-0"
+      >
+        <svg viewBox="0 0 200 200" className="h-full w-full">
+          <defs>
+            <path
+              id="footerCirclePath"
+              d="M 100,100 m -75,0 a 75,75 0 1,1 150,0 a 75,75 0 1,1 -150,0"
+            />
+          </defs>
+          <text
+            fill="rgba(255,255,255,0.85)"
+            fontSize="18"
+            className="font-bold uppercase tracking-[2px]"
+          >
+            <textPath href="#footerCirclePath" startOffset="0%">
+              {text}
+            </textPath>
+          </text>
+        </svg>
+      </motion.div>
+
+      <div className="absolute inset-0 flex items-center justify-center">
+        <div className="h-10 w-10 sm:h-12 sm:w-12 rounded-full bg-white/10 backdrop-blur-sm border border-white/30 flex items-center justify-center group-hover:bg-white/20 transition-colors">
+          <ArrowUp className="h-5 w-5 sm:h-6 sm:w-6 text-white" />
+        </div>
+      </div>
+    </button>
+  );
+}
+
 const Footer = () => {
   const scrollToTop = () =>
     window.scrollTo({ top: 0, behavior: "smooth" });
@@ -36,36 +82,34 @@ const Footer = () => {
         <div className="rounded-[32px] sm:rounded-[40px] lg:rounded-[48px] bg-[#F6B800] overflow-hidden">
           <div className="mx-auto max-w-7xl px-6 sm:px-10 lg:px-14 py-24">
 
-            {/* TOP */}
+            {/* TOP SECTION */}
             <div className="relative">
-              <button
-                onClick={scrollToTop}
-                className="absolute right-0 top-0 h-14 w-14 rounded-full border border-white/70
-                           flex items-center justify-center text-white
-                           hover:bg-white/10 transition"
-                aria-label="Наверх"
-              >
-                <ArrowUp className="w-6 h-6" />
-              </button>
+              {/* Позиционирование кнопки: 
+                  на мобилках (flex justify-end) она будет над текстом, 
+                  на десктопе (sm:absolute) прижмется к правому верхнему углу */}
+              <div className="flex justify-end sm:absolute sm:-top-12 sm:right-0 mb-8 sm:mb-0">
+                <ScrollToTopBadge onClick={scrollToTop} />
+              </div>
 
               <p className="text-white/80 text-xl mb-6">
                 Напиши нам
               </p>
 
-           <a
-             href={TELEGRAM_BOT_URL}
-             target="_blank"
-             rel="noopener noreferrer"
-             className="
-               block font-sans font-extrabold text-white
-               text-3xl sm:text-5xl md:text-6xl lg:text-8xl
-               leading-tight sm:leading-[0.95]
-               break-words
-               max-w-full
-             "
-           >
-             @HappyacademyTeam
-           </a>
+              <a
+                href={TELEGRAM_BOT_URL}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="
+                  block font-sans font-extrabold text-white
+                  text-3xl sm:text-5xl md:text-6xl lg:text-8xl
+                  leading-tight sm:leading-[0.95]
+                  break-words
+                  max-w-full
+                "
+              >
+                @HappyacademyTeam
+              </a>
+
               <div className="mt-10 grid sm:grid-cols-2 gap-10">
                 <div className="text-white text-xl">
                   Isaac Pintosevich
@@ -82,7 +126,7 @@ const Footer = () => {
               </div>
             </div>
 
-            {/* SOCIALS — СНИЗУ, В РЯД, БЕЛЫЕ */}
+            {/* SOCIALS */}
             <div className="mt-20 flex flex-wrap justify-center gap-4">
               {socials.map((s) => (
                 <a
@@ -105,7 +149,7 @@ const Footer = () => {
               ))}
             </div>
 
-            {/* BOTTOM */}
+            {/* BOTTOM BAR */}
             <div className="mt-20 pt-10 border-t border-white/30
                             flex flex-col md:flex-row items-center
                             justify-between gap-6 text-white/85 text-sm">

@@ -49,8 +49,7 @@ const Pillars = () => {
       ref={sectionRef}
       className="bg-[#F6F1E7]"
       style={{
-        // ✅ Это и есть “скролл-длина” для sticky.
-        // Не бесконечная, но хватает чтобы по очереди показать 5 пунктов.
+        
         minHeight: `calc(100vh + ${items.length * 220}px)`,
       }}
     >
@@ -103,7 +102,7 @@ const Pillars = () => {
               </div>
             </motion.div>
 
-            {/* ✅ ФОТО УБРАЛИ. СТРУКТУРА GRID НЕ ТРОНУТА. */}
+           
             <div className="hidden lg:block" />
           </div>
         </div>
@@ -151,7 +150,7 @@ function PillarRow({
           {String(index + 1).padStart(2, "0")}
         </span>
 
-        {/* ⬇️ ЕДИНСТВЕННОЕ ИЗМЕНЕНИЕ — mobile override */}
+        
         <span
           className={[
             "min-w-0 flex-1",
@@ -165,7 +164,7 @@ function PillarRow({
           {label}
         </span>
 
-        {/* ⬇️ НА МОБИЛЕ СКРЫТО */}
+
         <span className="shrink-0 hidden sm:flex w-[110px] justify-end">
           <motion.span
             style={{

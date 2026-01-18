@@ -3,23 +3,96 @@ import { motion } from 'framer-motion';
 import { gsap } from 'gsap';
 import { Button } from '@/components/ui/button';
 
-import bg1 from '@/assets/bg1.png';
-import bg3 from '@/assets/bg3.png';
-import bg4 from '@/assets/bg4.png';
-import bg5 from '@/assets/bg5.png';
-import bg6 from '@/assets/bg6.png';
-import bg7 from '@/assets/bg7.png';
+
+ import t1 from '@/assets/t1.jpg';
+ import t2 from '@/assets/t2.png';
+ import t3 from '@/assets/t3.jpg';
+ import t4 from '@/assets/t4.png';
+ import t5 from '@/assets/t5.jpg';
+ import t6 from '@/assets/t6.png';
+ 
+ 
+ import bg1 from '@/assets/bg1.png';
+ import bg2 from '@/assets/bg2.png';
+ import bg3 from '@/assets/bg4.png';
+ import bg4 from '@/assets/bg5.png';
+ import bg5 from '@/assets/bg6.png';
 
 const TELEGRAM_BOT_URL = 'https://t.me/happiness4people_bot';
 const HEADER_H = 88;
 
-/**
- * FULLSCREEN GRID MOTION BACKGROUND
- * - Desktop: mouse-driven
- * - Mobile: auto loop (smooth, infinite feel)
- * - Mobile tiles are wider (4 cols)
- * - Always loops through 28 items so it never feels like it ends
- */
+/** =========================
+ *  Helpers
+ *  ========================= */
+function shuffle<T>(arr: T[]) {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = (Math.random() * (i + 1)) | 0;
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+
+function buildGridMinRepeats(images: string[], rows: number, cols: number) {
+  const total = rows * cols;
+  if (!images.length) return [];
+
+
+  const unique = Array.from(new Set(images));
+  const uniqLen = unique.length;
+
+  const out: string[] = new Array(total);
+  const prevRow = new Array<string | null>(cols).fill(null);
+
+  for (let r = 0; r < rows; r++) {
+    // candidate pool: shuffled unique images
+    let pool = shuffle(unique);
+
+    // build current row
+    const usedInRow = new Set<string>();
+
+    for (let c = 0; c < cols; c++) {
+      let pickImg: string | null = null;
+
+     
+      for (let i = 0; i < pool.length; i++) {
+        const img = pool[i];
+        if (usedInRow.has(img)) continue;
+        if (prevRow[c] && img === prevRow[c]) continue;
+        pickImg = img;
+        pool.splice(i, 1);
+        break;
+      }
+
+     
+      if (!pickImg) {
+        for (let i = 0; i < pool.length; i++) {
+          const img = pool[i];
+          if (usedInRow.has(img)) continue;
+          pickImg = img;
+          pool.splice(i, 1);
+          break;
+        }
+      }
+
+      // 3) If still not found (super low unique), just take anything
+      if (!pickImg) {
+        pickImg = unique[(Math.random() * uniqLen) | 0];
+      }
+
+      usedInRow.add(pickImg);
+      out[r * cols + c] = pickImg;
+    }
+
+    // update prevRow tracker
+    for (let c = 0; c < cols; c++) prevRow[c] = out[r * cols + c];
+  }
+
+ 
+  return out;
+}
+
 function GridMotionBg({ images }: { images: string[] }) {
   const rowRefs = useRef<Array<HTMLDivElement | null>>([]);
   const mouseXRef = useRef<number>(typeof window !== 'undefined' ? window.innerWidth / 2 : 0);
@@ -30,13 +103,7 @@ function GridMotionBg({ images }: { images: string[] }) {
   const rows = 4;
   const cols = isMobile ? 4 : 7;
 
-  const TOTAL_ITEMS = 28;
-
-  const items = useMemo(() => {
-    const arr: string[] = [];
-    for (let i = 0; i < TOTAL_ITEMS; i++) arr.push(images[i % images.length]);
-    return arr;
-  }, [images]);
+  const items = useMemo(() => buildGridMinRepeats(images, rows, cols), [images, rows, cols]);
 
   useEffect(() => {
     gsap.ticker.lagSmoothing(0);
@@ -135,9 +202,8 @@ function GridMotionBg({ images }: { images: string[] }) {
               }}
             >
               {[...Array(cols)].map((_, itemIndex) => {
-                // desktop-like mapping for richer pattern, loop into 28
-                const desktopLikeIndex = rowIndex * 7 + itemIndex;
-                const img = items[desktopLikeIndex % items.length];
+                const idx = rowIndex * cols + itemIndex;
+                const img = items[idx];
 
                 return (
                   <div key={itemIndex} style={{ position: 'relative' }}>
@@ -193,9 +259,7 @@ function GridMotionBg({ images }: { images: string[] }) {
   );
 }
 
-/**
- * Mobile-only: separate layout so buttons are perfectly centered
- */
+
 function MobileContent() {
   return (
     <div className="lg:hidden relative z-10 h-full">
@@ -221,7 +285,6 @@ function MobileContent() {
             <span className="block font-semibold text-white">Только работающая структура.</span>
           </p>
 
-          {/* ✅ Centered buttons on mobile */}
           <div className="w-full flex justify-center">
             <div className="w-full max-w-[360px] space-y-3">
               <Button
@@ -247,9 +310,7 @@ function MobileContent() {
   );
 }
 
-/**
- * Desktop-only: keep your old positioning
- */
+
 function DesktopContent() {
   return (
     <div className="hidden lg:block relative z-10 h-full">
@@ -295,7 +356,6 @@ function DesktopContent() {
             </div>
           </motion.div>
 
-          {/* keep empty right column to preserve composition */}
           <div />
         </div>
       </div>
@@ -304,9 +364,27 @@ function DesktopContent() {
 }
 
 const Hero = () => {
-  const bgImages = useMemo(() => [bg4, bg5, bg7, bg1, bg3, bg6], []);
+  
+ const bgImages = useMemo(
+   () => [
+     
+     t1,
+     t2,
+     t3,
+     t4,
+     t5,
+     t6,
+ 
+     
+     bg1,
+     bg2,
+     bg3,
+     bg4,
+     bg5,
+   ],
+   []
+ );
 
-  // hard-block iOS pull-down bounce at top (prevents ugly reveal)
   useEffect(() => {
     const isMobile =
       typeof window !== 'undefined' && window.matchMedia('(max-width: 768px)').matches;
@@ -321,8 +399,6 @@ const Hero = () => {
     const onTouchMove = (e: TouchEvent) => {
       const y = e.touches?.[0]?.clientY ?? 0;
       const dy = y - startY;
-
-      // block pull-down only when we're at top
       if (window.scrollY <= 0 && dy > 0) e.preventDefault();
     };
 
@@ -337,21 +413,17 @@ const Hero = () => {
 
   return (
     <section className="relative w-screen h-[100svh] overflow-hidden">
-      {/* background grid */}
       <GridMotionBg images={bgImages} />
 
-      {/* ✅ readability gradient (fullscreen, dark, soft) */}
       <div className="absolute inset-0 pointer-events-none">
         <div className="absolute inset-0 bg-black/20" />
         <div className="absolute inset-0 bg-gradient-to-b from-black/55 via-black/25 to-black/65" />
         <div className="absolute inset-0 bg-gradient-to-r from-black/35 via-transparent to-black/10" />
       </div>
 
-      {/* content */}
       <MobileContent />
       <DesktopContent />
 
-      {/* tiny border/noise optional */}
       <div className="pointer-events-none absolute inset-0 ring-1 ring-black/10" />
     </section>
   );

@@ -12,6 +12,8 @@ import TechnologySection from "@/components/landing/TechnologySection";
 import InsideSystem from "@/components/landing/InsideSystem";
 import ParticipationFormat from "@/components/landing/ParticipationFormat";
 import QuickReviews from "@/components/landing/QuickReviews";
+import GlobeSection from "@/components/landing/GlobeSection";
+import MillionImpactSection from "@/components/landing/MillionImpactSection";
 
 const Index = () => {
   return (
@@ -21,6 +23,7 @@ const Index = () => {
       <HappyAcademySection />
       <TechnologySection />
         <Pillars />
+        <MillionImpactSection />
         <QuickReviews />
         <ParticipationFormat />
         <About />

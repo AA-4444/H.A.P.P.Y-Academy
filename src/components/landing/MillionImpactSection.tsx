@@ -219,7 +219,7 @@ export default function MillionImpactSection() {
 		  <div className="mt-8 grid grid-cols-1 gap-4">
 			<div>
 			 
-			  <div className="mt-2 font-sans font-extrabold tracking-tight text-2xl text-black">
+			  <div className="mt-2 font-sans font-extrabold tracking-tight text-2xl text-orange-500">
 				Реальные люди по всему миру
 			  </div>
 			  <div className="mt-2 font-sans text-black/60 text-sm">
@@ -228,12 +228,12 @@ export default function MillionImpactSection() {
 			</div>
 
 			<div>
-			  <div
-				className="font-sans font-extrabold tracking-tight text-4xl text-black tabular-nums"
-				style={{ fontVariantNumeric: "tabular-nums" }}
-			  >
-				{formatInt(display)}
-			  </div>
+			 <div
+			   className="font-sans font-extrabold tracking-tight text-4xl text-orange-500 tabular-nums"
+			   style={{ fontVariantNumeric: "tabular-nums" }}
+			 >
+			   {formatInt(display)}
+			 </div>
 			  <div className="mt-1 font-sans text-black/55 text-xs">
 				участников / вовлечённых
 			  </div>
@@ -285,9 +285,9 @@ export default function MillionImpactSection() {
 		  <div className="grid grid-cols-1 sm:grid-cols-[1fr_auto] gap-4 sm:gap-6 items-start">
 			<div>
 			  
-			  <div className="mt-2 font-sans font-extrabold tracking-tight text-2xl sm:text-3xl text-black">
-				Реальные люди по всему миру
-			  </div>
+			<div className="mt-2 font-sans font-extrabold tracking-tight text-2xl sm:text-3xl text-orange-500">
+			  Реальные люди по всему миру
+			</div>
 			  <div className="mt-2 font-sans text-black/60 text-sm sm:text-base">
 				{PERCENT}% от цели · рост идёт каждый день
 			  </div>
@@ -295,7 +295,7 @@ export default function MillionImpactSection() {
 
 			<div className="sm:text-right">
 			  <div
-				className="font-sans font-extrabold tracking-tight text-4xl sm:text-5xl lg:text-6xl text-black tabular-nums"
+				className="font-sans font-extrabold tracking-tight text-4xl sm:text-5xl lg:text-6xl text-orange-500 tabular-nums"
 				style={{ fontVariantNumeric: "tabular-nums" }}
 			  >
 				{formatInt(display)}

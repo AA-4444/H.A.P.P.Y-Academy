@@ -31,9 +31,9 @@ export default function Programs() {
       },
       {
         id: "tripwire",
-        label: "$1",
+        label: "1 €",
         title: "Минимальный пакет",
-        price: "$1",
+        price: "1 €",
         bullets: [
           "доступ к первому практическому модулю",
           "1 задание + чеклист внедрения",
@@ -47,7 +47,7 @@ export default function Programs() {
         id: "club",
         label: "CLUB",
         title: "Клуб «Энергия и Счастье»",
-        price: "от 30 € / месяц",
+        price: "49 € / месяц",
         bullets: [
           "курсы: «10 шагов», «Победитель лени», «Полный контроль»",
           "совместное чтение книг",

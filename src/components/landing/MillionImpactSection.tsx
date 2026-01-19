@@ -9,12 +9,8 @@ import {
   ZoomableGroup,
 } from "react-simple-maps";
 
-/**
- * Установка:
- * npm i react-simple-maps d3-geo
- */
 
-const SECTION_BG = "#F3EEE6";
+const SECTION_BG = "#F6F1E7";
 const ACCENT = "#E64B1E";
 const GEO_URL = "https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json";
 const formatInt = (n: number) => n.toLocaleString("ru-RU");
@@ -69,10 +65,7 @@ export default function MillionImpactSection() {
 	[]
   );
 
-  /**
-   * ✅ More points in USA + Israel
-   * Format: [lon, lat]
-   */
+
   const points = useMemo(() => {
 	const base: Array<[number, number]> = [
 	  // Europe
@@ -177,7 +170,7 @@ export default function MillionImpactSection() {
 	  ref={sectionRef as any}
 	  id="million-impact"
 	  className="relative"
-	  style={{ background: SECTION_BG }}
+	  style={{ backgroundColor: SECTION_BG }}
 	>
 	  {/* DESKTOP/TABLET: карта как фон секции */}
 	  <div className="absolute inset-0 z-0 hidden sm:block">
@@ -375,19 +368,19 @@ function WorldMapCoverBackground({
 
   const visible = points.slice(0, shownCount);
 
-  // ✅ map a bit stronger on desktop
+ 
   const geoFill = isMobile ? "rgba(0,0,0,0.07)" : "rgba(0,0,0,0.10)";
   const geoStroke = isMobile ? "rgba(0,0,0,0.14)" : "rgba(0,0,0,0.18)";
 
   return (
-	<div className="w-full h-full">
-	  <ComposableMap
+	<div className={["w-full h-full", isMobile ? "pointer-events-none" : "pointer-events-auto"].join(" ")}>
+	 <ComposableMap
 		projection="geoMercator"
 		projectionConfig={{
-		  scale: mode === "cover" ? 185 : 150, // ✅ чуть крупнее на ПК
+		  scale: mode === "cover" ? 185 : 150, 
 		}}
 		className="w-full h-full"
-		style={{ width: "100%", height: "100%" }}
+		style={{ width: "100%", height: "100%", background: "transparent" }}
 		preserveAspectRatio={mode === "cover" ? "xMidYMid slice" : "xMidYMid meet"}
 	  >
 		<ZoomableGroup

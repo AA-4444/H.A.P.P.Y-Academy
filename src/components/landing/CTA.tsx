@@ -21,7 +21,7 @@ const CTA = () => {
   const opacity = useTransform(scrollYProgress, [0, 0.3], [0, 1]);
 
   return (
-    <section ref={containerRef} className="bg-[#F7F3EE]">
+    <section ref={containerRef} className="bg-[#F6F1E7]">
       <motion.div style={{ scale, opacity }}>
         <div style={{ paddingTop: HEADER_H }} className="bg-[#F7F3EE]">
           <div className="mx-auto w-full px-3 sm:px-4 lg:px-6">

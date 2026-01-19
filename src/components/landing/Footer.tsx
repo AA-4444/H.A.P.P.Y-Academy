@@ -28,15 +28,15 @@ const socials = [
   },
 ];
 
-// Компонент анимированной кнопки "Наверх"
+
 function ScrollToTopBadge({ onClick }: { onClick: () => void }) {
-  // Повторяем текст больше раз, чтобы он заполнил весь круг без пробелов
+  
   const text = "наверх • наверх • наверх • наверх • наверх • ";
 
   return (
     <button
       onClick={onClick}
-      // Адаптивные размеры: h-24 (96px) на мобилках, больше на десктопе
+     
       className="relative h-24 w-24 sm:h-32 sm:w-32 lg:h-36 lg:w-36 transition-transform hover:scale-105 active:scale-95 group"
     >
       <motion.div
@@ -77,16 +77,14 @@ const Footer = () => {
     window.scrollTo({ top: 0, behavior: "smooth" });
 
   return (
-    <footer className="bg-[#F7F3EE]">
+    <footer className="bg-[#F6F1E7]">
       <div className="mx-auto w-full px-3 sm:px-4 lg:px-6 pb-8">
         <div className="rounded-[32px] sm:rounded-[40px] lg:rounded-[48px] bg-[#F6B800] overflow-hidden">
           <div className="mx-auto max-w-7xl px-6 sm:px-10 lg:px-14 py-24">
 
             {/* TOP SECTION */}
             <div className="relative">
-              {/* Позиционирование кнопки: 
-                  на мобилках (flex justify-end) она будет над текстом, 
-                  на десктопе (sm:absolute) прижмется к правому верхнему углу */}
+              
               <div className="flex justify-end sm:absolute sm:-top-12 sm:right-0 mb-8 sm:mb-0">
                 <ScrollToTopBadge onClick={scrollToTop} />
               </div>

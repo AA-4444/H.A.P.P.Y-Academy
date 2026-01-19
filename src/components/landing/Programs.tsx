@@ -82,7 +82,7 @@ export default function Programs() {
   }, [offers]);
 
   return (
-    <section id="programs" className="bg-[#F7F3EE]">
+    <section id="programs" className="bg-[#F6F1E7]">
       <div className="mx-auto max-w-7xl px-6 sm:px-8 lg:px-12 py-16 sm:py-20">
         <div className="max-w-4xl">
           <h2 className="font-sans font-extrabold tracking-tight text-4xl sm:text-5xl lg:text-6xl text-black leading-[1.05]">

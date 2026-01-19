@@ -91,7 +91,7 @@ export default function Testimonials() {
   const t = testimonials[active];
 
   return (
-    <section id="reviews" className="bg-[#F7F3EE]">
+    <section id="reviews" className="bg-[#F6F1E7]">
       <div className="mx-auto max-w-7xl px-6 sm:px-8 lg:px-12 py-16 sm:py-20">
         <div className="flex justify-center">
           <div className="flex items-center gap-2 text-xs tracking-[0.22em] font-semibold text-black/60">

@@ -1,42 +1,38 @@
 import React from "react";
-import { Instagram, Youtube, Send, Linkedin, ArrowUp } from "lucide-react";
 import { motion } from "framer-motion";
+import { ArrowUp, ArrowRight, Instagram, Youtube, Send } from "lucide-react";
+import { FaTiktok } from "react-icons/fa";
 import logo from "@/assets/logo.svg";
-
-const TELEGRAM_BOT_URL = "https://t.me/happiness4people_bot";
 
 const socials = [
   {
-    label: "Instagram",
-    href: "https://instagram.com/isaacpintosevich",
-    icon: Instagram,
-  },
-  {
     label: "YouTube",
-    href: "https://youtube.com",
+    href: "https://www.youtube.com/@isaacpintosevich",
     icon: Youtube,
   },
   {
-    label: "Telegram",
-    href: TELEGRAM_BOT_URL,
-    icon: Send,
+    label: "Instagram",
+    href: "https://www.instagram.com/isaacpintosevich/",
+    icon: Instagram,
   },
   {
-    label: "LinkedIn",
-    href: "https://linkedin.com",
-    icon: Linkedin,
+    label: "TikTok",
+    href: "https://www.tiktok.com/@isaacpintosevic",
+    icon: FaTiktok,
+  },
+  {
+    label: "Telegram",
+    href: "https://t.me/isaac_pintosevich",
+    icon: Send,
   },
 ];
 
-
 function ScrollToTopBadge({ onClick }: { onClick: () => void }) {
-  
   const text = "наверх • наверх • наверх • наверх • наверх • ";
 
   return (
     <button
       onClick={onClick}
-     
       className="relative h-24 w-24 sm:h-32 sm:w-32 lg:h-36 lg:w-36 transition-transform hover:scale-105 active:scale-95 group"
     >
       <motion.div
@@ -84,7 +80,6 @@ const Footer = () => {
 
             {/* TOP SECTION */}
             <div className="relative">
-              
               <div className="flex justify-end sm:absolute sm:-top-12 sm:right-0 mb-8 sm:mb-0">
                 <ScrollToTopBadge onClick={scrollToTop} />
               </div>
@@ -94,7 +89,7 @@ const Footer = () => {
               </p>
 
               <a
-                href={TELEGRAM_BOT_URL}
+                href="https://t.me/isaac_pintosevich"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="
@@ -105,7 +100,7 @@ const Footer = () => {
                   max-w-full
                 "
               >
-                @HappyacademyTeam
+                @isaac_pintosevich
               </a>
 
               <div className="mt-10 grid sm:grid-cols-2 gap-10">

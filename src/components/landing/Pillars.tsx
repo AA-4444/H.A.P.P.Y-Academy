@@ -44,74 +44,85 @@ const Pillars = () => {
     return () => unsub();
   }, [progress, items.length]);
 
+  const buttonsOpacity = useTransform(progress, [0.8, 0.95], [0, 1]);
+  const buttonsY = useTransform(progress, [0.8, 0.95], [40, 0]);
+  const buttonsBlur = useTransform(progress, [0.8, 0.95], [15, 0]);
+
   return (
     <section
       ref={sectionRef}
       className="bg-[#F6F1E7]"
       style={{
-        
-        minHeight: `calc(100vh + ${items.length * 220}px)`,
+        minHeight: `calc(100vh + ${items.length * 200}px)`,
       }}
     >
-      <div ref={stickyRef} className="sticky top-0 h-screen flex items-center">
-        <div className="container max-w-7xl mx-auto px-6">
-          <div className="grid lg:grid-cols-[1fr_1.25fr] gap-16 items-center">
+      <div ref={stickyRef} className="sticky top-0 h-screen flex items-center justify-center">
+        <div className="container mx-auto px-4 sm:px-6 flex justify-center">
+          
+          {/* Контейнер с max-w-fit сжимается по тексту, а mx-auto центрирует его в экране */}
+          <div className="max-w-fit w-full flex flex-col items-start">
             <motion.div
-              initial={{ opacity: 0, x: -22, filter: "blur(10px)" }}
+              initial={{ opacity: 0, x: -20, filter: "blur(10px)" }}
               animate={isInView ? { opacity: 1, x: 0, filter: "blur(0px)" } : {}}
-              transition={{ duration: 0.7, ease: "easeOut" }}
+              transition={{ duration: 0.8 }}
+              className="w-full"
             >
-              <span className="inline-flex items-center gap-2 text-[11px] font-semibold tracking-widest text-black/45 uppercase mb-6">
+              <span className="inline-flex items-center gap-2 text-[10px] sm:text-[12px] font-semibold tracking-[0.2em] text-black/45 uppercase mb-6 sm:mb-8">
                 <span className="w-2 h-2 rounded-full bg-accent" />
                 Что внутри системы
               </span>
 
-              <h2 className="font-sans font-extrabold tracking-tight text-black text-3xl sm:text-4xl md:text-5xl leading-[1.05] mb-8">
+              <h2 className="font-sans font-extrabold tracking-tight text-black text-4xl sm:text-4xl md:text-6xl leading-[1.1] mb-8 sm:mb-12">
                 Что ты получаешь
               </h2>
 
-              <div className="space-y-3">
-                {items.map((it, index) => (
-                  <PillarRow
-                    key={it.label}
-                    index={index}
-                    label={it.label}
-                    progress={progress}
-                    total={items.length}
-                    active={activeIndex === index}
-                  />
-                ))}
-              </div>
+              <div className="flex flex-col w-full">
+                <div className="space-y-4 sm:space-y-6">
+                  {items.map((it, index) => (
+                    <PillarRow
+                      key={it.label}
+                      index={index}
+                      label={it.label}
+                      progress={progress}
+                      total={items.length}
+                      active={activeIndex === index}
+                    />
+                  ))}
+                </div>
 
-              <div className="mt-10 flex flex-col sm:flex-row gap-4">
-                <Button
-                  size="lg"
-                  onClick={() => window.open(TELEGRAM_BOT_URL, "_blank")}
-                  className="rounded-full px-8 bg-yellow-400 text-black hover:bg-yellow-300 font-semibold"
+                <motion.div 
+                  className="mt-10 sm:mt-14 flex flex-col gap-3 sm:gap-4 w-full" 
+                  style={{ 
+                      opacity: buttonsOpacity, 
+                      y: buttonsY, 
+                      filter: buttonsBlur as unknown as string 
+                  }}
                 >
-                  Принять участие
-                </Button>
+                  <Button
+                    size="lg"
+                    onClick={() => window.open(TELEGRAM_BOT_URL, "_blank")}
+                    className="w-full rounded-full bg-yellow-400 text-black hover:bg-yellow-300 font-bold h-14 sm:h-16 text-sm sm:text-lg shadow-sm"
+                  >
+                    Принять участие
+                  </Button>
 
-                <Button
-                  size="lg"
-                  onClick={() => window.open(TELEGRAM_BOT_URL, "_blank")}
-                  className="rounded-full px-8 bg-accent text-white hover:opacity-95 font-semibold"
-                >
-                  Записаться FREE на вводный урок
-                </Button>
+                  <Button
+                    size="lg"
+                    onClick={() => window.open(TELEGRAM_BOT_URL, "_blank")}
+                    className="w-full rounded-full bg-[#F0623C] text-white hover:opacity-90 font-bold h-14 sm:h-16 text-sm sm:text-lg shadow-sm"
+                  >
+                    Записаться FREE на вводный урок
+                  </Button>
+                </motion.div>
               </div>
             </motion.div>
-
-           
-            <div className="hidden lg:block" />
           </div>
+
         </div>
       </div>
     </section>
   );
 };
-
-export default Pillars;
 
 function PillarRow({
   index,
@@ -128,63 +139,38 @@ function PillarRow({
 }) {
   const step = 1 / total;
   const start = index * step;
-  const end = start + step * 0.85;
+  const end = start + step * 0.8;
 
-  const y = useTransform(progress, [start, end], [26, 0]);
+  const y = useTransform(progress, [start, end], [20, 0]);
   const opacity = useTransform(progress, [start, end], [0, 1]);
-  const blur = useTransform(progress, [start, end], [10, 0]);
-
-  const ctaY = useTransform(progress, [start + step * 0.12, end], [14, 0]);
-  const ctaOpacity = useTransform(progress, [start + step * 0.12, end], [0, 1]);
-  const ctaBlur = useTransform(progress, [start + step * 0.12, end], [10, 0]);
+  const blur = useTransform(progress, [start, end], [8, 0]);
 
   return (
     <motion.div style={{ opacity, y, filter: blur as unknown as string }}>
-      <div className="flex items-center gap-4 min-w-0">
+      <div className="flex items-baseline gap-3 sm:gap-6">
         <span
           className={[
-            "font-sans text-xs tracking-widest shrink-0",
+            "font-sans text-[10px] sm:text-sm tracking-widest shrink-0 w-6 sm:w-8",
             active ? "text-black/70" : "text-black/30",
           ].join(" ")}
         >
           {String(index + 1).padStart(2, "0")}
         </span>
 
-        
         <span
           className={[
-            "min-w-0 flex-1",
             "font-serif leading-tight",
-            "text-3xl sm:text-4xl md:text-5xl",
-            "transition-colors duration-300",
+            "text-xl sm:text-4xl md:text-6xl", 
+            "transition-colors duration-500",
             active ? "text-black" : "text-black/35",
-            "whitespace-normal break-words sm:whitespace-nowrap sm:truncate",
+            "whitespace-normal sm:whitespace-nowrap", // На мобильных разрешаем перенос, чтобы не ломать экран
           ].join(" ")}
         >
           {label}
-        </span>
-
-
-        <span className="shrink-0 hidden sm:flex w-[110px] justify-end">
-          <motion.span
-            style={{
-              opacity: ctaOpacity,
-              y: ctaY,
-              filter: ctaBlur as unknown as string,
-            }}
-          >
-            <Button
-              variant="outline"
-              size="sm"
-              className="rounded-full text-xs font-sans px-3"
-              onClick={() => window.open(TELEGRAM_BOT_URL, "_blank")}
-            >
-              Узнать
-              <ArrowRight className="w-3.5 h-3.5 ml-1" />
-            </Button>
-          </motion.span>
         </span>
       </div>
     </motion.div>
   );
 }
+
+export default Pillars;

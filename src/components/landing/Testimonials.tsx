@@ -54,8 +54,8 @@ export default function Testimonials() {
   const [fixedHeight, setFixedHeight] = useState<number | null>(null);
   const measureRefs = useRef<(HTMLDivElement | null)[]>([]);
 
-  const AUTOPLAY_MS = 9000; // было слишком быстро
-  const MANUAL_PAUSE_MS = 10000; // после ручного переключения
+  const AUTOPLAY_MS = 9000;
+  const MANUAL_PAUSE_MS = 10000;
 
   const goTo = (i: number) => {
     setActive(i);
@@ -94,9 +94,9 @@ export default function Testimonials() {
     <section id="reviews" className="bg-[#F6F1E7]">
       <div className="mx-auto max-w-7xl px-6 sm:px-8 lg:px-12 py-16 sm:py-20">
         <div className="flex justify-center">
-          <div className="flex items-center gap-2 text-xs tracking-[0.22em] font-semibold text-black/60">
+          <div className="flex items-center gap-2 text-[10px] sm:text-[12px] tracking-[0.2em] font-semibold text-black/45 uppercase">
             <span className="h-1.5 w-1.5 rounded-full bg-accent" />
-            ОТЗЫВЫ
+            Отзывы
           </div>
         </div>
 
@@ -108,24 +108,24 @@ export default function Testimonials() {
               ref={(el) => {
                 measureRefs.current[i] = el;
               }}
-              className="text-center max-w-4xl"
+              className="text-center max-w-5xl"
             >
-              <h3 className="font-sans font-extrabold tracking-tight text-3xl sm:text-4xl md:text-5xl leading-[1.05]">
+              <h3 className="font-sans font-extrabold tracking-tight text-4xl md:text-6xl leading-[1.05]">
                 {x.name}
               </h3>
-              <p className="mt-3 font-sans text-base sm:text-lg">
+              <p className="mt-4 font-sans text-lg md:text-2xl">
                 {x.subtitle}
               </p>
-              <p className="mt-6 font-sans text-base sm:text-lg md:text-xl leading-relaxed whitespace-pre-line">
+              <p className="mt-8 font-sans text-lg md:text-2xl leading-relaxed whitespace-pre-line">
                 {x.text}
               </p>
             </div>
           ))}
         </div>
 
-        {/* центральный текст (фикс высоты, чтобы не прыгало) */}
+        {/* центральный текст */}
         <div
-          className="mt-10 sm:mt-12 text-center mx-auto max-w-4xl"
+          className="mt-12 text-center mx-auto max-w-5xl"
           style={fixedHeight ? { minHeight: fixedHeight } : undefined}
         >
           <AnimatePresence mode="wait">
@@ -136,15 +136,16 @@ export default function Testimonials() {
               exit={{ opacity: 0, y: -10 }}
               transition={{ duration: 0.35, ease: "easeOut" }}
             >
-              <h3 className="font-sans font-extrabold tracking-tight text-3xl sm:text-4xl md:text-5xl text-black leading-[1.05]">
+              {/* НА ПК БОЛЬШЕ */}
+              <h3 className="font-sans font-extrabold tracking-tight text-4xl sm:text-5xl lg:text-6xl text-black leading-[1.05]">
                 {t.name}
               </h3>
 
-              <p className="mt-3 font-sans text-black/70 text-base sm:text-lg">
+              <p className="mt-4 font-sans text-black/70 text-lg sm:text-xl lg:text-2xl">
                 {t.subtitle}
               </p>
 
-              <p className="mt-6 font-sans text-black/80 text-base sm:text-lg md:text-xl leading-relaxed whitespace-pre-line">
+              <p className="mt-8 font-sans text-black/80 text-lg sm:text-xl lg:text-2xl leading-relaxed whitespace-pre-line">
                 {t.text}
               </p>
             </motion.div>
@@ -153,12 +154,12 @@ export default function Testimonials() {
 
         {/* аватарки */}
         <div
-          className="mt-10 sm:mt-12"
+          className="mt-12"
           onMouseEnter={() => setIsHovering(true)}
           onMouseLeave={() => setIsHovering(false)}
         >
-          <div className="mx-auto max-w-5xl overflow-x-auto overflow-y-visible no-scrollbar">
-          <div className="flex items-center justify-center gap-10 sm:gap-14 min-w-max px-2 py-3">
+          <div className="mx-auto max-w-6xl overflow-x-auto overflow-y-visible no-scrollbar">
+            <div className="flex items-center justify-center gap-10 sm:gap-14 min-w-max px-2 py-3">
               {testimonials.map((p, i) => {
                 const isActive = i === active;
                 return (
@@ -171,28 +172,38 @@ export default function Testimonials() {
                     className="group flex flex-col items-center gap-4 focus:outline-none"
                     aria-label={`Показать отзыв: ${p.name}`}
                   >
-<div
-                    className={[
-                      "rounded-full transition",
-                      "ring-[3px] ring-offset-4 ring-offset-[#F7F3EE]", // чтобы кольцо не сливалось с фоном
-                      isActive ? "ring-accent" : "ring-black/10 group-hover:ring-black/25",
-                    ].join(" ")}
-                  >
-                    <div className="h-20 w-20 sm:h-24 sm:w-24 rounded-full overflow-hidden">
-                      <img
-                        src={p.avatar}
-                        alt={p.name}
-                        className="h-full w-full object-cover"
-                        draggable={false}
-                      />
-                    </div>
-                  </div>
                     <div
                       className={[
-                        "text-center font-sans font-semibold text-sm sm:text-base leading-tight transition",
-                        isActive
-                          ? "text-black"
-                          : "text-black/55 group-hover:text-black/75",
+                        "rounded-full transition",
+                        // НА ПК БОЛЬШЕ кольцо
+                        "ring-[3px] lg:ring-[4px]",
+                        "ring-offset-4 lg:ring-offset-6",
+                        "ring-offset-[#F7F3EE]",
+                        isActive ? "ring-accent" : "ring-black/10 group-hover:ring-black/25",
+                      ].join(" ")}
+                    >
+                      <div
+                        className={[
+                          "rounded-full overflow-hidden",
+                          // НА ПК БОЛЬШЕ фото
+                          "h-20 w-20 sm:h-24 sm:w-24 lg:h-32 lg:w-32",
+                        ].join(" ")}
+                      >
+                        <img
+                          src={p.avatar}
+                          alt={p.name}
+                          className="h-full w-full object-cover"
+                          draggable={false}
+                        />
+                      </div>
+                    </div>
+
+                    <div
+                      className={[
+                        "text-center font-sans font-semibold leading-tight transition",
+                        // НА ПК БОЛЬШЕ подпись
+                        "text-sm sm:text-base lg:text-lg",
+                        isActive ? "text-black" : "text-black/55 group-hover:text-black/75",
                       ].join(" ")}
                     >
                       {p.name}

@@ -22,13 +22,27 @@ function StarStickerSVG({ text }: { text: string }) {
   const letterSpacing = 2;
 
   return (
-    <div className="absolute right-5 top-5 z-20 rotate-[12deg]">
+    <div
+      className={[
+        "absolute right-5 top-5 z-20 rotate-[12deg]",
+        "pointer-events-none",
+        "will-change-transform",
+        // ✅ тень на ОБЁРТКЕ (мобила мягче, десктоп сильнее)
+        "drop-shadow-[0_8px_16px_rgba(0,0,0,0.18)]",
+        "sm:drop-shadow-[0_14px_35px_rgba(0,0,0,0.28)]",
+      ].join(" ")}
+    >
       <svg
         width="132"
         height="132"
         viewBox="0 0 120 120"
-        className="drop-shadow-[0_14px_35px_rgba(0,0,0,0.28)]"
         aria-label={t}
+        // ✅ убрали drop-shadow отсюда
+        className="block"
+        style={{
+          // чуть более аккуратные края при повороте на iOS
+          shapeRendering: "geometricPrecision",
+        }}
       >
         <path
           d="M60 6

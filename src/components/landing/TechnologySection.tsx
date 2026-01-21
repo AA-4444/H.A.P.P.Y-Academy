@@ -28,8 +28,9 @@ function usePrefersReducedMotion() {
 
 /* =========================
    shared: in-view once hook
+   ✅ FIX: add rootMargin for iOS + slightly lower threshold
    ========================= */
-function useInViewOnce<T extends HTMLElement>(threshold = 0.35) {
+function useInViewOnce<T extends HTMLElement>(threshold = 0.25) {
   const ref = useRef<T | null>(null);
   const [inView, setInView] = useState(false);
 
@@ -45,7 +46,11 @@ function useInViewOnce<T extends HTMLElement>(threshold = 0.35) {
 		  io.disconnect();
 		}
 	  },
-	  { threshold }
+	  {
+		threshold,
+		// helps mobile Safari trigger earlier / more consistently
+		rootMargin: "0px 0px -15% 0px",
+	  }
 	);
 
 	io.observe(el);
@@ -84,7 +89,10 @@ function CountUpNumber({
 	  const val = Number.isFinite(v) ? v : 0;
 	  const formatted =
 		decimals > 0
-		  ? val.toLocaleString(locale, { minimumFractionDigits: decimals, maximumFractionDigits: decimals })
+		  ? val.toLocaleString(locale, {
+			  minimumFractionDigits: decimals,
+			  maximumFractionDigits: decimals,
+			})
 		  : Math.round(val).toLocaleString(locale);
 	  setTxt(formatted + suffix);
 	});
@@ -94,6 +102,7 @@ function CountUpNumber({
   useEffect(() => {
 	if (!active) return;
 
+	// ✅ reduced motion should still SHOW final value
 	if (prefersReducedMotion || duration === 0) {
 	  mv.set(to);
 	  return;
@@ -132,7 +141,9 @@ function MotionLine({ children }: { children: React.ReactNode }) {
 	  className="flex items-start gap-3"
 	>
 	  <span className="mt-[10px] h-1.5 w-1.5 rounded-full bg-black/60 shrink-0" />
-	  <span className="font-sans text-black text-base sm:text-lg leading-relaxed">{children}</span>
+	  <span className="font-sans text-black text-base sm:text-lg leading-relaxed">
+		{children}
+	  </span>
 	</motion.div>
   );
 }
@@ -148,7 +159,9 @@ function MotionArrowRight({ children }: { children: React.ReactNode }) {
 	  className="flex items-start gap-3"
 	>
 	  <span className="mt-[3px] text-black/70 font-semibold">→</span>
-	  <span className="font-sans text-black text-base sm:text-lg leading-relaxed">{children}</span>
+	  <span className="font-sans text-black text-base sm:text-lg leading-relaxed">
+		{children}
+	  </span>
 	</motion.div>
   );
 }
@@ -167,7 +180,7 @@ function Metric({
   compact?: boolean;
 }) {
   const prefersReducedMotion = usePrefersReducedMotion();
-  const { ref, inView } = useInViewOnce<HTMLDivElement>(0.35);
+  const { ref, inView } = useInViewOnce<HTMLDivElement>(0.25);
 
   const formatted = (n: number) => {
 	if (compact && n >= 1000) {
@@ -195,10 +208,9 @@ function Metric({
 			</span>
 		  ) : (
 			<span>
-			  {/* count up */}
 			  <CountUpNumber
 				to={value}
-				active={inView}
+				active={inView} // ✅ always based on inView
 				duration={900}
 				decimals={0}
 				suffix={suffix ?? ""}
@@ -208,8 +220,14 @@ function Metric({
 		  )}
 		</motion.div>
 
-		<div className="mt-2 font-sans font-semibold text-black text-base sm:text-lg">{label}</div>
-		{hint ? <div className="mt-2 font-sans text-black/60 text-sm sm:text-base">{hint}</div> : null}
+		<div className="mt-2 font-sans font-semibold text-black text-base sm:text-lg">
+		  {label}
+		</div>
+		{hint ? (
+		  <div className="mt-2 font-sans text-black/60 text-sm sm:text-base">
+			{hint}
+		  </div>
+		) : null}
 	  </div>
 	</div>
   );
@@ -239,26 +257,36 @@ function StatCount({
 	  transition={{ duration: 0.55, ease: "easeOut" }}
 	>
 	  <div className="font-sans font-extrabold tracking-tight text-accent text-5xl sm:text-6xl md:text-7xl leading-none">
-		<CountUpNumber to={to} active={active} duration={900} decimals={decimals} suffix={suffix} locale="ru-RU" />
+		<CountUpNumber
+		  to={to}
+		  active={active} // ✅ active only depends on inView now
+		  duration={900}
+		  decimals={decimals}
+		  suffix={suffix}
+		  locale="ru-RU"
+		/>
 	  </div>
-	  <div className="mt-4 font-sans text-black text-sm sm:text-base leading-relaxed max-w-xs">{desc}</div>
+	  <div className="mt-4 font-sans text-black text-sm sm:text-base leading-relaxed max-w-xs">
+		{desc}
+	  </div>
 	</motion.div>
   );
 }
 
 /* ============================================================================
-   ✅ MOBILE (NOW ANIMATED LIKE DESKTOP + 2nd card stats animate on view)
+   ✅ MOBILE
+   FIX: counters must run even if reduced motion is on
    ============================================================================ */
 const MobileTechnologySection = () => {
   const prefersReducedMotion = usePrefersReducedMotion();
 
-  // this controls 2nd card counters start
-  const { ref: statsRef, inView: statsInView } = useInViewOnce<HTMLDivElement>(0.35);
+  // ✅ controls 2nd card counters start
+  const { ref: statsRef, inView: statsInView } = useInViewOnce<HTMLDivElement>(0.25);
 
   return (
 	<section className="lg:hidden bg-[#F6F1E7]">
 	  <div className="mx-auto w-full px-3 sm:px-4 py-10 space-y-10">
-		{/* CARD 1 (animated) */}
+		{/* CARD 1 */}
 		<motion.div className="rounded-[28px] overflow-hidden bg-white shadow-[0_30px_100px_rgba(0,0,0,0.10)]">
 		  <div className="px-5 py-8">
 			<motion.div
@@ -376,8 +404,11 @@ const MobileTechnologySection = () => {
 		  </div>
 		</motion.div>
 
-		{/* CARD 2 (animated + counters start on view) */}
-		<div ref={statsRef} className="rounded-[28px] overflow-hidden bg-white shadow-[0_30px_100px_rgba(0,0,0,0.08)]">
+		{/* CARD 2 */}
+		<div
+		  ref={statsRef}
+		  className="rounded-[28px] overflow-hidden bg-white shadow-[0_30px_100px_rgba(0,0,0,0.08)]"
+		>
 		  <div className="px-5 py-8">
 			<motion.p
 			  initial={{ opacity: 0, y: 12, filter: "blur(8px)" }}
@@ -396,7 +427,14 @@ const MobileTechnologySection = () => {
 			<div className="mt-8 space-y-7">
 			  <div className="text-center">
 				<div className="font-sans font-extrabold tracking-tight text-accent text-5xl leading-none">
-				  <CountUpNumber to={77} active={statsInView && !prefersReducedMotion} duration={900} decimals={0} suffix="%" locale="ru-RU" />
+				  <CountUpNumber
+					to={77}
+					active={statsInView} // ✅ FIX
+					duration={900}
+					decimals={0}
+					suffix="%"
+					locale="ru-RU"
+				  />
 				</div>
 				<div className="mt-3 font-sans text-black text-sm leading-relaxed">
 				  Участников после обучения
@@ -411,7 +449,7 @@ const MobileTechnologySection = () => {
 				<div className="font-sans font-extrabold tracking-tight text-accent text-5xl leading-none">
 				  <CountUpNumber
 					to={64.7}
-					active={statsInView && !prefersReducedMotion}
+					active={statsInView} // ✅ FIX
 					duration={900}
 					decimals={1}
 					suffix="%"
@@ -428,7 +466,7 @@ const MobileTechnologySection = () => {
 				<div className="font-sans font-extrabold tracking-tight text-accent text-5xl leading-none">
 				  <CountUpNumber
 					to={57.6}
-					active={statsInView && !prefersReducedMotion}
+					active={statsInView} // ✅ FIX
 					duration={900}
 					decimals={1}
 					suffix="%"
@@ -469,7 +507,8 @@ const MobileTechnologySection = () => {
 };
 
 /* ============================================================================
-   ✅ DESKTOP (YOUR LAYOUT, PLUS: 2nd card stats animate on view)
+   ✅ DESKTOP
+   FIX: StatCount active should not be blocked by reduced motion
    ============================================================================ */
 const DesktopTechnologySection = () => {
   const rootRef = useRef<HTMLDivElement | null>(null);
@@ -495,13 +534,12 @@ const DesktopTechnologySection = () => {
 	my.set(0);
   };
 
-  // controls 2nd card counters start
-  const { ref: statsRef, inView: statsInView } = useInViewOnce<HTMLDivElement>(0.35);
+  const { ref: statsRef, inView: statsInView } = useInViewOnce<HTMLDivElement>(0.25);
 
   return (
 	<section className="hidden lg:block bg-[#F6F1E7]">
 	  <div className="mx-auto w-full px-3 sm:px-4 lg:px-6 py-10 sm:py-12 space-y-10 sm:space-y-12">
-		{/* CARD 1 (your original, already animated) */}
+		{/* CARD 1 */}
 		<motion.div
 		  ref={rootRef}
 		  onMouseMove={prefersReducedMotion ? undefined : onMove}
@@ -652,7 +690,7 @@ const DesktopTechnologySection = () => {
 		  </div>
 		</motion.div>
 
-		{/* CARD 2 (NOW: animated text + counters on view) */}
+		{/* CARD 2 */}
 		<div
 		  ref={statsRef}
 		  className="rounded-[28px] sm:rounded-[36px] lg:rounded-[44px] overflow-hidden bg-white shadow-[0_30px_100px_rgba(0,0,0,0.08)]"
@@ -677,7 +715,7 @@ const DesktopTechnologySection = () => {
 				to={77}
 				decimals={0}
 				suffix="%"
-				active={statsInView && !prefersReducedMotion}
+				active={statsInView} // ✅ FIX
 				desc={
 				  <>
 					Участников после обучения
@@ -693,7 +731,7 @@ const DesktopTechnologySection = () => {
 				to={64.7}
 				decimals={1}
 				suffix="%"
-				active={statsInView && !prefersReducedMotion}
+				active={statsInView} // ✅ FIX
 				desc={
 				  <>
 					Улучшили отношения в семье
@@ -706,7 +744,7 @@ const DesktopTechnologySection = () => {
 				to={57.6}
 				decimals={1}
 				suffix="%"
-				active={statsInView && !prefersReducedMotion}
+				active={statsInView} // ✅ FIX
 				desc={
 				  <>
 					Стали успешнее
@@ -734,7 +772,6 @@ const DesktopTechnologySection = () => {
 			</div>
 		  </div>
 		</div>
-
 	  </div>
 	</section>
   );

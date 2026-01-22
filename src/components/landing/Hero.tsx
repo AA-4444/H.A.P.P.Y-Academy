@@ -21,7 +21,7 @@ const HEADER_H = 88;
 
 function shuffle<T>(arr: T[]) {
   const a = [...arr];
-  for (let i = a.length - 1; i > 0; i--) {
+  for (let i = a.lengthlength = a.length - 1; i > 0; i--) {
     const j = (Math.random() * (i + 1)) | 0;
     [a[i], a[j]] = [a[j], a[i]];
   }
@@ -96,12 +96,7 @@ function SplitText({
   }, []);
 
   return (
-    <span
-      className={["st-splitted", inView ? "st-inview" : "", className ?? ""].join(
-        " "
-      )}
-      aria-label={text}
-    >
+    <span className={["st-splitted", inView ? "st-inview" : "", className ?? ""].join(" ")} aria-label={text}>
       {chars.map((ch, i) => {
         const isSpace = ch === " ";
         const delay = baseDelay + i * step;
@@ -121,7 +116,6 @@ function SplitText({
   );
 }
 
-/** ✅ простая “дорогая” анимация строки снизу */
 function SlideLine({
   children,
   delay = 0,
@@ -135,11 +129,7 @@ function SlideLine({
     <motion.span
       initial={{ opacity: 0, y: 16, filter: "blur(10px)" }}
       animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
-      transition={{
-        duration: 0.65,
-        delay,
-        ease: [0.22, 1, 0.36, 1],
-      }}
+      transition={{ duration: 0.65, delay, ease: [0.22, 1, 0.36, 1] }}
       className={className}
     >
       {children}
@@ -149,21 +139,15 @@ function SlideLine({
 
 function GridMotionBg({ images }: { images: string[] }) {
   const rowRefs = useRef<Array<HTMLDivElement | null>>([]);
-  const mouseXRef = useRef<number>(
-    typeof window !== "undefined" ? window.innerWidth / 2 : 0
-  );
+  const mouseXRef = useRef<number>(typeof window !== "undefined" ? window.innerWidth / 2 : 0);
 
   const isMobile =
-    typeof window !== "undefined" &&
-    window.matchMedia("(max-width: 768px)").matches;
+    typeof window !== "undefined" && window.matchMedia("(max-width: 768px)").matches;
 
   const rows = 4;
   const cols = isMobile ? 4 : 7;
 
-  const items = useMemo(
-    () => buildGridMinRepeats(images, rows, cols),
-    [images, rows, cols]
-  );
+  const items = useMemo(() => buildGridMinRepeats(images, rows, cols), [images, rows, cols]);
 
   useEffect(() => {
     gsap.ticker.lagSmoothing(0);
@@ -196,8 +180,7 @@ function GridMotionBg({ images }: { images: string[] }) {
       rowRefs.current.forEach((row, index) => {
         if (!row) return;
         const direction = index % 2 === 0 ? 1 : -1;
-        const moveAmount =
-          ((xForCalc / w) * maxMoveAmount - maxMoveAmount / 2) * direction;
+        const moveAmount = ((xForCalc / w) * maxMoveAmount - maxMoveAmount / 2) * direction;
 
         gsap.to(row, {
           x: moveAmount,
@@ -212,9 +195,7 @@ function GridMotionBg({ images }: { images: string[] }) {
 
     if (!isMobile) {
       window.addEventListener("mousemove", handleMouseMove, { passive: true });
-      window.addEventListener("touchmove", handleTouchMoveDesktop, {
-        passive: true,
-      });
+      window.addEventListener("touchmove", handleTouchMoveDesktop, { passive: true });
     }
 
     return () => {
@@ -309,8 +290,7 @@ function GridMotionBg({ images }: { images: string[] }) {
       <div
         className="absolute inset-0 pointer-events-none"
         style={{
-          backgroundImage:
-            "radial-gradient(rgba(255,255,255,0.05) 1px, transparent 1px)",
+          backgroundImage: "radial-gradient(rgba(255,255,255,0.05) 1px, transparent 1px)",
           backgroundSize: "180px 180px",
           opacity: 0.18,
         }}
@@ -319,9 +299,6 @@ function GridMotionBg({ images }: { images: string[] }) {
   );
 }
 
-/* =========================
-   ✅ MOBILE — HERE IS THE FIX
-   ========================= */
 function MobileContent() {
   return (
     <div className="lg:hidden relative z-10 h-full">
@@ -335,28 +312,25 @@ function MobileContent() {
           transition: transform 0.9s cubic-bezier(0.86,0,0.31,1);
         }
         .st-inview .st-char{ transform: translate3d(0,0,0); }
+
+        /* prevents Telegram/WebView breaking words like "Н" "ЕТ" */
+        .no-bad-break{
+          word-break: keep-all;
+          overflow-wrap: normal;
+          hyphens: none;
+          white-space: normal;
+        }
       `}</style>
 
       <div className="h-full px-5 pt-[calc(1rem+88px)] pb-10 flex flex-col justify-end">
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 0.35 }}
-          className="w-full"
-        >
-          {/* ✅ меньше на узких телефонах, но на iPhone 12 Pro и выше останется 4xl */}
-          <h1 className="font-sans font-extrabold text-[34px] sm:text-4xl text-white leading-[1.05] tracking-tight mb-5">
+        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.35 }} className="w-full">
+          <h1 className="no-bad-break font-sans font-extrabold text-[34px] sm:text-4xl text-white leading-[1.05] tracking-tight mb-5">
             <SplitText text={"Ты не застрял"} baseDelay={0.0} step={0.04} />
             <br />
-            {/* ✅ чуть меньше step -> компактнее и меньше риск переноса точки */}
-            <SplitText
-              text={"У твоей жизни просто нет архитектуры."}
-              baseDelay={0.22}
-              step={0.018}
-            />
+            <SplitText text={"У твоей жизни просто нет архитектуры."} baseDelay={0.22} step={0.018} />
           </h1>
 
-          <p className="font-sans text-base text-white/80 leading-relaxed mb-8 max-w-[46ch]">
+          <p className="no-bad-break font-sans text-base text-white/80 leading-relaxed mb-8 max-w-[46ch]">
             <SplitText
               text={"Система, которая помогает навести порядок в мышлении, решениях и действиях."}
               baseDelay={0.35}
@@ -418,27 +392,25 @@ function DesktopContent() {
           transition: transform 0.9s cubic-bezier(0.86,0,0.31,1);
         }
         .st-inview .st-char{ transform: translate3d(0,0,0); }
+
+        .no-bad-break{
+          word-break: keep-all;
+          overflow-wrap: normal;
+          hyphens: none;
+          white-space: normal;
+        }
       `}</style>
 
       <div className="h-full px-14 pt-[calc(1rem+88px)] pb-14">
         <div className="h-full grid lg:grid-cols-[1.15fr_0.85fr] gap-12 items-end">
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.35 }}
-            className="max-w-3xl"
-          >
-            <h1 className="font-sans font-extrabold text-6xl xl:text-7xl text-white leading-[1.05] mb-6">
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.35 }} className="max-w-3xl">
+            <h1 className="no-bad-break font-sans font-extrabold text-6xl xl:text-7xl text-white leading-[1.05] mb-6">
               <SplitText text={"Ты не застрял"} baseDelay={0.0} step={0.028} />
               <br />
-              <SplitText
-                text={"У твоей жизни просто нет архитектуры."}
-                baseDelay={0.22}
-                step={0.016}
-              />
+              <SplitText text={"У твоей жизни просто нет архитектуры."} baseDelay={0.22} step={0.016} />
             </h1>
 
-            <p className="font-sans text-lg text-white/80 max-w-[46ch] leading-relaxed [text-wrap:balance] mb-10">
+            <p className="no-bad-break font-sans text-lg text-white/80 max-w-[46ch] leading-relaxed [text-wrap:balance] mb-10">
               <SplitText
                 text={"Система, которая помогает навести порядок в мышлении, решениях и действиях."}
                 baseDelay={0.35}
@@ -489,15 +461,11 @@ function DesktopContent() {
 }
 
 const Hero = () => {
-  const bgImages = useMemo(
-    () => [t1, t2, t3, t4, t5, t6, bg1, bg2, bg3, bg4, bg5],
-    []
-  );
+  const bgImages = useMemo(() => [t1, t2, t3, t4, t5, t6, bg1, bg2, bg3, bg4, bg5], []);
 
   useEffect(() => {
     const isMobile =
-      typeof window !== "undefined" &&
-      window.matchMedia("(max-width: 768px)").matches;
+      typeof window !== "undefined" && window.matchMedia("(max-width: 768px)").matches;
     if (!isMobile) return;
 
     let startY = 0;

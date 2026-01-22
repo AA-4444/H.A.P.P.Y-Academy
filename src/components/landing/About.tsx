@@ -64,15 +64,19 @@ function QuoteFullscreen({
       <div className="absolute inset-0 bg-gradient-to-r from-black/65 via-black/35 to-black/15" />
       <div className="absolute inset-0 bg-gradient-to-t from-black/65 via-black/20 to-black/35" />
 
-      <div className="relative z-10 h-full flex flex-col justify-center pr-6 sm:pr-10 lg:pr-16">
+      {/* ✅ было: pr-6 ... теперь: px-6 (чтобы не липло к левому краю на iPhone 12 Pro) */}
+      <div className="relative z-10 h-full flex flex-col justify-center px-6 sm:px-10 lg:px-16">
         <div className="ml-auto max-w-[680px] text-right">
           <motion.blockquote
             initial={{ opacity: 0, y: 14 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, amount: 0.5 }}
             transition={{ duration: 0.6 }}
-            className="font-sans font-extrabold text-white leading-[1.05] tracking-tight
-                       text-3xl sm:text-4xl md:text-5xl lg:text-[56px]"
+            className={[
+              "font-sans font-extrabold text-white leading-[1.05] tracking-tight",
+              // ✅ меньше на телефонах, sm/md/lg как было
+              "text-[30px] sm:text-4xl md:text-5xl lg:text-[56px]",
+            ].join(" ")}
           >
             {quote}
           </motion.blockquote>
@@ -82,9 +86,10 @@ function QuoteFullscreen({
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, amount: 0.5 }}
             transition={{ duration: 0.5, delay: 0.08 }}
-            className="mt-7 flex items-center justify-end gap-3"
+            className="mt-6 sm:mt-7 flex items-center justify-end gap-3"
           >
-            <div className="font-sans uppercase tracking-wide text-white/85 font-semibold text-sm sm:text-base">
+            {/* ✅ чуть меньше на мобиле */}
+            <div className="font-sans uppercase tracking-wide text-white/85 font-semibold text-[12px] sm:text-base">
               {name}
             </div>
             <div className="h-10 w-10 sm:h-11 sm:w-11 rounded-full overflow-hidden ring-2 ring-white/30">
@@ -103,7 +108,11 @@ function QuoteFullscreen({
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, amount: 0.5 }}
               transition={{ duration: 0.5, delay: 0.14 }}
-              className="mt-8 ml-auto max-w-[520px] font-sans text-white/75 text-base sm:text-lg leading-relaxed whitespace-pre-line"
+              className={[
+                // ✅ меньше и более “собрано” на мобиле + отступы не прилипают
+                "mt-7 sm:mt-8 ml-auto max-w-[520px] font-sans text-white/75 leading-relaxed whitespace-pre-line",
+                "text-[13px] sm:text-lg",
+              ].join(" ")}
             >
               {subline}
             </motion.p>
@@ -114,13 +123,13 @@ function QuoteFullscreen({
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, amount: 0.5 }}
             transition={{ duration: 0.5, delay: 0.18 }}
-            className="mt-10 flex justify-end"
+            className="mt-8 sm:mt-10 flex justify-end"
           >
             <Button
               size="xl"
               variant="outline"
               onClick={() => window.open(TELEGRAM_BOT_URL, "_blank")}
-              className="rounded-full px-10 border-white/40 text-white hover:bg-white/10"
+              className="rounded-full px-6 sm:px-10 border-white/40 text-white hover:bg-white/10"
             >
               Записаться FREE на вводный урок
             </Button>
@@ -137,12 +146,9 @@ function ReelCarousel() {
   const slides = useMemo(() => [reel1, reel2, reel3, reel4, reel5, reel6], []);
   const track = useMemo(() => [...slides, ...slides], [slides]);
 
-  // На мобиле "дёргается" из-за drag + бесконечной анимации одновременно.
-  // Решение: на touch-устройствах отключаем drag и уменьшаем шанс рывков.
   const isTouch =
     typeof window !== "undefined" &&
-    (navigator.maxTouchPoints > 0 ||
-      window.matchMedia("(pointer: coarse)").matches);
+    (navigator.maxTouchPoints > 0 || window.matchMedia("(pointer: coarse)").matches);
 
   return (
     <section className="bg-black">
@@ -156,7 +162,6 @@ function ReelCarousel() {
             className={[
               "flex gap-5 sm:gap-6 lg:gap-8 will-change-transform",
               isTouch ? "select-none" : "cursor-grab active:cursor-grabbing",
-              // чуть стабильнее на мобиле
               "translate-z-0",
             ].join(" ")}
             animate={{ x: ["0%", "-50%"] }}
@@ -165,7 +170,6 @@ function ReelCarousel() {
               ease: "linear",
               repeat: Infinity,
             }}
-            // ✅ drag только на десктопе (исправляет дерганье на телефоне)
             drag={isTouch ? false : "x"}
             dragConstraints={{ left: 0, right: 0 }}
             dragElastic={0.06}
@@ -178,7 +182,6 @@ function ReelCarousel() {
                   "rounded-[28px] sm:rounded-[34px] lg:rounded-[40px]",
                   "ring-1 ring-white/10 bg-white/5",
                   "w-[320px] sm:w-[420px] lg:w-[520px]",
-                  // ✅ ВЫСОТУ СДЕЛАЛ БОЛЬШЕ (особенно на мобиле)
                   "h-[250px] sm:h-[320px] lg:h-[380px]",
                 ].join(" ")}
               >

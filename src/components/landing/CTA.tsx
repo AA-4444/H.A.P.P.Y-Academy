@@ -51,20 +51,36 @@ const CTA = () => {
                         initial={{ opacity: 0, y: 28 }}
                         animate={isInView ? { opacity: 1, y: 0 } : {}}
                         transition={{ duration: 0.8, ease: "easeOut" }}
-                        className="text-center max-w-3xl"
+                        className="text-center max-w-3xl w-full"
                       >
+                        {/* ✅ фикс заголовка для iPhone 12 Pro и меньше */}
                         <h2
-                          className="font-sans font-extrabold tracking-tight text-white leading-[1.05]
-                                     text-4xl sm:text-5xl md:text-6xl lg:text-7xl"
+                          className={[
+                            "font-sans font-extrabold tracking-tight text-white",
+                            // переносы и “не вылезать”
+                            "mx-auto max-w-[18ch] [text-wrap:balance]",
+                            // размеры: мобильные меньше, дальше как было
+                            "text-[30px] leading-[1.08]",
+                            "sm:text-5xl sm:leading-[1.05]",
+                            "md:text-6xl lg:text-7xl",
+                            // на совсем узких ещё чуть меньше
+                            "max-[360px]:text-[28px]",
+                          ].join(" ")}
                         >
                           Сколько ещё жить без системы?
                         </h2>
 
-                        <div className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-4">
+                        <div className="mt-8 sm:mt-10 flex flex-col sm:flex-row items-center justify-center gap-4">
+                          {/* ✅ на мобиле кнопки не распирают */}
                           <Button
                             size="xl"
                             onClick={() => window.open(TELEGRAM_BOT_URL, "_blank")}
-                            className="rounded-full px-12 bg-yellow-400 text-black hover:bg-yellow-300 font-semibold"
+                            className={[
+                              "rounded-full bg-yellow-400 text-black hover:bg-yellow-300 font-semibold",
+                              "w-full sm:w-auto",
+                              "max-w-[320px] sm:max-w-none",
+                              "px-8 sm:px-12",
+                            ].join(" ")}
                           >
                             Принять участие
                             <ArrowRight className="ml-2 h-5 w-5" />
@@ -73,13 +89,19 @@ const CTA = () => {
                           <Button
                             size="xl"
                             onClick={() => window.open(TELEGRAM_BOT_URL, "_blank")}
-                            className="rounded-full px-12 bg-accent text-white hover:opacity-95 font-semibold"
+                            className={[
+                              "rounded-full bg-accent text-white hover:opacity-95 font-semibold",
+                              "w-full sm:w-auto",
+                              "max-w-[320px] sm:max-w-none",
+                              "px-8 sm:px-12",
+                            ].join(" ")}
                           >
                             Записаться FREE на вводный урок
                           </Button>
                         </div>
 
-                        <p className="mt-8 font-sans text-white/75 text-base sm:text-lg">
+                        {/* ✅ текст ниже чуть компактнее на мобиле */}
+                        <p className="mt-7 sm:mt-8 font-sans text-white/75 text-[13px] sm:text-lg">
                           Минимальный вход —{" "}
                           <span className="font-semibold text-white">$1</span>. Риск — ноль.
                         </p>

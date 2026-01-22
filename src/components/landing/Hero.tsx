@@ -21,7 +21,7 @@ const HEADER_H = 88;
 
 function shuffle<T>(arr: T[]) {
   const a = [...arr];
-  for (let i = a.lengthlength = a.length - 1; i > 0; i--) {
+  for (let i = a.length - 1; i > 0; i--) {
     const j = (Math.random() * (i + 1)) | 0;
     [a[i], a[j]] = [a[j], a[i]];
   }
@@ -76,6 +76,10 @@ function buildGridMinRepeats(images: string[], rows: number, cols: number) {
   return out;
 }
 
+/**
+ * SplitText without ugly letter breaks:
+ * words are wrapped with white-space: nowrap, so перенос только между словами.
+ */
 function SplitText({
   text,
   className,
@@ -88,27 +92,53 @@ function SplitText({
   step?: number;
 }) {
   const [inView, setInView] = useState(false);
-  const chars = useMemo(() => Array.from(text), [text]);
+
+  // tokens: words + spaces (spaces kept as separate tokens)
+  const tokens = useMemo(() => (text ? text.split(/(\s+)/) : []), [text]);
 
   useEffect(() => {
     const id = window.setTimeout(() => setInView(true), 0);
     return () => window.clearTimeout(id);
   }, []);
 
-  return (
-    <span className={["st-splitted", inView ? "st-inview" : "", className ?? ""].join(" ")} aria-label={text}>
-      {chars.map((ch, i) => {
-        const isSpace = ch === " ";
-        const delay = baseDelay + i * step;
+  let charIndex = 0;
 
-        const isDot = ch === ".";
-        const charClass = ["st-char", isDot ? "text-accent" : ""].join(" ");
+  return (
+    <span
+      className={["st-splitted", inView ? "st-inview" : "", className ?? ""].join(" ")}
+      aria-label={text}
+    >
+      {tokens.map((tok, ti) => {
+        const isSpace = /^\s+$/.test(tok);
+
+        if (isSpace) {
+          // keep spaces as real spaces, allow wrap after them
+          return (
+            <span key={`sp-${ti}`} className="st-space">
+              {tok.replace(/ /g, "\u00A0")}
+            </span>
+          );
+        }
+
+        const chars = Array.from(tok);
 
         return (
-          <span key={`${ch}-${i}`} className="st-charWrap">
-            <span className={charClass} style={{ transitionDelay: `${delay}s` }}>
-              {isSpace ? "\u00A0" : ch}
-            </span>
+          <span key={`w-${ti}`} className="st-word">
+            {chars.map((ch, i) => {
+              const delay = baseDelay + charIndex * step;
+              charIndex += 1;
+
+              const isDot = ch === ".";
+              const charClass = ["st-char", isDot ? "text-accent" : ""].join(" ");
+
+              return (
+                <span key={`${ch}-${ti}-${i}`} className="st-charWrap">
+                  <span className={charClass} style={{ transitionDelay: `${delay}s` }}>
+                    {ch}
+                  </span>
+                </span>
+              );
+            })}
           </span>
         );
       })}
@@ -299,38 +329,39 @@ function GridMotionBg({ images }: { images: string[] }) {
   );
 }
 
+function SharedSplitCSS() {
+  return (
+    <style>{`
+      .st-splitted{ display:inline; }
+      .st-word{ display:inline-block; white-space:nowrap; }
+      .st-space{ white-space:pre; }
+
+      .st-charWrap{ display:inline-block; overflow:hidden; vertical-align:baseline; }
+      .st-char{
+        display:inline-block;
+        transform: translate3d(0,120%,0);
+        will-change: transform;
+        transition: transform 0.9s cubic-bezier(0.86,0,0.31,1);
+      }
+      .st-inview .st-char{ transform: translate3d(0,0,0); }
+    `}</style>
+  );
+}
+
 function MobileContent() {
   return (
     <div className="lg:hidden relative z-10 h-full">
-      <style>{`
-        .st-splitted{ display:inline; overflow:hidden; }
-        .st-charWrap{ display:inline-block; overflow:hidden; vertical-align:baseline; }
-        .st-char{
-          display:inline-block;
-          transform: translate3d(0,120%,0);
-          will-change: transform;
-          transition: transform 0.9s cubic-bezier(0.86,0,0.31,1);
-        }
-        .st-inview .st-char{ transform: translate3d(0,0,0); }
-
-        /* prevents Telegram/WebView breaking words like "Н" "ЕТ" */
-        .no-bad-break{
-          word-break: keep-all;
-          overflow-wrap: normal;
-          hyphens: none;
-          white-space: normal;
-        }
-      `}</style>
+      <SharedSplitCSS />
 
       <div className="h-full px-5 pt-[calc(1rem+88px)] pb-10 flex flex-col justify-end">
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.35 }} className="w-full">
-          <h1 className="no-bad-break font-sans font-extrabold text-[34px] sm:text-4xl text-white leading-[1.05] tracking-tight mb-5">
+          <h1 className="font-sans font-extrabold text-[34px] sm:text-4xl text-white leading-[1.05] tracking-tight mb-5">
             <SplitText text={"Ты не застрял"} baseDelay={0.0} step={0.04} />
             <br />
             <SplitText text={"У твоей жизни просто нет архитектуры."} baseDelay={0.22} step={0.018} />
           </h1>
 
-          <p className="no-bad-break font-sans text-base text-white/80 leading-relaxed mb-8 max-w-[46ch]">
+          <p className="font-sans text-base text-white/80 leading-relaxed mb-8 max-w-[46ch]">
             <SplitText
               text={"Система, которая помогает навести порядок в мышлении, решениях и действиях."}
               baseDelay={0.35}
@@ -382,35 +413,18 @@ function MobileContent() {
 function DesktopContent() {
   return (
     <div className="hidden lg:block relative z-10 h-full">
-      <style>{`
-        .st-splitted{ display:inline; overflow:hidden; }
-        .st-charWrap{ display:inline-block; overflow:hidden; vertical-align:baseline; }
-        .st-char{
-          display:inline-block;
-          transform: translate3d(0,120%,0);
-          will-change: transform;
-          transition: transform 0.9s cubic-bezier(0.86,0,0.31,1);
-        }
-        .st-inview .st-char{ transform: translate3d(0,0,0); }
-
-        .no-bad-break{
-          word-break: keep-all;
-          overflow-wrap: normal;
-          hyphens: none;
-          white-space: normal;
-        }
-      `}</style>
+      <SharedSplitCSS />
 
       <div className="h-full px-14 pt-[calc(1rem+88px)] pb-14">
         <div className="h-full grid lg:grid-cols-[1.15fr_0.85fr] gap-12 items-end">
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.35 }} className="max-w-3xl">
-            <h1 className="no-bad-break font-sans font-extrabold text-6xl xl:text-7xl text-white leading-[1.05] mb-6">
+            <h1 className="font-sans font-extrabold text-6xl xl:text-7xl text-white leading-[1.05] mb-6">
               <SplitText text={"Ты не застрял"} baseDelay={0.0} step={0.028} />
               <br />
               <SplitText text={"У твоей жизни просто нет архитектуры."} baseDelay={0.22} step={0.016} />
             </h1>
 
-            <p className="no-bad-break font-sans text-lg text-white/80 max-w-[46ch] leading-relaxed [text-wrap:balance] mb-10">
+            <p className="font-sans text-lg text-white/80 max-w-[46ch] leading-relaxed [text-wrap:balance] mb-10">
               <SplitText
                 text={"Система, которая помогает навести порядок в мышлении, решениях и действиях."}
                 baseDelay={0.35}

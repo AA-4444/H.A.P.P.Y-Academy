@@ -9,7 +9,7 @@ import f3 from "@/assets/bg4.png";
 
 const TELEGRAM_BOT_URL = "https://t.me/happiness4people_bot";
 const INSTAGRAM_URL = "https://www.instagram.com/isaacpintosevich/";
-const VIDEO_URL = "https://www.instagram.com/reel/";
+const VIDEO_URL = "https://youtu.be/VZhCbEQUD-A?si=akJc1rkK_nx2LxL4";
 
 export default function ParticipationFormat() {
   const ref = useRef(null);

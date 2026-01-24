@@ -18,6 +18,7 @@ import bg5 from "@/assets/bg6.png";
 
 const TELEGRAM_BOT_URL = "https://t.me/happiness4people_bot";
 const HEADER_H = 88;
+const VIDEO_URL = "https://youtu.be/VZhCbEQUD-A?si=akJc1rkK_nx2LxL4";
 
 function shuffle<T>(arr: T[]) {
   const a = [...arr];
@@ -349,12 +350,12 @@ function SharedSplitCSS() {
       .st-word{ display:inline-block; white-space:nowrap; }
       .st-space{ white-space:pre; }
 
-      /* ✅ FIX 1: prevent tails (У, у, р, g, etc.) from being clipped by mask */
+      
       .st-charWrap{
         display:inline-block;
         overflow:hidden;
         vertical-align:baseline;
-        padding-bottom: 0.22em; /* ✅ extra room for descenders */
+        padding-bottom: 0.22em; 
       }
 
       .st-char{
@@ -380,7 +381,7 @@ function MobileContent() {
           transition={{ duration: 0.35 }}
           className="w-full"
         >
-          {/* ✅ FIX 2: new line WITHOUT indent, keep whole second line in one row */}
+         
           <h1 className="font-sans font-extrabold text-[34px] sm:text-4xl text-white leading-[1.05] tracking-tight mb-5">
             <SplitText text={"Счастье не ищут."} baseDelay={0.0} step={0.04} />
             <span className="block whitespace-nowrap">
@@ -431,7 +432,7 @@ function MobileContent() {
 
               <Button
                 size="xl"
-                onClick={() => window.open(TELEGRAM_BOT_URL, "_blank")}
+                onClick={() => window.open(VIDEO_URL, "_blank")}
                 className="w-full rounded-full px-10 bg-accent text-white hover:opacity-95 font-semibold"
               >
                 Смотреть видео Ицхака
@@ -507,7 +508,7 @@ function DesktopContent() {
 
               <Button
                 size="xl"
-                onClick={() => window.open(TELEGRAM_BOT_URL, "_blank")}
+                onClick={() => window.open(VIDEO_URL, "_blank")}
                 className="rounded-full px-10 bg-accent text-white hover:opacity-95 font-semibold"
               >
                 Смотреть видео Ицхака

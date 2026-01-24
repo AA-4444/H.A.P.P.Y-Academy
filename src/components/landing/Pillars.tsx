@@ -12,12 +12,22 @@ import { Button } from "@/components/ui/button";
 
 const TELEGRAM_BOT_URL = "https://t.me/happiness4people_bot";
 
+/**
+ * ✅ ТЗ #6: КАК ПРОИСХОДЯТ ИЗМЕНЕНИЯ
+ * Заголовок: Это не мотивация. Это протокол внедрения.
+ * Маркеры:
+ * — 30 базовых упражнений
+ * — 10 недель базового цикла
+ * — ~30 минут в день
+ * Подпись: Система встраивается в мышление, внимание и поведение.
+ *
+ * Кнопки — НЕ трогаю (как просил).
+ */
+
 const itemsBase = [
-  { label: "архитектуру мышления" },
-  { label: "понимание истинных целей" },
-  { label: "порядок в решениях" },
-  { label: "инструменты внедрения в реальной жизни" },
-  { label: "логику: что делать, зачем и в каком порядке" },
+  { label: "30 базовых упражнений" },
+  { label: "10 недель базового цикла" },
+  { label: "~30 минут в день" },
 ];
 
 const Pillars = () => {
@@ -58,8 +68,6 @@ const Pillars = () => {
     >
       <div ref={stickyRef} className="sticky top-0 h-screen flex items-center justify-center">
         <div className="container mx-auto px-4 sm:px-6 flex justify-center">
-          
-          {/* Контейнер с max-w-fit сжимается по тексту, а mx-auto центрирует его в экране */}
           <div className="max-w-fit w-full flex flex-col items-start">
             <motion.div
               initial={{ opacity: 0, x: -20, filter: "blur(10px)" }}
@@ -69,11 +77,11 @@ const Pillars = () => {
             >
               <span className="inline-flex items-center gap-2 text-[10px] sm:text-[12px] font-semibold tracking-[0.2em] text-black/45 uppercase mb-6 sm:mb-8">
                 <span className="w-2 h-2 rounded-full bg-accent" />
-                Что внутри системы
+                Как происходят изменения
               </span>
 
               <h2 className="font-sans font-extrabold tracking-tight text-black text-4xl sm:text-4xl md:text-6xl leading-[1.1] mb-8 sm:mb-12">
-                Что ты получаешь
+                Это не мотивация. Это протокол внедрения.
               </h2>
 
               <div className="flex flex-col w-full">
@@ -90,12 +98,23 @@ const Pillars = () => {
                   ))}
                 </div>
 
-                <motion.div 
-                  className="mt-10 sm:mt-14 flex flex-col gap-3 sm:gap-4 w-full" 
-                  style={{ 
-                      opacity: buttonsOpacity, 
-                      y: buttonsY, 
-                      filter: buttonsBlur as unknown as string 
+                {/* ✅ подпись из ТЗ */}
+                <motion.p
+                  initial={{ opacity: 0, y: 10, filter: "blur(8px)" }}
+                  animate={isInView ? { opacity: 1, y: 0, filter: "blur(0px)" } : {}}
+                  transition={{ duration: 0.6, delay: 0.12, ease: "easeOut" }}
+                  className="mt-8 sm:mt-10 font-sans text-black/60 text-sm sm:text-base leading-relaxed max-w-[60ch]"
+                >
+                  Система встраивается в мышление, внимание и поведение.
+                </motion.p>
+
+                {/* ✅ кнопки оставляю как есть */}
+                <motion.div
+                  className="mt-10 sm:mt-14 flex flex-col gap-3 sm:gap-4 w-full"
+                  style={{
+                    opacity: buttonsOpacity,
+                    y: buttonsY,
+                    filter: buttonsBlur as unknown as string,
                   }}
                 >
                   <Button
@@ -117,7 +136,6 @@ const Pillars = () => {
               </div>
             </motion.div>
           </div>
-
         </div>
       </div>
     </section>
@@ -160,10 +178,10 @@ function PillarRow({
         <span
           className={[
             "font-serif leading-tight",
-            "text-xl sm:text-4xl md:text-6xl", 
+            "text-xl sm:text-4xl md:text-6xl",
             "transition-colors duration-500",
             active ? "text-black" : "text-black/35",
-            "whitespace-normal sm:whitespace-nowrap", // На мобильных разрешаем перенос, чтобы не ломать экран
+            "whitespace-normal sm:whitespace-nowrap",
           ].join(" ")}
         >
           {label}

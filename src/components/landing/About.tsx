@@ -23,11 +23,14 @@ const About = () => {
         avatar={quoteAvatar}
         name="Ицхак Пинтосевич"
         quote="Архитектор Счастья"
-        subline={`Ицхак Пинтосевич — практик, который работает с мышлением, смыслами и внедрением.
-15 лет трансформационной практики
-25 лет преподавания Торы
-позитивная психология + практическое внедрение
-создатель системы «10 шагов к счастью»`}
+        subline={`Психолог работает с прошлым.
+Коуч — с целями.
+Архитектор Счастья проектирует внутренний мир, в котором хорошо жить.
+
+— 30+ лет практики
+— тысячи учеников
+— автор системного подхода к счастью
+— человек, который сначала построил свой дом, а потом начал помогать другим`}
       />
 
       <ReelCarousel />
@@ -64,7 +67,6 @@ function QuoteFullscreen({
       <div className="absolute inset-0 bg-gradient-to-r from-black/65 via-black/35 to-black/15" />
       <div className="absolute inset-0 bg-gradient-to-t from-black/65 via-black/20 to-black/35" />
 
-      {/* ✅ было: pr-6 ... теперь: px-6 (чтобы не липло к левому краю на iPhone 12 Pro) */}
       <div className="relative z-10 h-full flex flex-col justify-center px-6 sm:px-10 lg:px-16">
         <div className="ml-auto max-w-[680px] text-right">
           <motion.blockquote
@@ -74,7 +76,6 @@ function QuoteFullscreen({
             transition={{ duration: 0.6 }}
             className={[
               "font-sans font-extrabold text-white leading-[1.05] tracking-tight",
-              // ✅ меньше на телефонах, sm/md/lg как было
               "text-[30px] sm:text-4xl md:text-5xl lg:text-[56px]",
             ].join(" ")}
           >
@@ -88,7 +89,6 @@ function QuoteFullscreen({
             transition={{ duration: 0.5, delay: 0.08 }}
             className="mt-6 sm:mt-7 flex items-center justify-end gap-3"
           >
-            {/* ✅ чуть меньше на мобиле */}
             <div className="font-sans uppercase tracking-wide text-white/85 font-semibold text-[12px] sm:text-base">
               {name}
             </div>
@@ -109,7 +109,6 @@ function QuoteFullscreen({
               viewport={{ once: true, amount: 0.5 }}
               transition={{ duration: 0.5, delay: 0.14 }}
               className={[
-                // ✅ меньше и более “собрано” на мобиле + отступы не прилипают
                 "mt-7 sm:mt-8 ml-auto max-w-[520px] font-sans text-white/75 leading-relaxed whitespace-pre-line",
                 "text-[13px] sm:text-lg",
               ].join(" ")}

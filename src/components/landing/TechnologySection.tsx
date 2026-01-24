@@ -26,10 +26,6 @@ function usePrefersReducedMotion() {
   return reduced;
 }
 
-/* =========================
-   shared: in-view once hook
-   ✅ FIX: add rootMargin for iOS + slightly lower threshold
-   ========================= */
 function useInViewOnce<T extends HTMLElement>(threshold = 0.25) {
   const ref = useRef<T | null>(null);
   const [inView, setInView] = useState(false);
@@ -48,7 +44,6 @@ function useInViewOnce<T extends HTMLElement>(threshold = 0.25) {
 	  },
 	  {
 		threshold,
-		// helps mobile Safari trigger earlier / more consistently
 		rootMargin: "0px 0px -15% 0px",
 	  }
 	);
@@ -102,7 +97,6 @@ function CountUpNumber({
   useEffect(() => {
 	if (!active) return;
 
-	// ✅ reduced motion should still SHOW final value
 	if (prefersReducedMotion || duration === 0) {
 	  mv.set(to);
 	  return;
@@ -138,10 +132,10 @@ function MotionLine({ children }: { children: React.ReactNode }) {
 		show: { opacity: 1, y: 0, filter: "blur(0px)" },
 	  }}
 	  transition={{ duration: 0.5, ease: "easeOut" }}
-	  className="flex items-start gap-3"
+	  className="flex items-start gap-3 min-w-0"
 	>
 	  <span className="mt-[10px] h-1.5 w-1.5 rounded-full bg-black/60 shrink-0" />
-	  <span className="font-sans text-black text-base sm:text-lg leading-relaxed">
+	  <span className="font-sans text-black text-base sm:text-lg leading-relaxed break-words">
 		{children}
 	  </span>
 	</motion.div>
@@ -156,10 +150,10 @@ function MotionArrowRight({ children }: { children: React.ReactNode }) {
 		show: { opacity: 1, y: 0, filter: "blur(0px)" },
 	  }}
 	  transition={{ duration: 0.5, ease: "easeOut" }}
-	  className="flex items-start gap-3"
+	  className="flex items-start gap-3 min-w-0"
 	>
-	  <span className="mt-[3px] text-black/70 font-semibold">→</span>
-	  <span className="font-sans text-black text-base sm:text-lg leading-relaxed">
+	  <span className="mt-[3px] text-black/70 font-semibold shrink-0">→</span>
+	  <span className="font-sans text-black text-base sm:text-lg leading-relaxed break-words">
 		{children}
 	  </span>
 	</motion.div>
@@ -210,7 +204,7 @@ function Metric({
 			<span>
 			  <CountUpNumber
 				to={value}
-				active={inView} // ✅ always based on inView
+				active={inView}
 				duration={900}
 				decimals={0}
 				suffix={suffix ?? ""}
@@ -259,7 +253,7 @@ function StatCount({
 	  <div className="font-sans font-extrabold tracking-tight text-accent text-5xl sm:text-6xl md:text-7xl leading-none">
 		<CountUpNumber
 		  to={to}
-		  active={active} // ✅ active only depends on inView now
+		  active={active}
 		  duration={900}
 		  decimals={decimals}
 		  suffix={suffix}
@@ -273,14 +267,182 @@ function StatCount({
   );
 }
 
+/* =========================
+   NEW: Architecture block (Card 3)
+   ========================= */
+function ArchitectureCard({
+  compact,
+}: {
+  compact?: boolean; // mobile true, desktop false
+}) {
+  const pillars = [
+	"Благодарность",
+	"Обучение",
+	"Гибкость мышления",
+	"Комплименты",
+	"Осознанность",
+	"Доброта",
+	"Смыслы и ценности",
+	"Убеждения и критерии успеха",
+	"Планы и цели",
+	"Энергия",
+  ];
+
+  return (
+	<div className="rounded-[28px] sm:rounded-[36px] lg:rounded-[44px] overflow-hidden bg-white shadow-[0_30px_100px_rgba(0,0,0,0.08)]">
+	  <div className="px-5 sm:px-10 lg:px-14 py-10 sm:py-12 lg:py-14">
+		{/* Section 3 */}
+		<motion.h2
+		  initial={{ opacity: 0, y: 14, filter: "blur(10px)" }}
+		  whileInView={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+		  viewport={{ once: true, amount: 0.4 }}
+		  transition={{ duration: 0.65, ease: "easeOut" }}
+		  className={[
+			"font-sans font-extrabold tracking-tight text-black break-words",
+			compact
+			  ? "text-2xl leading-[1.08] text-center"
+			  : "text-4xl sm:text-5xl leading-[1.05]",
+		  ].join(" ")}
+		>
+		  Архитектура Счастья — это система из 10 несущих элементов
+		</motion.h2>
+
+		<motion.div
+		  initial="hidden"
+		  whileInView="show"
+		  viewport={{ once: true, amount: 0.45 }}
+		  variants={{
+			hidden: {},
+			show: { transition: { staggerChildren: 0.08, delayChildren: 0.12 } },
+		  }}
+		  className={[
+			"mt-6 sm:mt-8 space-y-3",
+			compact ? "max-w-xl mx-auto text-center" : "max-w-3xl",
+		  ].join(" ")}
+		>
+		  <motion.p
+			variants={{
+			  hidden: { opacity: 0, y: 8, filter: "blur(8px)" },
+			  show: { opacity: 1, y: 0, filter: "blur(0px)" },
+			}}
+			className="font-sans text-black text-base sm:text-lg leading-relaxed break-words"
+		  >
+			Это не набор советов.
+		  </motion.p>
+
+		  <motion.p
+			variants={{
+			  hidden: { opacity: 0, y: 8, filter: "blur(8px)" },
+			  show: { opacity: 1, y: 0, filter: "blur(0px)" },
+			}}
+			className="font-sans text-black text-base sm:text-lg leading-relaxed break-words"
+		  >
+			Это единая конструкция, где каждый элемент усиливает другие.
+		  </motion.p>
+
+		  <motion.p
+			variants={{
+			  hidden: { opacity: 0, y: 8, filter: "blur(8px)" },
+			  show: { opacity: 1, y: 0, filter: "blur(0px)" },
+			}}
+			className="font-sans text-black text-base sm:text-lg leading-relaxed break-words"
+		  >
+			Система превращает счастье:
+		  </motion.p>
+
+		  <div className={compact ? "space-y-2" : "space-y-2"}>
+			<MotionArrowRight>из случайного события</MotionArrowRight>
+			<MotionArrowRight>в постоянное состояние</MotionArrowRight>
+		  </div>
+
+		  <motion.p
+			variants={{
+			  hidden: { opacity: 0, y: 8, filter: "blur(8px)" },
+			  show: { opacity: 1, y: 0, filter: "blur(0px)" },
+			}}
+			className="font-sans text-black text-base sm:text-lg leading-relaxed break-words"
+		  >
+			Как физическая форма — результат системы, а не мотивации.
+		  </motion.p>
+		</motion.div>
+
+		{/* Divider */}
+		<div className="mt-10 sm:mt-12 border-t border-black/10" />
+
+		{/* Section 4 */}
+		<motion.h3
+		  initial={{ opacity: 0, y: 14, filter: "blur(10px)" }}
+		  whileInView={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+		  viewport={{ once: true, amount: 0.4 }}
+		  transition={{ duration: 0.65, ease: "easeOut" }}
+		  className={[
+			"mt-10 sm:mt-12 font-sans font-extrabold tracking-tight text-black break-words",
+			compact ? "text-xl leading-[1.1] text-center" : "text-3xl sm:text-4xl leading-[1.1]",
+		  ].join(" ")}
+		>
+		  10 несущих конструкций вашего внутреннего дома
+		</motion.h3>
+
+		<motion.div
+		  initial={{ opacity: 0, y: 10, filter: "blur(8px)" }}
+		  whileInView={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+		  viewport={{ once: true, amount: 0.4 }}
+		  transition={{ duration: 0.6, ease: "easeOut", delay: 0.05 }}
+		  className={[
+			"mt-6 grid gap-2 sm:gap-3",
+			compact ? "grid-cols-1" : "grid-cols-2 lg:grid-cols-3",
+		  ].join(" ")}
+		>
+		  {pillars.map((p) => (
+			<div
+			  key={p}
+			  className="rounded-2xl border border-black/10 bg-black/[0.02] px-4 py-3 font-sans text-black text-sm sm:text-base leading-snug break-words"
+			>
+			  {p}
+			</div>
+		  ))}
+		</motion.div>
+
+		<motion.p
+		  initial={{ opacity: 0, y: 10, filter: "blur(8px)" }}
+		  whileInView={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+		  viewport={{ once: true, amount: 0.4 }}
+		  transition={{ duration: 0.55, ease: "easeOut", delay: 0.08 }}
+		  className={[
+			"mt-8 font-sans text-black/80",
+			compact ? "text-sm text-center" : "text-base",
+		  ].join(" ")}
+		>
+		  Если хотя бы один элемент не встроен — дом неустойчив.
+		</motion.p>
+
+		<motion.div
+		  initial={{ opacity: 0, y: 10, filter: "blur(8px)" }}
+		  whileInView={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+		  viewport={{ once: true, amount: 0.4 }}
+		  transition={{ duration: 0.55, ease: "easeOut", delay: 0.12 }}
+		  className={compact ? "mt-7 flex justify-center" : "mt-7"}
+		>
+		  <Button
+			size="xl"
+			onClick={() => window.open(TELEGRAM_BOT_URL, "_blank")}
+			className={[
+			  "rounded-full bg-yellow-400 text-black hover:bg-yellow-300 font-semibold",
+			  compact ? "w-full sm:w-auto px-10 whitespace-nowrap" : "px-10 whitespace-nowrap",
+			].join(" ")}
+		  >
+			Смотреть
+		  </Button>
+		</motion.div>
+	  </div>
+	</div>
+  );
+}
+
 /* ============================================================================
    ✅ MOBILE
-   FIX: counters must run even if reduced motion is on
    ============================================================================ */
 const MobileTechnologySection = () => {
-  const prefersReducedMotion = usePrefersReducedMotion();
-
-  // ✅ controls 2nd card counters start
   const { ref: statsRef, inView: statsInView } = useInViewOnce<HTMLDivElement>(0.25);
 
   return (
@@ -427,14 +589,7 @@ const MobileTechnologySection = () => {
 			<div className="mt-8 space-y-7">
 			  <div className="text-center">
 				<div className="font-sans font-extrabold tracking-tight text-accent text-5xl leading-none">
-				  <CountUpNumber
-					to={77}
-					active={statsInView} // ✅ FIX
-					duration={900}
-					decimals={0}
-					suffix="%"
-					locale="ru-RU"
-				  />
+				  <CountUpNumber to={77} active={statsInView} duration={900} decimals={0} suffix="%" locale="ru-RU" />
 				</div>
 				<div className="mt-3 font-sans text-black text-sm leading-relaxed">
 				  Участников после обучения
@@ -447,14 +602,7 @@ const MobileTechnologySection = () => {
 
 			  <div className="text-center">
 				<div className="font-sans font-extrabold tracking-tight text-accent text-5xl leading-none">
-				  <CountUpNumber
-					to={64.7}
-					active={statsInView} // ✅ FIX
-					duration={900}
-					decimals={1}
-					suffix="%"
-					locale="ru-RU"
-				  />
+				  <CountUpNumber to={64.7} active={statsInView} duration={900} decimals={1} suffix="%" locale="ru-RU" />
 				</div>
 				<div className="mt-3 font-sans text-black text-sm leading-relaxed">
 				  Улучшили отношения в семье
@@ -464,14 +612,7 @@ const MobileTechnologySection = () => {
 
 			  <div className="text-center">
 				<div className="font-sans font-extrabold tracking-tight text-accent text-5xl leading-none">
-				  <CountUpNumber
-					to={57.6}
-					active={statsInView} // ✅ FIX
-					duration={900}
-					decimals={1}
-					suffix="%"
-					locale="ru-RU"
-				  />
+				  <CountUpNumber to={57.6} active={statsInView} duration={900} decimals={1} suffix="%" locale="ru-RU" />
 				</div>
 				<div className="mt-3 font-sans text-black text-sm leading-relaxed">
 				  Стали успешнее
@@ -501,6 +642,9 @@ const MobileTechnologySection = () => {
 			</motion.div>
 		  </div>
 		</div>
+
+		{/* ✅ CARD 3 (NEW) */}
+		<ArchitectureCard compact />
 	  </div>
 	</section>
   );
@@ -508,7 +652,6 @@ const MobileTechnologySection = () => {
 
 /* ============================================================================
    ✅ DESKTOP
-   FIX: StatCount active should not be blocked by reduced motion
    ============================================================================ */
 const DesktopTechnologySection = () => {
   const rootRef = useRef<HTMLDivElement | null>(null);
@@ -715,7 +858,7 @@ const DesktopTechnologySection = () => {
 				to={77}
 				decimals={0}
 				suffix="%"
-				active={statsInView} // ✅ FIX
+				active={statsInView}
 				desc={
 				  <>
 					Участников после обучения
@@ -731,7 +874,7 @@ const DesktopTechnologySection = () => {
 				to={64.7}
 				decimals={1}
 				suffix="%"
-				active={statsInView} // ✅ FIX
+				active={statsInView}
 				desc={
 				  <>
 					Улучшили отношения в семье
@@ -744,7 +887,7 @@ const DesktopTechnologySection = () => {
 				to={57.6}
 				decimals={1}
 				suffix="%"
-				active={statsInView} // ✅ FIX
+				active={statsInView}
 				desc={
 				  <>
 					Стали успешнее
@@ -772,6 +915,9 @@ const DesktopTechnologySection = () => {
 			</div>
 		  </div>
 		</div>
+
+		{/* ✅ CARD 3 (NEW) */}
+		<ArchitectureCard />
 	  </div>
 	</section>
   );

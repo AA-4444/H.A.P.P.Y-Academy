@@ -53,58 +53,55 @@ const CTA = () => {
                         transition={{ duration: 0.8, ease: "easeOut" }}
                         className="text-center max-w-3xl w-full"
                       >
-                        {/* ✅ фикс заголовка для iPhone 12 Pro и меньше */}
+                        {/* Заголовок */}
                         <h2
                           className={[
                             "font-sans font-extrabold tracking-tight text-white",
-                            // переносы и “не вылезать”
-                            "mx-auto max-w-[18ch] [text-wrap:balance]",
-                            // размеры: мобильные меньше, дальше как было
+                            "mx-auto max-w-[22ch] [text-wrap:balance]",
                             "text-[30px] leading-[1.08]",
                             "sm:text-5xl sm:leading-[1.05]",
                             "md:text-6xl lg:text-7xl",
-                            // на совсем узких ещё чуть меньше
                             "max-[360px]:text-[28px]",
                           ].join(" ")}
                         >
-                          Сколько ещё жить без системы?
+                          Дом счастья не строят «когда-нибудь»
                         </h2>
 
-                        <div className="mt-8 sm:mt-10 flex flex-col sm:flex-row items-center justify-center gap-4">
-                          {/* ✅ на мобиле кнопки не распирают */}
-                          <Button
-                            size="xl"
-                            onClick={() => window.open(TELEGRAM_BOT_URL, "_blank")}
-                            className={[
-                              "rounded-full bg-yellow-400 text-black hover:bg-yellow-300 font-semibold",
-                              "w-full sm:w-auto",
-                              "max-w-[320px] sm:max-w-none",
-                              "px-8 sm:px-12",
-                            ].join(" ")}
-                          >
-                            Принять участие
-                            <ArrowRight className="ml-2 h-5 w-5" />
-                          </Button>
-
-                          <Button
-                            size="xl"
-                            onClick={() => window.open(TELEGRAM_BOT_URL, "_blank")}
-                            className={[
-                              "rounded-full bg-accent text-white hover:opacity-95 font-semibold",
-                              "w-full sm:w-auto",
-                              "max-w-[320px] sm:max-w-none",
-                              "px-8 sm:px-12",
-                            ].join(" ")}
-                          >
-                            Записаться FREE на вводный урок
-                          </Button>
-                        </div>
-
-                        {/* ✅ текст ниже чуть компактнее на мобиле */}
-                        <p className="mt-7 sm:mt-8 font-sans text-white/75 text-[13px] sm:text-lg">
-                          Минимальный вход —{" "}
-                          <span className="font-semibold text-white">$1</span>. Риск — ноль.
+                        {/* Текст */}
+                        <p className="mt-5 sm:mt-6 font-sans text-white/80 text-[14px] sm:text-lg leading-relaxed">
+                          Его строят шаг за шагом.
                         </p>
+
+                        {/* CTA — 3 кнопки */}
+                       <div className="mt-8 sm:mt-10 flex flex-col sm:flex-row items-center justify-center gap-4">
+                         
+                         <Button
+                           size="xl"
+                           onClick={() => window.open(TELEGRAM_BOT_URL, "_blank")}
+                           className="w-full sm:w-auto max-w-[320px] sm:max-w-none px-8 sm:px-12 rounded-full bg-red-600 text-white hover:bg-red-700 font-semibold"
+                         >
+                           Начать путь за 1 €
+                           <ArrowRight className="ml-2 h-5 w-5" />
+                         </Button>
+                       
+                      
+                         <Button
+                           size="xl"
+                           onClick={() => window.open(TELEGRAM_BOT_URL, "_blank")}
+                           className="w-full sm:w-auto max-w-[320px] sm:max-w-none px-8 sm:px-12 rounded-full bg-accent text-white hover:opacity-95 font-semibold"
+                         >
+                           Войти в клуб
+                         </Button>
+                       
+                        
+                         <Button
+                           size="xl"
+                           onClick={() => window.open(TELEGRAM_BOT_URL, "_blank")}
+                           className="w-full sm:w-auto max-w-[320px] sm:max-w-none px-8 sm:px-12 rounded-full bg-yellow-400 text-black hover:bg-yellow-300 font-semibold"
+                         >
+                           Смотреть видео Ицхака
+                         </Button>
+                       </div>
                       </motion.div>
                     </div>
                   </div>

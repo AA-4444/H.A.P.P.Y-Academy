@@ -13,6 +13,7 @@ import InsideSystem from "@/components/landing/InsideSystem";
 import ParticipationFormat from "@/components/landing/ParticipationFormat";
 import QuickReviews from "@/components/landing/QuickReviews";
 import MillionImpactSection from "@/components/landing/MillionImpactSection";
+import ArchitectureSection from "@/components/landing/ArchitectureSection";
 
 const Index = () => {
   return (
@@ -20,12 +21,15 @@ const Index = () => {
       <Header />
       <Hero />
       <HappyAcademySection />
-      <TechnologySection />
+        <ArchitectureSection />
+          
+     {/*  <TechnologySection /> */}
+        <About />
         <Pillars />
         <MillionImpactSection />
         <QuickReviews />
         <ParticipationFormat />
-        <About />
+      
       <Programs />
       <Testimonials />
       <CTA />

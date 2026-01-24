@@ -105,7 +105,9 @@ function SplitText({
 
   return (
     <span
-      className={["st-splitted", inView ? "st-inview" : "", className ?? ""].join(" ")}
+      className={["st-splitted", inView ? "st-inview" : "", className ?? ""].join(
+        " "
+      )}
       aria-label={text}
     >
       {tokens.map((tok, ti) => {
@@ -129,7 +131,9 @@ function SplitText({
               charIndex += 1;
 
               const isDot = ch === ".";
-              const charClass = ["st-char", isDot ? "text-accent" : ""].join(" ");
+              const charClass = ["st-char", isDot ? "text-accent" : ""].join(
+                " "
+              );
 
               return (
                 <span key={`${ch}-${ti}-${i}`} className="st-charWrap">
@@ -169,15 +173,22 @@ function SlideLine({
 
 function GridMotionBg({ images }: { images: string[] }) {
   const rowRefs = useRef<Array<HTMLDivElement | null>>([]);
-  const mouseXRef = useRef<number>(typeof window !== "undefined" ? window.innerWidth / 2 : 0);
+  const mouseXRef = useRef<number>(
+    typeof window !== "undefined" ? window.innerWidth / 2 : 0
+  );
 
   const isMobile =
-    typeof window !== "undefined" && window.matchMedia("(max-width: 768px)").matches;
+    typeof window !== "undefined" &&
+    window.matchMedia("(max-width: 768px)").matches;
 
   const rows = 4;
   const cols = isMobile ? 4 : 7;
 
-  const items = useMemo(() => buildGridMinRepeats(images, rows, cols), [images, rows, cols]);
+  const items = useMemo(() => buildGridMinRepeats(images, rows, cols), [
+    images,
+    rows,
+    cols,
+  ]);
 
   useEffect(() => {
     gsap.ticker.lagSmoothing(0);
@@ -210,7 +221,8 @@ function GridMotionBg({ images }: { images: string[] }) {
       rowRefs.current.forEach((row, index) => {
         if (!row) return;
         const direction = index % 2 === 0 ? 1 : -1;
-        const moveAmount = ((xForCalc / w) * maxMoveAmount - maxMoveAmount / 2) * direction;
+        const moveAmount =
+          ((xForCalc / w) * maxMoveAmount - maxMoveAmount / 2) * direction;
 
         gsap.to(row, {
           x: moveAmount,
@@ -320,7 +332,8 @@ function GridMotionBg({ images }: { images: string[] }) {
       <div
         className="absolute inset-0 pointer-events-none"
         style={{
-          backgroundImage: "radial-gradient(rgba(255,255,255,0.05) 1px, transparent 1px)",
+          backgroundImage:
+            "radial-gradient(rgba(255,255,255,0.05) 1px, transparent 1px)",
           backgroundSize: "180px 180px",
           opacity: 0.18,
         }}
@@ -336,7 +349,14 @@ function SharedSplitCSS() {
       .st-word{ display:inline-block; white-space:nowrap; }
       .st-space{ white-space:pre; }
 
-      .st-charWrap{ display:inline-block; overflow:hidden; vertical-align:baseline; }
+      /* ✅ FIX 1: prevent tails (У, у, р, g, etc.) from being clipped by mask */
+      .st-charWrap{
+        display:inline-block;
+        overflow:hidden;
+        vertical-align:baseline;
+        padding-bottom: 0.22em; /* ✅ extra room for descenders */
+      }
+
       .st-char{
         display:inline-block;
         transform: translate3d(0,120%,0);
@@ -354,29 +374,43 @@ function MobileContent() {
       <SharedSplitCSS />
 
       <div className="h-full px-5 pt-[calc(1rem+88px)] pb-10 flex flex-col justify-end">
-        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.35 }} className="w-full">
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.35 }}
+          className="w-full"
+        >
+          {/* ✅ FIX 2: new line WITHOUT indent, keep whole second line in one row */}
           <h1 className="font-sans font-extrabold text-[34px] sm:text-4xl text-white leading-[1.05] tracking-tight mb-5">
-            <SplitText text={"Ты не застрял"} baseDelay={0.0} step={0.04} />
-            <br />
-            <SplitText text={"У твоей жизни просто нет архитектуры."} baseDelay={0.22} step={0.018} />
+            <SplitText text={"Счастье не ищут."} baseDelay={0.0} step={0.04} />
+            <span className="block whitespace-nowrap">
+              <SplitText text={"Его проектируют."} baseDelay={0.22} step={0.04} />
+            </span>
           </h1>
 
           <p className="font-sans text-base text-white/80 leading-relaxed mb-8 max-w-[46ch]">
-            <SplitText
-              text={"Система, которая помогает навести порядок в мышлении, решениях и действиях."}
-              baseDelay={0.35}
-              step={0.010}
-            />
-            <br />
+            <span className="block font-semibold text-white">
+              <SplitText
+                text={"Архитектура Счастья — система построения внутреннего дома"}
+                baseDelay={0.18}
+                step={0.010}
+              />
+            </span>
 
-            <span className="block mt-3 font-semibold text-white">
-              <SlideLine delay={0.95}>Без мотивации</SlideLine>
+            <span className="block mt-3">
+              <SplitText
+                text={"Как у любого дома, у счастья есть фундамент, несущие конструкции и баланс."}
+                baseDelay={0.32}
+                step={0.010}
+              />
             </span>
-            <span className="block font-semibold text-white">
-              <SlideLine delay={1.08}>Без иллюзий</SlideLine>
-            </span>
-            <span className="block font-semibold text-white">
-              <SlideLine delay={1.21}>Только работающая структура</SlideLine>
+
+            <span className="block mt-2">
+              <SplitText
+                text={"Без архитектуры оно разваливается при первой нагрузке."}
+                baseDelay={0.44}
+                step={0.010}
+              />
             </span>
           </p>
 
@@ -392,7 +426,7 @@ function MobileContent() {
                 onClick={() => window.open(TELEGRAM_BOT_URL, "_blank")}
                 className="w-full rounded-full px-10 bg-yellow-400 text-black hover:bg-yellow-300 font-semibold"
               >
-                Принять участие
+                Начать строить дом счастья
               </Button>
 
               <Button
@@ -400,7 +434,7 @@ function MobileContent() {
                 onClick={() => window.open(TELEGRAM_BOT_URL, "_blank")}
                 className="w-full rounded-full px-10 bg-accent text-white hover:opacity-95 font-semibold"
               >
-                Записаться FREE на вводный урок
+                Смотреть видео Ицхака
               </Button>
             </div>
           </motion.div>
@@ -417,29 +451,43 @@ function DesktopContent() {
 
       <div className="h-full px-14 pt-[calc(1rem+88px)] pb-14">
         <div className="h-full grid lg:grid-cols-[1.15fr_0.85fr] gap-12 items-end">
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.35 }} className="max-w-3xl">
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.35 }}
+            className="max-w-3xl"
+          >
+            {/* ✅ FIX 2: new line WITHOUT indent, keep whole second line in one row */}
             <h1 className="font-sans font-extrabold text-6xl xl:text-7xl text-white leading-[1.05] mb-6">
-              <SplitText text={"Ты не застрял"} baseDelay={0.0} step={0.028} />
-              <br />
-              <SplitText text={"У твоей жизни просто нет архитектуры."} baseDelay={0.22} step={0.016} />
+              <SplitText text={"Счастье не ищут."} baseDelay={0.0} step={0.028} />
+              <span className="block whitespace-nowrap">
+                <SplitText text={"Его проектируют."} baseDelay={0.22} step={0.028} />
+              </span>
             </h1>
 
             <p className="font-sans text-lg text-white/80 max-w-[46ch] leading-relaxed [text-wrap:balance] mb-10">
-              <SplitText
-                text={"Система, которая помогает навести порядок в мышлении, решениях и действиях."}
-                baseDelay={0.35}
-                step={0.008}
-              />
-              <br />
+              <span className="block font-semibold text-white">
+                <SplitText
+                  text={"Архитектура Счастья — система построения внутреннего дома"}
+                  baseDelay={0.18}
+                  step={0.008}
+                />
+              </span>
 
-              <span className="block mt-3 font-semibold text-white">
-                <SlideLine delay={0.95}>Без мотивации</SlideLine>
+              <span className="block mt-3">
+                <SplitText
+                  text={"Как у любого дома, у счастья есть фундамент, несущие конструкции и баланс."}
+                  baseDelay={0.32}
+                  step={0.008}
+                />
               </span>
-              <span className="block font-semibold text-white">
-                <SlideLine delay={1.08}>Без иллюзий</SlideLine>
-              </span>
-              <span className="block font-semibold text-white">
-                <SlideLine delay={1.21}>Только работающая структура</SlideLine>
+
+              <span className="block mt-2">
+                <SplitText
+                  text={"Без архитектуры оно разваливается при первой нагрузке."}
+                  baseDelay={0.44}
+                  step={0.008}
+                />
               </span>
             </p>
 
@@ -454,7 +502,7 @@ function DesktopContent() {
                 onClick={() => window.open(TELEGRAM_BOT_URL, "_blank")}
                 className="rounded-full px-10 bg-yellow-400 text-black hover:bg-yellow-300 font-semibold"
               >
-                Принять участие
+                Начать строить дом счастья
               </Button>
 
               <Button
@@ -462,7 +510,7 @@ function DesktopContent() {
                 onClick={() => window.open(TELEGRAM_BOT_URL, "_blank")}
                 className="rounded-full px-10 bg-accent text-white hover:opacity-95 font-semibold"
               >
-                Записаться FREE на вводный урок
+                Смотреть видео Ицхака
               </Button>
             </motion.div>
           </motion.div>
@@ -475,11 +523,15 @@ function DesktopContent() {
 }
 
 const Hero = () => {
-  const bgImages = useMemo(() => [t1, t2, t3, t4, t5, t6, bg1, bg2, bg3, bg4, bg5], []);
+  const bgImages = useMemo(
+    () => [t1, t2, t3, t4, t5, t6, bg1, bg2, bg3, bg4, bg5],
+    []
+  );
 
   useEffect(() => {
     const isMobile =
-      typeof window !== "undefined" && window.matchMedia("(max-width: 768px)").matches;
+      typeof window !== "undefined" &&
+      window.matchMedia("(max-width: 768px)").matches;
     if (!isMobile) return;
 
     let startY = 0;

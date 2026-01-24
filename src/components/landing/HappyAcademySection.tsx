@@ -14,7 +14,7 @@ import slide4 from "@/assets/bg6.png";
 import slide5 from "@/assets/bg7.png";
 
 const HappyAcademySection = () => {
-  const slides = useMemo(() => [slide1,  slide3, slide4, slide5], []);
+  const slides = useMemo(() => [slide1, slide3, slide4, slide5], []);
 
   const rootRef = useRef<HTMLDivElement | null>(null);
   const prefersReducedMotion = usePrefersReducedMotion();
@@ -42,6 +42,7 @@ const HappyAcademySection = () => {
   return (
 	<section className="bg-[#F6F1E7]">
 	  <div className="mx-auto w-full px-3 sm:px-4 lg:px-6 py-10 sm:py-12 space-y-10 sm:space-y-12">
+		{/* FIRST WHITE BLOCK (PROBLEM) */}
 		<motion.div
 		  ref={rootRef}
 		  onMouseMove={prefersReducedMotion ? undefined : onMove}
@@ -71,21 +72,21 @@ const HappyAcademySection = () => {
 
 		  <div className="relative px-6 sm:px-10 lg:px-14 py-12 sm:py-14 lg:py-16">
 			<div className="grid lg:grid-cols-2 gap-10 lg:gap-14 items-start">
-			  <div className="max-w-xl">
+			  {/* LEFT */}
+			  <div className="max-w-xl min-w-0">
 				<motion.h2
 				  initial={{ opacity: 0, y: 14, filter: "blur(10px)" }}
 				  whileInView={{ opacity: 1, y: 0, filter: "blur(0px)" }}
 				  viewport={{ once: true, amount: 0.45 }}
 				  transition={{ duration: 0.65, ease: "easeOut" }}
-				  className="font-sans font-extrabold tracking-tight text-[38px] leading-[1.05] sm:text-5xl md:text-6xl text-black"
+				  className="font-sans font-extrabold tracking-tight text-[32px] leading-[1.08] sm:text-5xl md:text-6xl text-black break-words hyphens-auto"
 				>
-				  Если честно,
-				  <br />
-				  ты здесь потому что…
+				  Почему большинство людей «иногда счастливы», но не устойчиво?
 				</motion.h2>
 			  </div>
 
-			  <div className="max-w-2xl">
+			  {/* RIGHT */}
+			  <div className="max-w-2xl min-w-0">
 				<motion.div
 				  initial="hidden"
 				  whileInView="show"
@@ -96,18 +97,19 @@ const HappyAcademySection = () => {
 					  transition: { staggerChildren: 0.08, delayChildren: 0.12 },
 					},
 				  }}
-				  className="space-y-4 font-sans text-black text-base sm:text-lg leading-relaxed"
+				  className="space-y-4 font-sans text-black text-base sm:text-lg leading-relaxed break-words"
 				>
-				  <MotionArrowLine>
-					Ты много знаешь, но это не превращается в стабильные результаты
-				  </MotionArrowLine>
-				  <MotionArrowLine>Ты устал начинать сначала</MotionArrowLine>
-				  <MotionArrowLine>
-					Есть ощущение, что потенциал больше, чем текущая жизнь
-				  </MotionArrowLine>
-				  <MotionArrowLine>
-					Нет ясности, куда идти и что делать дальше
-				  </MotionArrowLine>
+				  <MotionFadeLine>Счастье путают с эмоцией.</MotionFadeLine>
+				  <MotionFadeLine>Но эмоции — это погода.</MotionFadeLine>
+				  <MotionFadeLine>А счастье — это архитектура состояния.</MotionFadeLine>
+				  <MotionFadeLine>Без структуры любое благополучие временно.</MotionFadeLine>
+				  <MotionFadeLine>Как «красивый ремонт без фундамента».</MotionFadeLine>
+
+				  <div className="pt-2 space-y-2">
+					<MotionArrowLine>нет системы</MotionArrowLine>
+					<MotionArrowLine>нет внутренней архитектуры</MotionArrowLine>
+					<MotionArrowLine>жизнь в реакции, а не в создании</MotionArrowLine>
+				  </div>
 				</motion.div>
 
 				<motion.div
@@ -119,9 +121,9 @@ const HappyAcademySection = () => {
 				>
 				  <Button
 					size="lg"
-					className="h-12 px-10 rounded-full bg-yellow-400 text-black hover:bg-yellow-300 font-semibold"
+					className="h-12 px-10 rounded-full bg-yellow-400 text-black hover:bg-yellow-300 font-semibold w-full sm:w-auto whitespace-nowrap"
 				  >
-					Узнать подробнее
+					Понять
 				  </Button>
 				</motion.div>
 			  </div>
@@ -129,6 +131,7 @@ const HappyAcademySection = () => {
 		  </div>
 		</motion.div>
 
+		{/* SECOND BLOCK (unchanged) */}
 		<div className="rounded-[28px] sm:rounded-[36px] lg:rounded-[44px] bg-accent overflow-hidden">
 		  <div className="px-6 sm:px-10 lg:px-14 py-16 sm:py-20 lg:py-24">
 			<div className="mx-auto max-w-5xl text-center">
@@ -267,10 +270,25 @@ function MotionArrowLine({ children }: { children: React.ReactNode }) {
 		show: { opacity: 1, y: 0, filter: "blur(0px)" },
 	  }}
 	  transition={{ duration: 0.5, ease: "easeOut" }}
-	  className="flex items-start gap-3"
+	  className="flex items-start gap-3 min-w-0"
 	>
 	  <span className="mt-[3px] text-black/70 font-semibold">→</span>
-	  <span className="text-black">{children}</span>
+	  <span className="text-black break-words">{children}</span>
+	</motion.div>
+  );
+}
+
+function MotionFadeLine({ children }: { children: React.ReactNode }) {
+  return (
+	<motion.div
+	  variants={{
+		hidden: { opacity: 0, y: 8, filter: "blur(8px)" },
+		show: { opacity: 1, y: 0, filter: "blur(0px)" },
+	  }}
+	  transition={{ duration: 0.5, ease: "easeOut" }}
+	  className="text-black break-words"
+	>
+	  {children}
 	</motion.div>
   );
 }

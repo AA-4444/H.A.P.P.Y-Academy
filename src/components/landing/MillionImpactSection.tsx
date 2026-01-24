@@ -9,7 +9,6 @@ import {
   ZoomableGroup,
 } from "react-simple-maps";
 
-
 const SECTION_BG = "#F6F1E7";
 const ACCENT = "#E64B1E";
 const GEO_URL = "https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json";
@@ -61,10 +60,9 @@ export default function MillionImpactSection() {
 
   const subtitle = useMemo(
 	() =>
-	  "Мы строим систему, которая масштабируется. Прогресс измеряется людьми — не обещаниями.",
+	  "Мы создаём сообщество людей с внутренней опорой. Это новая элита:",
 	[]
   );
-
 
   const points = useMemo(() => {
 	const base: Array<[number, number]> = [
@@ -186,7 +184,6 @@ export default function MillionImpactSection() {
 		  className="absolute inset-0"
 		  style={{
 			background:
-			 
 			  "linear-gradient(to bottom, rgba(243,238,230,0.78) 0%, rgba(243,238,230,0.58) 42%, rgba(243,238,230,0.46) 100%)",
 		  }}
 		/>
@@ -201,17 +198,22 @@ export default function MillionImpactSection() {
 			</div>
 
 			<h2 className="mt-4 font-sans font-extrabold tracking-tight text-4xl text-black leading-[1.05]">
-			  <MarkerHighlight>{formatInt(GOAL)} людей счастливее</MarkerHighlight>
+			  <MarkerHighlight>{formatInt(GOAL)} счастливых людей</MarkerHighlight>
 			</h2>
 
 			<p className="mt-4 font-sans text-black/70 text-base leading-relaxed">
 			  {subtitle}
 			</p>
+
+			<div className="mt-4 space-y-2 font-sans text-black/75 text-base leading-relaxed">
+			  <div>— без невроза</div>
+			  <div>— без борьбы</div>
+			  <div>— с ясностью и созиданием</div>
+			</div>
 		  </div>
 
 		  <div className="mt-8 grid grid-cols-1 gap-4">
 			<div>
-			 
 			  <div className="mt-2 font-sans font-extrabold tracking-tight text-2xl text-orange-500">
 				Реальные люди по всему миру
 			  </div>
@@ -221,12 +223,12 @@ export default function MillionImpactSection() {
 			</div>
 
 			<div>
-			 <div
-			   className="font-sans font-extrabold tracking-tight text-4xl text-orange-500 tabular-nums"
-			   style={{ fontVariantNumeric: "tabular-nums" }}
-			 >
-			   {formatInt(display)}
-			 </div>
+			  <div
+				className="font-sans font-extrabold tracking-tight text-4xl text-orange-500 tabular-nums"
+				style={{ fontVariantNumeric: "tabular-nums" }}
+			  >
+				{formatInt(display)}
+			  </div>
 			  <div className="mt-1 font-sans text-black/55 text-xs">
 				участников / вовлечённых
 			  </div>
@@ -265,22 +267,33 @@ export default function MillionImpactSection() {
 			</div>
 
 			<h2 className="mt-4 font-sans font-extrabold tracking-tight text-4xl sm:text-5xl lg:text-6xl text-black leading-[1.05]">
-			  <MarkerHighlight>{formatInt(GOAL)} людей счастливее</MarkerHighlight>
+			  <MarkerHighlight>{formatInt(GOAL)} счастливых людей</MarkerHighlight>
 			</h2>
 
 			<p className="mt-5 font-sans text-black/70 text-base sm:text-lg leading-relaxed">
 			  {subtitle}
 			</p>
+
+			<div className="mt-5 grid grid-cols-1 sm:grid-cols-3 gap-2 sm:gap-4 max-w-3xl mx-auto">
+			  <div className="font-sans font-semibold text-black/80 text-base sm:text-lg">
+				без невроза
+			  </div>
+			  <div className="font-sans font-semibold text-black/80 text-base sm:text-lg">
+				без борьбы
+			  </div>
+			  <div className="font-sans font-semibold text-black/80 text-base sm:text-lg">
+				с ясностью и созиданием
+			  </div>
+			</div>
 		  </div>
 		</div>
 
 		<div className="mx-auto max-w-7xl px-6 sm:px-8 lg:px-12 mt-10 sm:mt-12">
 		  <div className="grid grid-cols-1 sm:grid-cols-[1fr_auto] gap-4 sm:gap-6 items-start">
 			<div>
-			  
-			<div className="mt-2 font-sans font-extrabold tracking-tight text-2xl sm:text-3xl text-orange-500">
-			  Реальные люди по всему миру
-			</div>
+			  <div className="mt-2 font-sans font-extrabold tracking-tight text-2xl sm:text-3xl text-orange-500">
+				Реальные люди по всему миру
+			  </div>
 			  <div className="mt-2 font-sans text-black/60 text-sm sm:text-base">
 				{PERCENT}% от цели · рост идёт каждый день
 			  </div>
@@ -368,16 +381,19 @@ function WorldMapCoverBackground({
 
   const visible = points.slice(0, shownCount);
 
- 
   const geoFill = isMobile ? "rgba(0,0,0,0.07)" : "rgba(0,0,0,0.10)";
   const geoStroke = isMobile ? "rgba(0,0,0,0.14)" : "rgba(0,0,0,0.18)";
 
   return (
-	<div className={["w-full h-full", isMobile ? "pointer-events-none" : "pointer-events-auto"].join(" ")}>
-	 <ComposableMap
+	<div
+	  className={["w-full h-full", isMobile ? "pointer-events-none" : "pointer-events-auto"].join(
+		" "
+	  )}
+	>
+	  <ComposableMap
 		projection="geoMercator"
 		projectionConfig={{
-		  scale: mode === "cover" ? 185 : 150, 
+		  scale: mode === "cover" ? 185 : 150,
 		}}
 		className="w-full h-full"
 		style={{ width: "100%", height: "100%", background: "transparent" }}
@@ -388,7 +404,6 @@ function WorldMapCoverBackground({
 		  minZoom={1}
 		  maxZoom={1}
 		  center={[0, 12]}
-		  // ✅ IMPORTANT: отключаем drag/zoom на мобиле, чтобы не мешало скроллу
 		  translateExtent={[[0, 0], [0, 0]]}
 		  disablePanning={isMobile}
 		  disableZooming={true}

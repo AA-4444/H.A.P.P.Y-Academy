@@ -88,7 +88,7 @@ const Footer = () => {
                 Напиши нам
               </p>
 
-              {/* 🔴 ТЕКСТ НЕ МЕНЯЛИ / 🔴 ПОМЕНЯЛИ ТОЛЬКО ССЫЛКУ */}
+             
               <a
                 href="https://t.me/TataZakzheva"
                 target="_blank"
@@ -106,10 +106,10 @@ const Footer = () => {
 
               <div className="mt-10 grid sm:grid-cols-2 gap-10">
                 <div className="text-white text-xl">
-                  Isaac Pintosevich
+                  Ицхак Пинтосевич
                 </div>
 
-                {/* ❌ БЛОК С ВОПРОСАМИ ПОЛНОСТЬЮ УБРАН */}
+               
               </div>
             </div>
 

@@ -1,34 +1,22 @@
-import { useMemo, useRef, useState } from "react";
+import { useRef } from "react";
 import { motion, useInView } from "framer-motion";
 import { ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
-import f1 from "@/assets/bg2.png";
-import f2 from "@/assets/bg3.png";
-import f3 from "@/assets/bg4.png";
+import f1 from "@/assets/bg2.png"; // ОДНА ФОТКА
 
-const TELEGRAM_BOT_URL = "https://t.me/happiness4people_bot";
-const INSTAGRAM_URL = "https://www.instagram.com/isaacpintosevich/";
-const VIDEO_URL = "https://youtu.be/VZhCbEQUD-A?si=akJc1rkK_nx2LxL4";
+const TELEGRAM_BOT_URL = "https://www.instagram.com/isaacpintosevich/";
 
 export default function ParticipationFormat() {
   const ref = useRef(null);
   const isInView = useInView(ref, { once: true, margin: "-100px" });
 
-  const items = useMemo(
-	() => [
-	  { label: "Подпишитесь на Instagram Ицхака", image: f1 },
-	  { label: "Поделитесь этим видео в сторис", image: f2 },
-	  { label: "Напишите фразу: «Счастье — это …»", image: f3 },
-	],
-	[]
-  );
+  const goPrograms = () => {
+	const el = document.getElementById("programs");
+	if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
+  };
 
-  const [activeIndex, setActiveIndex] = useState(0);
-
-  const handleMainCTA = () => window.open(TELEGRAM_BOT_URL, "_blank");
-  const handleInstagram = () => window.open(INSTAGRAM_URL, "_blank");
-  const handleVideo = () => window.open(VIDEO_URL, "_blank");
+  const handleGift = () => window.open(TELEGRAM_BOT_URL, "_blank");
 
   return (
 	<section id="viral-offer" ref={ref} className="bg-[#F6F1E7] py-20 md:py-24">
@@ -47,70 +35,33 @@ export default function ParticipationFormat() {
 			</div>
 
 			<h2 className="mt-5 font-sans font-extrabold tracking-tight text-black text-3xl sm:text-4xl md:text-5xl leading-[1.05]">
-			  Получите подарок от Ицхака
+			  Получите подарок от Ицхака Пинтосевича
 			</h2>
 
-			{/* LIST */}
-			<div className="mt-10 space-y-3">
-			  {items.map((it, index) => {
-				const active = index === activeIndex;
-				const click =
-				  index === 0 ? handleInstagram : index === 1 ? handleVideo : undefined;
-
-				return (
-				  <motion.button
-					key={it.label}
-					type="button"
-					initial={{ opacity: 0, x: -14 }}
-					animate={isInView ? { opacity: 1, x: 0 } : {}}
-					transition={{ duration: 0.45, delay: index * 0.08 }}
-					onMouseEnter={() => setActiveIndex(index)}
-					onFocus={() => setActiveIndex(index)}
-					onClick={click}
-					className="w-full text-left group"
-				  >
-					<div className="flex items-baseline gap-4">
-					  <span
-						className={[
-						  "font-sans text-xs tracking-widest",
-						  active ? "text-black/70" : "text-black/30",
-						].join(" ")}
-					  >
-						{String(index + 1).padStart(2, "0")}
-					  </span>
-
-					  <span
-						className={[
-						  "font-serif leading-tight transition-colors duration-300",
-						  "text-2xl sm:text-3xl md:text-4xl",
-						  active ? "text-black" : "text-black/35",
-						].join(" ")}
-					  >
-						{it.label}
-					  </span>
-					</div>
-
-					<div className="mt-3 h-px w-full bg-black/10" />
-				  </motion.button>
-				);
-			  })}
-			</div>
-
-			{/* подпись */}
+			{/* ОДИН ТЕКСТ */}
 			<motion.p
 			  initial={{ opacity: 0, y: 10, filter: "blur(8px)" }}
 			  animate={isInView ? { opacity: 1, y: 0, filter: "blur(0px)" } : {}}
-			  transition={{ duration: 0.55, delay: 0.15, ease: "easeOut" }}
-			  className="mt-8 font-sans text-black/65 text-sm sm:text-base leading-relaxed max-w-xl"
+			  transition={{ duration: 0.55, delay: 0.12, ease: "easeOut" }}
+			  className="mt-10 font-serif text-black text-2xl sm:text-3xl md:text-4xl leading-tight"
 			>
-			  После этого вы получите личный подарок от Ицхака.
+			  Поделись рилсом в Инстаграм сторис
 			</motion.p>
 
-			{/* CTA */}
+			<motion.p
+			  initial={{ opacity: 0, y: 10, filter: "blur(8px)" }}
+			  animate={isInView ? { opacity: 1, y: 0, filter: "blur(0px)" } : {}}
+			  transition={{ duration: 0.55, delay: 0.16, ease: "easeOut" }}
+			  className="mt-8 font-sans text-black/65 text-sm sm:text-base leading-relaxed max-w-xl"
+			>
+			  После этого вы получите личный подарок от Ицхака Пинтосевича.
+			</motion.p>
+
+			{/* 2 КНОПКИ */}
 			<div className="mt-10 flex flex-col sm:flex-row gap-4">
 			  <Button
 				size="lg"
-				onClick={handleMainCTA}
+				onClick={goPrograms}
 				className="
 				  w-full sm:w-auto
 				  rounded-full
@@ -119,13 +70,13 @@ export default function ParticipationFormat() {
 				  font-semibold
 				"
 			  >
-				Получить подарок
+				Стать счастливым
 				<ArrowRight className="ml-2 h-5 w-5" />
 			  </Button>
 
 			  <Button
 				size="lg"
-				onClick={handleInstagram}
+				onClick={handleGift}
 				className="
 				  w-full sm:w-auto
 				  rounded-full
@@ -134,48 +85,30 @@ export default function ParticipationFormat() {
 				  font-semibold
 				"
 			  >
-				Instagram Ицхака
-			  </Button>
-
-			  <Button
-				size="lg"
-				onClick={handleVideo}
-				className="
-				  w-full sm:w-auto
-				  rounded-full
-				  px-8
-				  bg-[#E4002B] text-white hover:opacity-95
-				  font-semibold
-				"
-			  >
-				Смотреть видео
+				Получить подарок
 			  </Button>
 			</div>
 		  </motion.div>
 
-		  {/* RIGHT */}
+		  {/* RIGHT — ОДНА ФОТКА */}
+		  {/* RIGHT — ОДНА ФОТКА */}
 		  <motion.div
 			initial={{ opacity: 0, x: 28 }}
 			animate={isInView ? { opacity: 1, x: 0 } : {}}
 			transition={{ duration: 0.7, ease: "easeOut" }}
 			className="relative"
 		  >
-			<div className="rounded-[32px] overflow-hidden bg-black shadow-[0_30px_90px_rgba(0,0,0,0.25)]">
-			  <motion.img
-				key={items[activeIndex].image}
-				src={items[activeIndex].image}
-				alt={items[activeIndex].label}
-				className="w-full h-[520px] md:h-[600px] object-cover opacity-95"
-				initial={{ opacity: 0, scale: 1.02 }}
-				animate={{ opacity: 1, scale: 1 }}
-				transition={{ duration: 0.45, ease: "easeOut" }}
+			<div className="rounded-[32px] overflow-hidden bg-white shadow-[0_30px_90px_rgba(0,0,0,0.25)]">
+			  <img
+				src={f1}
+				alt="Ицхак Пинтосевич"
+				className="block w-full h-[520px] md:h-[600px] object-cover"
 				draggable={false}
 			  />
-			  <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/35 via-black/10 to-transparent" />
 			</div>
-
-			<div className="pointer-events-none absolute inset-0 rounded-[32px] ring-1 ring-black/10" />
 		  </motion.div>
+			
+
 		</div>
 	  </div>
 	</section>

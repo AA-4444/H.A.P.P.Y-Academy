@@ -38,6 +38,14 @@ const HappyAcademySection = () => {
 	mx.set(0);
 	my.set(0);
   };
+  
+  const goPrograms = () => {
+	const el = document.getElementById("programs");
+	if (!el) return;
+  
+	
+	el.scrollIntoView({ behavior: "smooth", block: "start" });
+  };
 
   return (
 	<section className="bg-[#F6F1E7]">
@@ -100,8 +108,8 @@ const HappyAcademySection = () => {
 				  className="space-y-4 font-sans text-black text-base sm:text-lg leading-relaxed break-words"
 				>
 				  <MotionFadeLine>Счастье путают с эмоцией.</MotionFadeLine>
-				  <MotionFadeLine>Но эмоции — это погода.</MotionFadeLine>
-				  <MotionFadeLine>А счастье — это архитектура состояния.</MotionFadeLine>
+				  <MotionFadeLine>Но эмоции - это погода.</MotionFadeLine>
+				  <MotionFadeLine>А счастье - это архитектура состояния.</MotionFadeLine>
 				  <MotionFadeLine>Без структуры любое благополучие временно.</MotionFadeLine>
 				  <MotionFadeLine>Как «красивый ремонт без фундамента».</MotionFadeLine>
 
@@ -121,9 +129,10 @@ const HappyAcademySection = () => {
 				>
 				  <Button
 					size="lg"
+					onClick={goPrograms}
 					className="h-12 px-10 rounded-full bg-yellow-400 text-black hover:bg-yellow-300 font-semibold w-full sm:w-auto whitespace-nowrap"
 				  >
-					Понять
+					Стать счатсливым 
 				  </Button>
 				</motion.div>
 			  </div>
@@ -131,41 +140,13 @@ const HappyAcademySection = () => {
 		  </div>
 		</motion.div>
 
-		{/* SECOND BLOCK (unchanged) */}
-		<div className="rounded-[28px] sm:rounded-[36px] lg:rounded-[44px] bg-accent overflow-hidden">
-		  <div className="px-6 sm:px-10 lg:px-14 py-16 sm:py-20 lg:py-24">
-			<div className="mx-auto max-w-5xl text-center">
-			  <motion.h2
-				initial={{ opacity: 0, y: 18 }}
-				whileInView={{ opacity: 1, y: 0 }}
-				viewport={{ once: true, amount: 0.35 }}
-				transition={{ duration: 0.6 }}
-				className="font-sans font-extrabold tracking-tight text-white text-4xl sm:text-5xl md:text-6xl lg:text-7xl leading-[1.05]"
-			  >
-				Академия счастья H.A.P.P.Y.
-			  </motion.h2>
-
-			  <motion.p
-				initial={{ opacity: 0, y: 18 }}
-				whileInView={{ opacity: 1, y: 0 }}
-				viewport={{ once: true, amount: 0.35 }}
-				transition={{ duration: 0.6, delay: 0.08 }}
-				className="mt-8 text-white font-sans text-base sm:text-lg md:text-xl leading-relaxed max-w-4xl mx-auto"
-			  >
-				Это путь к устойчивому состоянию, ясным решениям и действиям,
-				которые дают реальные результаты — без мотивационных иллюзий и
-				бесконечных стартов с нуля.
-			  </motion.p>
-
-			  <div className="mt-14 sm:mt-16 flex justify-center">
-				<ScrollBadge />
-			  </div>
-			</div>
-		  </div>
-		</div>
+		
 	  </div>
 
-	  <FullScreenSlider slides={slides} />
+	 
+	  <div className="hidden lg:block">
+		<FullScreenSlider slides={slides} />
+	  </div>
 	</section>
   );
 };

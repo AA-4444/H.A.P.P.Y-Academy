@@ -12,17 +12,7 @@ import { Button } from "@/components/ui/button";
 
 const TELEGRAM_BOT_URL = "https://t.me/happiness4people_bot";
 
-/**
- * ✅ ТЗ #6: КАК ПРОИСХОДЯТ ИЗМЕНЕНИЯ
- * Заголовок: Это не мотивация. Это протокол внедрения.
- * Маркеры:
- * — 30 базовых упражнений
- * — 10 недель базового цикла
- * — ~30 минут в день
- * Подпись: Система встраивается в мышление, внимание и поведение.
- *
- * Кнопки — НЕ трогаю (как просил).
- */
+
 
 const itemsBase = [
   { label: "30 базовых упражнений" },
@@ -57,6 +47,15 @@ const Pillars = () => {
   const buttonsOpacity = useTransform(progress, [0.8, 0.95], [0, 1]);
   const buttonsY = useTransform(progress, [0.8, 0.95], [40, 0]);
   const buttonsBlur = useTransform(progress, [0.8, 0.95], [15, 0]);
+  
+  const goPrograms = () => {
+  const el = document.getElementById("programs");
+  if (!el) return;
+  
+  
+  el.scrollIntoView({ behavior: "smooth", block: "start" });
+  };
+
 
   return (
     <section
@@ -98,7 +97,7 @@ const Pillars = () => {
                   ))}
                 </div>
 
-                {/* ✅ подпись из ТЗ */}
+               
                 <motion.p
                   initial={{ opacity: 0, y: 10, filter: "blur(8px)" }}
                   animate={isInView ? { opacity: 1, y: 0, filter: "blur(0px)" } : {}}
@@ -108,7 +107,7 @@ const Pillars = () => {
                   Система встраивается в мышление, внимание и поведение.
                 </motion.p>
 
-                {/* ✅ кнопки оставляю как есть */}
+               
                 <motion.div
                   className="mt-10 sm:mt-14 flex flex-col gap-3 sm:gap-4 w-full"
                   style={{
@@ -119,19 +118,13 @@ const Pillars = () => {
                 >
                   <Button
                     size="lg"
-                    onClick={() => window.open(TELEGRAM_BOT_URL, "_blank")}
+                   onClick={goPrograms}
                     className="w-full rounded-full bg-yellow-400 text-black hover:bg-yellow-300 font-bold h-14 sm:h-16 text-sm sm:text-lg shadow-sm"
                   >
-                    Принять участие
+                   Стать счастливым
                   </Button>
 
-                  <Button
-                    size="lg"
-                    onClick={() => window.open(TELEGRAM_BOT_URL, "_blank")}
-                    className="w-full rounded-full bg-[#F0623C] text-white hover:opacity-90 font-bold h-14 sm:h-16 text-sm sm:text-lg shadow-sm"
-                  >
-                    Записаться FREE на вводный урок
-                  </Button>
+               
                 </motion.div>
               </div>
             </motion.div>

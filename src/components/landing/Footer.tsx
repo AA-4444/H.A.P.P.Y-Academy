@@ -1,6 +1,6 @@
 import React from "react";
 import { motion } from "framer-motion";
-import { ArrowUp, ArrowRight, Instagram, Youtube, Send } from "lucide-react";
+import { ArrowUp, Instagram, Youtube, Send } from "lucide-react";
 import { FaTiktok } from "react-icons/fa";
 import logo from "@/assets/logo.svg";
 
@@ -52,7 +52,7 @@ function ScrollToTopBadge({ onClick }: { onClick: () => void }) {
             fontSize="18"
             className="font-bold uppercase tracking-[2px]"
           >
-            <textPath href="#footerCirclePath" startOffset="0%">
+            <textPath href="#footerCirclePath">
               {text}
             </textPath>
           </text>
@@ -88,8 +88,9 @@ const Footer = () => {
                 Напиши нам
               </p>
 
+              {/* 🔴 ТЕКСТ НЕ МЕНЯЛИ / 🔴 ПОМЕНЯЛИ ТОЛЬКО ССЫЛКУ */}
               <a
-                href="https://t.me/isaac_pintosevich"
+                href="https://t.me/TataZakzheva"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="
@@ -108,14 +109,7 @@ const Footer = () => {
                   Isaac Pintosevich
                 </div>
 
-                <div className="text-white/85">
-                  <div className="font-semibold">
-                    Остались вопросы?
-                  </div>
-                  <div className="mt-2 text-sm sm:text-base">
-                    Напиши их в личные сообщения Ицхаку.
-                  </div>
-                </div>
+                {/* ❌ БЛОК С ВОПРОСАМИ ПОЛНОСТЬЮ УБРАН */}
               </div>
             </div>
 

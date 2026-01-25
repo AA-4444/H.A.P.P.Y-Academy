@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { motion } from "framer-motion";
 import { gsap } from "gsap";
 import { Button } from "@/components/ui/button";
+import { ArrowDown } from "lucide-react";
 
 import t1 from "@/assets/t1.jpg";
 import t2 from "@/assets/t2.png";
@@ -78,8 +79,7 @@ function buildGridMinRepeats(images: string[], rows: number, cols: number) {
 }
 
 /**
- * SplitText without ugly letter breaks:
- * words are wrapped with white-space: nowrap, so перенос только между словами.
+ * SplitText — оставляю как есть (НЕ ТРОГАЮ), просто сейчас не используется.
  */
 function SplitText({
   text,
@@ -93,8 +93,6 @@ function SplitText({
   step?: number;
 }) {
   const [inView, setInView] = useState(false);
-
-  // tokens: words + spaces (spaces kept as separate tokens)
   const tokens = useMemo(() => (text ? text.split(/(\s+)/) : []), [text]);
 
   useEffect(() => {
@@ -115,7 +113,6 @@ function SplitText({
         const isSpace = /^\s+$/.test(tok);
 
         if (isSpace) {
-          // keep spaces as real spaces, allow wrap after them
           return (
             <span key={`sp-${ti}`} className="st-space">
               {tok.replace(/ /g, "\u00A0")}
@@ -132,9 +129,7 @@ function SplitText({
               charIndex += 1;
 
               const isDot = ch === ".";
-              const charClass = ["st-char", isDot ? "text-accent" : ""].join(
-                " "
-              );
+              const charClass = ["st-char", isDot ? "text-accent" : ""].join(" ");
 
               return (
                 <span key={`${ch}-${ti}-${i}`} className="st-charWrap">
@@ -148,27 +143,6 @@ function SplitText({
         );
       })}
     </span>
-  );
-}
-
-function SlideLine({
-  children,
-  delay = 0,
-  className,
-}: {
-  children: React.ReactNode;
-  delay?: number;
-  className?: string;
-}) {
-  return (
-    <motion.span
-      initial={{ opacity: 0, y: 16, filter: "blur(10px)" }}
-      animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
-      transition={{ duration: 0.65, delay, ease: [0.22, 1, 0.36, 1] }}
-      className={className}
-    >
-      {children}
-    </motion.span>
   );
 }
 
@@ -343,180 +317,98 @@ function GridMotionBg({ images }: { images: string[] }) {
   );
 }
 
-function SharedSplitCSS() {
+/* =========================
+   ✅ ОРАНЖЕВЫЙ БЛОК — 1 В 1 как во 2-м скрине
+   + добавили ТОЛЬКО одну кнопку "Стать счастливым" (scroll -> #programs)
+   КРУГОВАЯ СТРЕЛКА ОСТАЁТСЯ ВНУТРИ БЛОКА
+   ========================= */
+function ScrollBadge() {
+  const text = "узнать подробнее • узнать подробнее • ";
+
   return (
-    <style>{`
-      .st-splitted{ display:inline; }
-      .st-word{ display:inline-block; white-space:nowrap; }
-      .st-space{ white-space:pre; }
+    <div className="relative h-[140px] w-[140px] sm:h-[160px] sm:w-[160px]">
+      <motion.div
+        animate={{ rotate: 360 }}
+        transition={{ duration: 16, repeat: Infinity, ease: "linear" }}
+        className="absolute inset-0"
+      >
+        <svg viewBox="0 0 200 200" className="h-full w-full">
+          <defs>
+            <path
+              id="circlePath"
+              d="M 100,100 m -78,0 a 78,78 0 1,1 156,0 a 78,78 0 1,1 -156,0"
+            />
+          </defs>
+          <text fill="rgba(255,255,255,0.85)" fontSize="13" letterSpacing="2.5">
+            <textPath href="#circlePath">{text.repeat(2)}</textPath>
+          </text>
+        </svg>
+      </motion.div>
 
-      
-      .st-charWrap{
-        display:inline-block;
-        overflow:hidden;
-        vertical-align:baseline;
-        padding-bottom: 0.22em; 
-      }
-
-      .st-char{
-        display:inline-block;
-        transform: translate3d(0,120%,0);
-        will-change: transform;
-        transition: transform 0.9s cubic-bezier(0.86,0,0.31,1);
-      }
-      .st-inview .st-char{ transform: translate3d(0,0,0); }
-    `}</style>
-  );
-}
-
-function MobileContent() {
-  return (
-    <div className="lg:hidden relative z-10 h-full">
-      <SharedSplitCSS />
-
-      <div className="h-full px-5 pt-[calc(1rem+88px)] pb-10 flex flex-col justify-end">
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 0.35 }}
-          className="w-full"
-        >
-         
-          <h1 className="font-sans font-extrabold text-[34px] sm:text-4xl text-white leading-[1.05] tracking-tight mb-5">
-            <SplitText text={"Счастье не ищут."} baseDelay={0.0} step={0.04} />
-            <span className="block whitespace-nowrap">
-              <SplitText text={"Его проектируют."} baseDelay={0.22} step={0.04} />
-            </span>
-          </h1>
-
-          <p className="font-sans text-base text-white/80 leading-relaxed mb-8 max-w-[46ch]">
-            <span className="block font-semibold text-white">
-              <SplitText
-                text={"Архитектура Счастья — система построения внутреннего дома"}
-                baseDelay={0.18}
-                step={0.010}
-              />
-            </span>
-
-            <span className="block mt-3">
-              <SplitText
-                text={"Как у любого дома, у счастья есть фундамент, несущие конструкции и баланс."}
-                baseDelay={0.32}
-                step={0.010}
-              />
-            </span>
-
-            <span className="block mt-2">
-              <SplitText
-                text={"Без архитектуры оно разваливается при первой нагрузке."}
-                baseDelay={0.44}
-                step={0.010}
-              />
-            </span>
-          </p>
-
-          <motion.div
-            initial={{ opacity: 0, y: 14 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.55, delay: 0.25, ease: [0.22, 1, 0.36, 1] }}
-            className="w-full flex justify-center"
-          >
-            <div className="w-full max-w-[360px] space-y-3">
-              <Button
-                size="xl"
-                onClick={() => window.open(TELEGRAM_BOT_URL, "_blank")}
-                className="w-full rounded-full px-10 bg-yellow-400 text-black hover:bg-yellow-300 font-semibold"
-              >
-                Начать строить дом счастья
-              </Button>
-
-              <Button
-                size="xl"
-                onClick={() => window.open(VIDEO_URL, "_blank")}
-                className="w-full rounded-full px-10 bg-accent text-white hover:opacity-95 font-semibold"
-              >
-                Смотреть видео Ицхака
-              </Button>
-            </div>
-          </motion.div>
-        </motion.div>
+      <div className="absolute inset-0 flex items-center justify-center">
+        <div className="h-12 w-12 rounded-full bg-white/15 backdrop-blur-sm border border-white/25 flex items-center justify-center">
+          <ArrowDown className="h-6 w-6 text-white" />
+        </div>
       </div>
     </div>
   );
 }
 
-function DesktopContent() {
+function OrangeHeroBlock() {
+  const goPrograms = () => {
+    const el = document.getElementById("programs");
+    if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
+    else window.location.hash = "#programs";
+  };
+
   return (
-    <div className="hidden lg:block relative z-10 h-full">
-      <SharedSplitCSS />
+    <div className="relative z-10 h-full w-full">
+     
+      <div className="h-full px-5 sm:px-10 lg:px-14 pt-[calc(1rem+88px)] pb-14 flex items-center justify-center">
+        <div className="w-full">
+        
+          <div className="rounded-[28px] sm:rounded-[36px] lg:rounded-[44px] bg-white/10 backdrop-blur-md border border-white/20 overflow-hidden shadow-2xl">
+            <div className="px-6 sm:px-10 lg:px-14 py-16 sm:py-20 lg:py-24">
+              <div className="mx-auto max-w-5xl text-center">
+                <motion.h2
+                  initial={{ opacity: 0, y: 18 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.6 }}
+                  className="font-sans font-extrabold tracking-tight text-white text-4xl sm:text-5xl md:text-6xl lg:text-7xl leading-[1.05]"
+                >
+                  Академия счастья H.A.P.P.Y.
+                </motion.h2>
 
-      <div className="h-full px-14 pt-[calc(1rem+88px)] pb-14">
-        <div className="h-full grid lg:grid-cols-[1.15fr_0.85fr] gap-12 items-end">
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.35 }}
-            className="max-w-3xl"
-          >
-            {/* ✅ FIX 2: new line WITHOUT indent, keep whole second line in one row */}
-            <h1 className="font-sans font-extrabold text-6xl xl:text-7xl text-white leading-[1.05] mb-6">
-              <SplitText text={"Счастье не ищут."} baseDelay={0.0} step={0.028} />
-              <span className="block whitespace-nowrap">
-                <SplitText text={"Его проектируют."} baseDelay={0.22} step={0.028} />
-              </span>
-            </h1>
+                <motion.p
+                  initial={{ opacity: 0, y: 18 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.6, delay: 0.08 }}
+                  className="mt-8 text-white font-sans text-base sm:text-lg md:text-xl leading-relaxed max-w-4xl mx-auto"
+                >
+                  Это путь к устойчивому состоянию, ясным решениям и действиям,
+                  которые дают реальные результаты — без мотивационных иллюзий и
+                  бесконечных стартов с нуля.
+                </motion.p>
 
-            <p className="font-sans text-lg text-white/80 max-w-[46ch] leading-relaxed [text-wrap:balance] mb-10">
-              <span className="block font-semibold text-white">
-                <SplitText
-                  text={"Архитектура Счастья — система построения внутреннего дома"}
-                  baseDelay={0.18}
-                  step={0.008}
-                />
-              </span>
+              
+                <div className="mt-10 flex justify-center">
+                  <Button
+                    size="xl"
+                    onClick={goPrograms}
+                    className="rounded-full px-10 bg-yellow-400 text-black hover:bg-yellow-300 font-semibold"
+                  >
+                    Стать счастливым
+                  </Button>
+                </div>
 
-              <span className="block mt-3">
-                <SplitText
-                  text={"Как у любого дома, у счастья есть фундамент, несущие конструкции и баланс."}
-                  baseDelay={0.32}
-                  step={0.008}
-                />
-              </span>
-
-              <span className="block mt-2">
-                <SplitText
-                  text={"Без архитектуры оно разваливается при первой нагрузке."}
-                  baseDelay={0.44}
-                  step={0.008}
-                />
-              </span>
-            </p>
-
-            <motion.div
-              initial={{ opacity: 0, y: 14 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.55, delay: 0.25, ease: [0.22, 1, 0.36, 1] }}
-              className="flex gap-4 items-center"
-            >
-              <Button
-                size="xl"
-                onClick={() => window.open(TELEGRAM_BOT_URL, "_blank")}
-                className="rounded-full px-10 bg-yellow-400 text-black hover:bg-yellow-300 font-semibold"
-              >
-                Начать строить дом счастья
-              </Button>
-
-              <Button
-                size="xl"
-                onClick={() => window.open(VIDEO_URL, "_blank")}
-                className="rounded-full px-10 bg-accent text-white hover:opacity-95 font-semibold"
-              >
-                Смотреть видео Ицхака
-              </Button>
-            </motion.div>
-          </motion.div>
-
-          <div />
+                
+                <div className="mt-10 sm:mt-12 flex justify-center">
+                  <ScrollBadge />
+                </div>
+              </div>
+            </div>
+          </div>
+         
         </div>
       </div>
     </div>
@@ -558,16 +450,18 @@ const Hero = () => {
 
   return (
     <section className="relative w-screen h-[100svh] overflow-hidden">
+      
       <GridMotionBg images={bgImages} />
 
+     
       <div className="absolute inset-0 pointer-events-none">
         <div className="absolute inset-0 bg-black/20" />
         <div className="absolute inset-0 bg-gradient-to-b from-black/55 via-black/25 to-black/65" />
         <div className="absolute inset-0 bg-gradient-to-r from-black/35 via-transparent to-black/10" />
       </div>
 
-      <MobileContent />
-      <DesktopContent />
+    
+      <OrangeHeroBlock />
 
       <div className="pointer-events-none absolute inset-0 ring-1 ring-black/10" />
     </section>

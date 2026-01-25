@@ -7,7 +7,7 @@ import logo from "@/assets/logo.svg";
 const TELEGRAM_BOT_URL = "https://t.me/happiness4people_bot";
 
 const navItems = [
-  { label: "О нас", href: "#about" },
+  { label: "Ицхак Пинтосевич", href: "#about" },
   { label: "Программы", href: "#programs" },
   { label: "Отзывы", href: "#reviews" },
 ];

@@ -13,8 +13,6 @@ import reel6 from "@/assets/t6.png";
 
 import { Button } from "@/components/ui/button";
 
-const TELEGRAM_BOT_URL = "https://t.me/happiness4people_bot";
-
 const About = () => {
   return (
     <section id="about" className="bg-white">
@@ -24,21 +22,30 @@ const About = () => {
         name="Ицхак Пинтосевич"
         quote="Архитектор Счастья"
         subline={`Психолог работает с прошлым.
-Коуч — с целями.
+Коуч - с целями.
 Архитектор Счастья проектирует внутренний мир, в котором хорошо жить.
 
-— 30+ лет практики
-— тысячи учеников
-— автор системного подхода к счастью
-— человек, который сначала построил свой дом, а потом начал помогать другим`}
+30+ лет практики
+тысячи учеников
+автор системного подхода к счастью
+человек, который сначала построил свой дом, а потом начал помогать другим`}
       />
 
-      <ReelCarousel />
+      {/* ✅ карусель как раньше, только НЕ на мобиле */}
+      <div className="hidden sm:block">
+        <ReelCarousel />
+      </div>
     </section>
   );
 };
 
 export default About;
+
+function goPrograms() {
+  const el = document.getElementById("programs");
+  if (!el) return;
+  el.scrollIntoView({ behavior: "smooth", block: "start" });
+}
 
 /* ===================== FULLSCREEN QUOTE ===================== */
 
@@ -55,6 +62,14 @@ function QuoteFullscreen({
   quote: string;
   subline?: string;
 }) {
+  const slides = useMemo(() => [reel1, reel2, reel3, reel4, reel5, reel6], []);
+  const track = useMemo(() => [...slides, ...slides], [slides]);
+
+  const isTouch =
+    typeof window !== "undefined" &&
+    (navigator.maxTouchPoints > 0 ||
+      window.matchMedia("(pointer: coarse)").matches);
+
   return (
     <section className="relative h-screen w-full overflow-hidden bg-black">
       <img
@@ -68,7 +83,8 @@ function QuoteFullscreen({
       <div className="absolute inset-0 bg-gradient-to-t from-black/65 via-black/20 to-black/35" />
 
       <div className="relative z-10 h-full flex flex-col justify-center px-6 sm:px-10 lg:px-16">
-        <div className="ml-auto max-w-[680px] text-right">
+        {/* ===================== DESKTOP / TABLET (как было) ===================== */}
+        <div className="hidden sm:block ml-auto max-w-[680px] text-right">
           <motion.blockquote
             initial={{ opacity: 0, y: 14 }}
             whileInView={{ opacity: 1, y: 0 }}
@@ -127,19 +143,131 @@ function QuoteFullscreen({
             <Button
               size="xl"
               variant="outline"
-              onClick={() => window.open(TELEGRAM_BOT_URL, "_blank")}
+              onClick={goPrograms}
               className="rounded-full px-6 sm:px-10 border-white/40 text-white hover:bg-white/10"
             >
-              Записаться FREE на вводный урок
+              Стать счастливым
             </Button>
           </motion.div>
+        </div>
+
+        {/* ===================== MOBILE (исправлено) ===================== */}
+        <div className="sm:hidden w-full text-center">
+          <motion.blockquote
+            initial={{ opacity: 0, y: 14 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, amount: 0.5 }}
+            transition={{ duration: 0.6 }}
+            className="font-sans font-extrabold text-white leading-[1.05] tracking-tight text-[28px]"
+          >
+            {quote}
+          </motion.blockquote>
+
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, amount: 0.5 }}
+            transition={{ duration: 0.5, delay: 0.08 }}
+            className="mt-5 flex items-center justify-center gap-3"
+          >
+            <div className="font-sans uppercase tracking-wide text-white/85 font-semibold text-[12px]">
+              {name}
+            </div>
+            <div className="h-10 w-10 rounded-full overflow-hidden ring-2 ring-white/30">
+              <img
+                src={avatar}
+                alt={name}
+                className="h-full w-full object-cover"
+                draggable={false}
+              />
+            </div>
+          </motion.div>
+
+          {subline ? (
+            <motion.p
+              initial={{ opacity: 0, y: 10 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, amount: 0.5 }}
+              transition={{ duration: 0.5, delay: 0.14 }}
+              className="mt-6 mx-auto max-w-[520px] font-sans text-white/75 leading-relaxed whitespace-pre-line text-[13px]"
+            >
+              {subline}
+            </motion.p>
+          ) : null}
+
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, amount: 0.5 }}
+            transition={{ duration: 0.5, delay: 0.18 }}
+            className="mt-7 flex justify-center"
+          >
+            <Button
+              size="xl"
+              variant="outline"
+              onClick={goPrograms}
+              className="rounded-full px-10 border-white/40 text-white hover:bg-white/10"
+            >
+              Стать счастливым
+            </Button>
+          </motion.div>
+
+          {/* ✅ текст под кнопкой (НЕ уезжает) */}
+          <motion.h3
+            initial={{ opacity: 0, y: 10 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, amount: 0.5 }}
+            transition={{ duration: 0.5, delay: 0.22 }}
+            className="mt-7 mx-auto max-w-[330px] font-sans font-extrabold tracking-tight text-white text-[18px] leading-[1.15]"
+          >
+            Сейчас он автор бестселлеров и наставник, который изменил жизни миллионов.
+          </motion.h3>
+
+          {/* ✅ карусель под текстом и ВО ВСЮ ШИРИНУ ЭКРАНА */}
+          <div className="mt-5 w-screen relative left-1/2 -translate-x-1/2 overflow-hidden">
+            <motion.div
+              className={[
+                "flex gap-5 will-change-transform",
+                isTouch ? "select-none" : "cursor-grab active:cursor-grabbing",
+                "translate-z-0 px-4",
+              ].join(" ")}
+              animate={{ x: ["0%", "-50%"] }}
+              transition={{
+                duration: 28,
+                ease: "linear",
+                repeat: Infinity,
+              }}
+              drag={isTouch ? false : "x"}
+              dragConstraints={{ left: 0, right: 0 }}
+              dragElastic={0.06}
+            >
+              {track.map((src, i) => (
+                <div
+                  key={`${src}-${i}`}
+                  className={[
+                    "relative shrink-0 overflow-hidden",
+                    "rounded-[26px] ring-1 ring-white/10 bg-white/5",
+                    "w-[300px] h-[210px]",
+                  ].join(" ")}
+                >
+                  <img
+                    src={src}
+                    alt=""
+                    className="absolute inset-0 h-full w-full object-cover"
+                    draggable={false}
+                  />
+                  <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/25 via-transparent to-black/10" />
+                </div>
+              ))}
+            </motion.div>
+          </div>
         </div>
       </div>
     </section>
   );
 }
 
-/* ===================== REEL CAROUSEL (фикс дерганья + больше высота) ===================== */
+/* ===================== ORIGINAL REEL CAROUSEL (unchanged) ===================== */
 
 function ReelCarousel() {
   const slides = useMemo(() => [reel1, reel2, reel3, reel4, reel5, reel6], []);
@@ -147,7 +275,8 @@ function ReelCarousel() {
 
   const isTouch =
     typeof window !== "undefined" &&
-    (navigator.maxTouchPoints > 0 || window.matchMedia("(pointer: coarse)").matches);
+    (navigator.maxTouchPoints > 0 ||
+      window.matchMedia("(pointer: coarse)").matches);
 
   return (
     <section className="bg-black">

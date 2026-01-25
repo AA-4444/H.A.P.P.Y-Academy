@@ -8,6 +8,12 @@ const TELEGRAM_BOT_URL = "https://t.me/happiness4people_bot";
 const VIDEO_URL = "https://youtu.be/VZhCbEQUD-A?si=akJc1rkK_nx2LxL4";
 const HEADER_H = 0;
 
+function goPrograms() {
+  const el = document.getElementById("programs");
+  if (!el) return;
+  el.scrollIntoView({ behavior: "smooth", block: "start" });
+}
+
 const CTA = () => {
   const ref = useRef(null);
   const isInView = useInView(ref, { once: true, margin: "-120px" });
@@ -54,7 +60,6 @@ const CTA = () => {
                         transition={{ duration: 0.8, ease: "easeOut" }}
                         className="text-center max-w-3xl w-full"
                       >
-                        {/* Заголовок */}
                         <h2
                           className={[
                             "font-sans font-extrabold tracking-tight text-white",
@@ -68,41 +73,40 @@ const CTA = () => {
                           Дом счастья не строят «когда-нибудь»
                         </h2>
 
-                        {/* Текст */}
                         <p className="mt-5 sm:mt-6 font-sans text-white/80 text-[14px] sm:text-lg leading-relaxed">
                           Его строят шаг за шагом.
                         </p>
 
-                        {/* CTA — 3 кнопки */}
-                       <div className="mt-8 sm:mt-10 flex flex-col sm:flex-row items-center justify-center gap-4">
-                         
-                         <Button
-                           size="xl"
-                           onClick={() => window.open(TELEGRAM_BOT_URL, "_blank")}
-                           className="w-full sm:w-auto max-w-[320px] sm:max-w-none px-8 sm:px-12 rounded-full bg-red-600 text-white hover:bg-red-700 font-semibold"
-                         >
-                           Начать путь за 1 €
-                           <ArrowRight className="ml-2 h-5 w-5" />
-                         </Button>
-                       
-                      
-                         <Button
-                           size="xl"
-                           onClick={() => window.open(TELEGRAM_BOT_URL, "_blank")}
-                           className="w-full sm:w-auto max-w-[320px] sm:max-w-none px-8 sm:px-12 rounded-full bg-accent text-white hover:opacity-95 font-semibold"
-                         >
-                           Войти в клуб
-                         </Button>
-                       
-                        
-                         <Button
-                           size="xl"
-                           onClick={() => window.open(VIDEO_URL, "_blank")}
-                           className="w-full sm:w-auto max-w-[320px] sm:max-w-none px-8 sm:px-12 rounded-full bg-yellow-400 text-black hover:bg-yellow-300 font-semibold"
-                         >
-                           Смотреть видео Ицхака
-                         </Button>
-                       </div>
+                        {/* ✅ CTA — 3 кнопки */}
+                        <div className="mt-8 sm:mt-10 flex flex-col sm:flex-row items-center justify-center gap-4">
+                          {/* 1) Войти в клуб -> Telegram */}
+                          <Button
+                            size="xl"
+                            onClick={() => window.open(TELEGRAM_BOT_URL, "_blank")}
+                            className="w-full sm:w-auto max-w-[320px] sm:max-w-none px-8 sm:px-12 rounded-full bg-accent text-white hover:opacity-95 font-semibold"
+                          >
+                            Войти в клуб
+                          </Button>
+
+                          {/* 2) О программе -> Видео */}
+                          <Button
+                            size="xl"
+                            onClick={() => window.open(VIDEO_URL, "_blank")}
+                            className="w-full sm:w-auto max-w-[320px] sm:max-w-none px-8 sm:px-12 rounded-full bg-yellow-400 text-black hover:bg-yellow-300 font-semibold"
+                          >
+                            О программе
+                          </Button>
+
+                          {/* 3) Стать счастливым -> programs */}
+                          <Button
+                            size="xl"
+                            onClick={goPrograms}
+                            className="w-full sm:w-auto max-w-[320px] sm:max-w-none px-8 sm:px-12 rounded-full bg-red-600 text-white hover:bg-red-700 font-semibold"
+                          >
+                            Стать счастливым
+                            <ArrowRight className="ml-2 h-5 w-5" />
+                          </Button>
+                        </div>
                       </motion.div>
                     </div>
                   </div>

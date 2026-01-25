@@ -162,6 +162,14 @@ export default function MillionImpactSection() {
 	  coordinates: c as [number, number],
 	}));
   }, []);
+  
+  const goPrograms = () => {
+	  const el = document.getElementById("programs");
+	  if (!el) return;
+	
+	  
+	  el.scrollIntoView({ behavior: "smooth", block: "start" });
+	};
 
   return (
 	<section
@@ -320,6 +328,7 @@ export default function MillionImpactSection() {
 	  <div className="sticky bottom-0 z-20">
 		<button
 		  type="button"
+		  onClick={goPrograms}
 		  className={[
 			"w-full",
 			"h-[76px] sm:h-[90px]",
@@ -331,7 +340,7 @@ export default function MillionImpactSection() {
 			"shadow-[0_-10px_30px_rgba(0,0,0,0.12)]",
 		  ].join(" ")}
 		>
-		  Принять участие
+		  Стать счастливым
 		  <ArrowRight className="h-6 w-6" />
 		</button>
 	  </div>

@@ -15,6 +15,7 @@ type Offer = {
   variant: "light" | "yellow";
 };
 
+/** ✅ Ровные галочки + текст */
 function CheckItem({ text }: { text: string }) {
   return (
     <li className="grid grid-cols-[24px_1fr] gap-3 items-start">
@@ -24,13 +25,14 @@ function CheckItem({ text }: { text: string }) {
       >
         <span className="text-black text-sm leading-none">✓</span>
       </span>
-      <span className="text-black/75 text-sm sm:text-base leading-snug sm:leading-relaxed">
+      <span className="text-black/70 text-sm sm:text-base leading-snug sm:leading-relaxed">
         {text}
       </span>
     </li>
   );
 }
 
+/** ✅ Модалка только для мобилки */
 function MobileBulletsModal({
   open,
   onClose,
@@ -49,7 +51,7 @@ function MobileBulletsModal({
             type="button"
             aria-label="Закрыть"
             onClick={onClose}
-            className="fixed inset-0 z-[60] bg-black/50"
+            className="fixed inset-0 z-[60] bg-black/50 sm:hidden"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
@@ -64,11 +66,7 @@ function MobileBulletsModal({
             transition={{ duration: 0.22, ease: "easeOut" }}
           >
             <div
-              className={[
-                "mx-auto w-full max-w-[520px]",
-                "rounded-t-[28px] bg-[#F6F1E7] shadow-2xl",
-                "border border-black/10",
-              ].join(" ")}
+              className="mx-auto w-full max-w-[520px] rounded-t-[28px] bg-[#F6F1E7] shadow-2xl border border-black/10"
               style={{ paddingBottom: "max(16px, env(safe-area-inset-bottom))" }}
             >
               <div className="px-4 pt-4">
@@ -195,7 +193,7 @@ export default function Programs() {
   };
 
   const cardUp = {
-    hidden: { opacity: 0, y: 70, filter: "blur(12px)" },
+    hidden: { opacity: 0, y: 90, filter: "blur(12px)" },
     show: {
       opacity: 1,
       y: 0,
@@ -205,11 +203,11 @@ export default function Programs() {
   };
 
   const inside = {
-    hidden: { opacity: 0, y: 12 },
+    hidden: { opacity: 0, y: 16 },
     show: {
       opacity: 1,
       y: 0,
-      transition: { duration: 0.5, ease: "easeOut", delay: 0.06 },
+      transition: { duration: 0.55, ease: "easeOut", delay: 0.08 },
     },
   };
 
@@ -233,8 +231,8 @@ export default function Programs() {
 
   return (
     <section id="programs" className="bg-[#F6F1E7]">
-      <div className="mx-auto max-w-7xl px-4 sm:px-8 lg:px-12 sm:py-20 py-10">
-        {/* HEADER */}
+      <div className="mx-auto max-w-7xl px-6 sm:px-8 lg:px-12 py-12 sm:py-20">
+        {/* HEADER (как было) */}
         <motion.div
           className="max-w-4xl"
           initial="hidden"
@@ -243,7 +241,7 @@ export default function Programs() {
         >
           <motion.span
             variants={headerItem}
-            className="inline-flex items-center gap-2 text-[10px] sm:text-[12px] font-semibold tracking-[0.2em] text-black/45 uppercase mb-3 sm:mb-8"
+            className="inline-flex items-center gap-2 text-[10px] sm:text-[12px] font-semibold tracking-[0.2em] text-black/45 uppercase mb-6 sm:mb-8"
           >
             <span className="w-2 h-2 rounded-full bg-[#E64B1E]" />
             Программы и продукты
@@ -251,22 +249,21 @@ export default function Programs() {
 
           <motion.h2
             variants={headerItem}
-            className="font-sans font-extrabold tracking-tight text-black text-[30px] leading-[1.12] sm:text-5xl lg:text-6xl sm:leading-[1.05]"
+            className="font-sans font-extrabold tracking-tight text-black text-3xl sm:text-5xl lg:text-6xl leading-[1.05]"
           >
             Выберите формат участия
           </motion.h2>
 
           <motion.p
             variants={headerItem}
-            className="hidden sm:block mt-6 font-sans text-black/70 text-base sm:text-lg leading-relaxed"
+            className="mt-6 font-sans text-black/70 text-base sm:text-lg leading-relaxed"
           >
-            Начните с фундамента - или заходите в полный проект и стройте устойчивое
+            Начните с фундамента — или заходите в полный проект и стройте устойчивое
             состояние системно.
           </motion.p>
         </motion.div>
 
-        {/* CARDS */}
-        <div className="mt-6 sm:mt-12 grid gap-4 sm:gap-8 lg:grid-cols-2">
+        <div className="mt-10 sm:mt-12 grid gap-6 lg:gap-8 lg:grid-cols-2 items-stretch">
           {offers.map((o, idx) => {
             const isYellow = o.variant === "yellow";
             const isLight = o.variant === "light";
@@ -279,8 +276,13 @@ export default function Programs() {
                 whileInView="show"
                 viewport={{ once: true, amount: 0.35 }}
                 transition={{
-                  delay: idx * 0.1,
+                  type: "spring",
+                  stiffness: 120,
+                  damping: 18,
+                  mass: 0.9,
+                  delay: idx * 0.12,
                 }}
+                whileHover={{ y: -4 }}
                 className={[
                   "relative flex flex-col",
                   "rounded-[32px] sm:rounded-[40px] overflow-hidden border",
@@ -302,75 +304,140 @@ export default function Programs() {
                   </div>
                 )}
 
-                <motion.div variants={inside} className="relative flex flex-col">
-                  {/* TOP */}
-                  <div className="flex justify-between items-start sm:block">
-                    <div className="max-w-[72%] sm:max-w-full min-w-0">
-                      <h3 className="font-sans font-extrabold tracking-tight text-[22px] leading-[1.15] sm:text-3xl text-black">
+                <motion.div variants={inside} className="relative h-full flex flex-col">
+                  {/* ===== MOBILE (оставляем как сейчас: коротко + модалка) ===== */}
+                  <div className="sm:hidden">
+                    <div className="flex justify-between items-start">
+                      <div className="max-w-[72%] min-w-0">
+                        <h3 className="font-sans font-extrabold tracking-tight text-[18px] leading-[1.15] text-black">
+                          {o.title}
+                        </h3>
+                        <p className="mt-2 text-black/70 text-[14px] leading-snug">
+                          {o.mobileDescription}
+                        </p>
+                      </div>
+
+                      <div className="text-3xl font-black text-black leading-none">
+                        {o.price}
+                        {o.priceNote ? (
+                          <span className="ml-1 text-black/60 text-base font-semibold">
+                            {o.priceNote}
+                          </span>
+                        ) : null}
+                      </div>
+                    </div>
+
+                    <div className="mt-4 flex flex-col gap-3">
+                      <button
+                        type="button"
+                        className={[
+                          "w-full rounded-full h-12",
+                          "font-sans font-bold flex items-center justify-center gap-2 transition shadow-lg",
+                          isYellow
+                            ? "bg-[#E64B1E] text-white hover:opacity-95"
+                            : "bg-yellow-400 text-black hover:bg-yellow-300",
+                        ].join(" ")}
+                      >
+                        <span className="text-[14px]">{o.cta}</span>
+                        <ArrowRight className="h-4 w-4" />
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => openMore(o.id)}
+                        className="w-full rounded-full h-11 bg-white/70 text-black border border-black/10 font-sans font-semibold hover:bg-white transition"
+                      >
+                        Узнать больше
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* ===== DESKTOP (ВОЗВРАЩАЕМ ТВОЮ ОРИГИНАЛЬНУЮ СТРУКТУРУ) ===== */}
+                  <div className="hidden sm:block">
+                    {/* HEADER AREA */}
+                    <div className="max-w-full">
+                      <h3 className="font-sans font-extrabold tracking-tight text-3xl leading-tight text-black">
                         {o.title}
                       </h3>
-
-                      <p className="sm:hidden mt-2 text-black/70 text-[14px] leading-snug">
-                        {o.mobileDescription}
-                      </p>
-
-                      <p className="hidden sm:block mt-3 font-sans text-black/65 text-base leading-relaxed">
+                      <p className="mt-3 font-sans text-black/65 text-base leading-relaxed">
                         {o.description}
                       </p>
                     </div>
 
-                    <div className="sm:hidden text-3xl font-black text-black leading-none">
-                      {o.price}
-                      {o.priceNote ? (
-                        <span className="ml-1 text-black/60 text-base font-semibold">
-                          {o.priceNote}
-                        </span>
-                      ) : null}
+                    {/* PRICE (как было) */}
+                    <div className="mt-7">
+                      <div className="text-xs uppercase tracking-[0.18em] font-sans text-black/45">
+                        Цена
+                      </div>
+                      <div className="mt-2 flex flex-wrap items-end gap-x-2 gap-y-1">
+                        <div className="font-sans font-extrabold tracking-tight text-5xl sm:text-6xl text-black leading-none">
+                          {o.price}
+                        </div>
+                        {o.priceNote ? (
+                          <div className="pb-1 text-sm sm:text-base font-sans font-semibold text-black/60">
+                            {o.priceNote}
+                          </div>
+                        ) : null}
+                      </div>
+                    </div>
+
+                    {/* BUTTON + divider (как было) */}
+                    <div className="mt-7">
+                      <button
+                        type="button"
+                        className={[
+                          "w-full h-12 rounded-full",
+                          "font-sans font-bold flex items-center justify-center gap-2 transition shadow-lg",
+                          isYellow
+                            ? "bg-[#E64B1E] text-white hover:opacity-95"
+                            : "bg-yellow-400 text-black hover:bg-yellow-300",
+                        ].join(" ")}
+                      >
+                        {o.cta}
+                        <ArrowRight className="h-5 w-5" />
+                      </button>
+                      <div
+                        className={[
+                          "mt-6 border-t border-dashed",
+                          isYellow ? "border-black/25" : "border-black/15",
+                        ].join(" ")}
+                      />
+                    </div>
+
+                    {/* BULLETS (как было) */}
+                    <div className="mt-6">
+                      <div className="text-xs uppercase tracking-[0.18em] font-sans mb-4 text-black/45">
+                        Что внутри
+                      </div>
+                      <ul className="space-y-3 font-sans leading-relaxed">
+                        {o.bullets.map((b, i) => (
+                          <CheckItem key={i} text={b} />
+                        ))}
+                      </ul>
+                    </div>
+
+                    {/* RESULT (как было) */}
+                    <div>
+                      {o.id === "path" ? (
+                        <p className="mt-8 font-sans text-black/70 text-base leading-relaxed">
+                          Вы начинаете чувствовать опору, ясность и баланс уже в процессе.
+                        </p>
+                      ) : (
+                        <div className="mt-8">
+                          <div className="font-sans font-semibold text-black/80 mb-3">
+                            Результат
+                          </div>
+                          <ul className="space-y-2 font-sans text-black/70">
+                            <li>— достигаются цели</li>
+                            <li>— выстраиваются отношения</li>
+                            <li>— живётся без внутреннего шума</li>
+                          </ul>
+                        </div>
+                      )}
                     </div>
                   </div>
 
-                  {/* DESKTOP: FULL LIST */}
-                  <div className="hidden sm:block mt-7">
-                    <div className="text-xs uppercase tracking-[0.18em] font-sans text-black/45">
-                      Что внутри
-                    </div>
-                    <ul className="mt-4 space-y-3 font-sans leading-relaxed">
-                      {o.bullets.map((b, i) => (
-                        <CheckItem key={i} text={b} />
-                      ))}
-                    </ul>
-                  </div>
-
-                  {/* CTA AREA */}
-                  <div className="mt-4 sm:mt-8 flex flex-col gap-3">
-                    <button
-                      type="button"
-                      className={[
-                        "w-full rounded-full h-12",
-                        "font-sans font-bold flex items-center justify-center gap-2 transition shadow-lg",
-                        isYellow
-                          ? "bg-[#E64B1E] text-white hover:opacity-95"
-                          : "bg-yellow-400 text-black hover:bg-yellow-300",
-                      ].join(" ")}
-                    >
-                      <span className="text-[14px] sm:text-base">{o.cta}</span>
-                      <ArrowRight className="h-4 w-4 sm:h-5 sm:w-5" />
-                    </button>
-
-                    {/* ✅ MOBILE: “Узнать больше” opens modal */}
-                    <button
-                      type="button"
-                      onClick={() => openMore(o.id)}
-                      className={[
-                        "sm:hidden w-full rounded-full h-11",
-                        "bg-white/70 text-black border border-black/10",
-                        "font-sans font-semibold",
-                        "hover:bg-white transition",
-                      ].join(" ")}
-                    >
-                      Узнать больше
-                    </button>
-                  </div>
+                  <div className="mt-auto" />
                 </motion.div>
               </motion.article>
             );

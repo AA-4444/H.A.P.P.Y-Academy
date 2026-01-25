@@ -147,8 +147,8 @@ const HappyAcademySection = () => {
 			  {/* RIGHT */}
 			  <div className="max-w-2xl min-w-0 space-y-4">
 				<MotionChip>Счастье путают с эмоцией.</MotionChip>
-				<MotionChip>Но эмоции — это погода.</MotionChip>
-				<MotionChip>А счастье — архитектура состояния.</MotionChip>
+				<MotionChip>Но эмоции - это погода.</MotionChip>
+				<MotionChip>А счастье - архитектура состояния.</MotionChip>
 				<MotionChip>Без структуры любое благополучие временно.</MotionChip>
 				<MotionChip>Как «красивый ремонт без фундамента».</MotionChip>
 

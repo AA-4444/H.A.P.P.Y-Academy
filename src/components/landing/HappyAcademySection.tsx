@@ -5,7 +5,7 @@ import {
   useTransform,
 } from "framer-motion";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { ArrowDown, ChevronLeft, ChevronRight } from "lucide-react";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 import slide1 from "@/assets/bg8.png";
@@ -38,12 +38,10 @@ const HappyAcademySection = () => {
 	mx.set(0);
 	my.set(0);
   };
-  
+
   const goPrograms = () => {
 	const el = document.getElementById("programs");
 	if (!el) return;
-  
-	
 	el.scrollIntoView({ behavior: "smooth", block: "start" });
   };
 
@@ -57,13 +55,34 @@ const HappyAcademySection = () => {
 		  onMouseLeave={prefersReducedMotion ? undefined : onLeave}
 		  className="relative rounded-[28px] sm:rounded-[36px] lg:rounded-[44px] bg-white overflow-hidden shadow-[0_30px_100px_rgba(0,0,0,0.10)]"
 		>
+		  {/* site-like background */}
 		  <div className="pointer-events-none absolute inset-0">
-			<div className="absolute -top-24 -left-24 h-64 w-64 rounded-full bg-black/5 blur-2xl" />
-			<div className="absolute -bottom-28 -right-28 h-72 w-72 rounded-full bg-black/5 blur-2xl" />
+			{/* grain-ish dots */}
+			<div
+			  className="absolute inset-0 opacity-[0.10]"
+			  style={{
+				backgroundImage:
+				  "radial-gradient(rgba(0,0,0,0.10) 1px, transparent 1px)",
+				backgroundSize: "150px 150px",
+			  }}
+			/>
+			{/* soft blobs */}
+			<div className="absolute -top-28 -left-28 h-[420px] w-[420px] rounded-full bg-black/5 blur-3xl" />
+			<div
+			  className="absolute -bottom-40 -right-40 h-[520px] w-[520px] rounded-full blur-3xl opacity-35"
+			  style={{
+				background:
+				  "radial-gradient(circle at 30% 30%, rgba(255,214,0,0.55), rgba(230,75,30,0.22), rgba(0,0,0,0))",
+			  }}
+			/>
+
+			{/* subtle divider */}
 			<div className="absolute left-0 top-0 h-full w-px bg-black/10" />
+
+			{/* cursor-follow glow */}
 			{!prefersReducedMotion ? (
 			  <motion.div
-				className="absolute h-[520px] w-[520px] rounded-full blur-3xl opacity-35"
+				className="absolute h-[560px] w-[560px] rounded-full blur-3xl opacity-30"
 				style={{
 				  left: "50%",
 				  top: "50%",
@@ -72,10 +91,12 @@ const HappyAcademySection = () => {
 				  x: glowX,
 				  y: glowY,
 				  background:
-					"radial-gradient(circle at 30% 30%, rgba(255, 214, 0, 0.55), rgba(230, 75, 30, 0.28), rgba(0,0,0,0))",
+					"radial-gradient(circle at 30% 30%, rgba(255,214,0,0.55), rgba(230,75,30,0.20), rgba(0,0,0,0))",
 				}}
 			  />
 			) : null}
+
+			<div className="absolute inset-0 ring-1 ring-black/10" />
 		  </div>
 
 		  <div className="relative px-6 sm:px-10 lg:px-14 py-12 sm:py-14 lg:py-16">
@@ -91,6 +112,17 @@ const HappyAcademySection = () => {
 				>
 				  Почему большинство людей «иногда счастливы», но не устойчиво?
 				</motion.h2>
+
+				{/* small helper line: makes it feel like product section */}
+				<motion.p
+				  initial={{ opacity: 0, y: 10, filter: "blur(8px)" }}
+				  whileInView={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+				  viewport={{ once: true, amount: 0.45 }}
+				  transition={{ duration: 0.55, ease: "easeOut", delay: 0.08 }}
+				  className="mt-6 font-sans text-black/65 text-sm sm:text-base leading-relaxed max-w-[52ch]"
+				>
+				  Потому что люди строят настроение, а не систему. Здесь начинается переход от реакции к созданию.
+				</motion.p>
 			  </div>
 
 			  {/* RIGHT */}
@@ -102,21 +134,22 @@ const HappyAcademySection = () => {
 				  variants={{
 					hidden: {},
 					show: {
-					  transition: { staggerChildren: 0.08, delayChildren: 0.12 },
+					  transition: { staggerChildren: 0.08, delayChildren: 0.10 },
 					},
 				  }}
 				  className="space-y-4 font-sans text-black text-base sm:text-lg leading-relaxed break-words"
 				>
-				  <MotionFadeLine>Счастье путают с эмоцией.</MotionFadeLine>
-				  <MotionFadeLine>Но эмоции - это погода.</MotionFadeLine>
-				  <MotionFadeLine>А счастье - это архитектура состояния.</MotionFadeLine>
-				  <MotionFadeLine>Без структуры любое благополучие временно.</MotionFadeLine>
-				  <MotionFadeLine>Как «красивый ремонт без фундамента».</MotionFadeLine>
+				  {/* “chips” instead of powerpoint lines */}
+				  <MotionChip>Счастье путают с эмоцией.</MotionChip>
+				  <MotionChip>Но эмоции - это погода.</MotionChip>
+				  <MotionChip>А счастье - это архитектура состояния.</MotionChip>
+				  <MotionChip>Без структуры любое благополучие временно.</MotionChip>
+				  <MotionChip>Как «красивый ремонт без фундамента».</MotionChip>
 
-				  <div className="pt-2 space-y-2">
-					<MotionArrowLine>нет системы</MotionArrowLine>
-					<MotionArrowLine>нет внутренней архитектуры</MotionArrowLine>
-					<MotionArrowLine>жизнь в реакции, а не в создании</MotionArrowLine>
+				  <div className="pt-3 grid gap-2 sm:gap-3">
+					<MotionPoint>нет системы</MotionPoint>
+					<MotionPoint>нет внутренней архитектуры</MotionPoint>
+					<MotionPoint>жизнь в реакции, а не в создании</MotionPoint>
 				  </div>
 				</motion.div>
 
@@ -124,7 +157,7 @@ const HappyAcademySection = () => {
 				  initial={{ opacity: 0, y: 10, filter: "blur(8px)" }}
 				  whileInView={{ opacity: 1, y: 0, filter: "blur(0px)" }}
 				  viewport={{ once: true, amount: 0.55 }}
-				  transition={{ duration: 0.55, ease: "easeOut", delay: 0.22 }}
+				  transition={{ duration: 0.55, ease: "easeOut", delay: 0.18 }}
 				  className="mt-8"
 				>
 				  <Button
@@ -132,18 +165,16 @@ const HappyAcademySection = () => {
 					onClick={goPrograms}
 					className="h-12 px-10 rounded-full bg-yellow-400 text-black hover:bg-yellow-300 font-semibold w-full sm:w-auto whitespace-nowrap"
 				  >
-					Стать счатсливым 
+					Стать счастливым
 				  </Button>
 				</motion.div>
 			  </div>
 			</div>
 		  </div>
 		</motion.div>
-
-		
 	  </div>
 
-	 
+	  {/* slider only desktop */}
 	  <div className="hidden lg:block">
 		<FullScreenSlider slides={slides} />
 	  </div>
@@ -211,39 +242,29 @@ function FullScreenSlider({ slides }: { slides: string[] }) {
   );
 }
 
-function ScrollBadge() {
-  const text = "узнать подробнее • узнать подробнее • ";
+/* ===================== UI pieces ===================== */
 
+function MotionChip({ children }: { children: React.ReactNode }) {
   return (
-	<div className="relative h-[140px] w-[140px] sm:h-[160px] sm:w-[160px]">
-	  <motion.div
-		animate={{ rotate: 360 }}
-		transition={{ duration: 16, repeat: Infinity, ease: "linear" }}
-		className="absolute inset-0"
-	  >
-		<svg viewBox="0 0 200 200" className="h-full w-full">
-		  <defs>
-			<path
-			  id="circlePath"
-			  d="M 100,100 m -78,0 a 78,78 0 1,1 156,0 a 78,78 0 1,1 -156,0"
-			/>
-		  </defs>
-		  <text fill="rgba(255,255,255,0.85)" fontSize="13" letterSpacing="2.5">
-			<textPath href="#circlePath">{text.repeat(2)}</textPath>
-		  </text>
-		</svg>
-	  </motion.div>
-
-	  <div className="absolute inset-0 flex items-center justify-center">
-		<div className="h-12 w-12 rounded-full bg-white/15 backdrop-blur-sm border border-white/25 flex items-center justify-center">
-		  <ArrowDown className="h-6 w-6 text-white" />
-		</div>
-	  </div>
-	</div>
+	<motion.div
+	  variants={{
+		hidden: { opacity: 0, y: 8, filter: "blur(8px)" },
+		show: { opacity: 1, y: 0, filter: "blur(0px)" },
+	  }}
+	  transition={{ duration: 0.5, ease: "easeOut" }}
+	  className={[
+		"inline-flex w-fit max-w-full",
+		"rounded-full px-4 py-2",
+		"bg-black/[0.04] ring-1 ring-black/10",
+		"text-black",
+	  ].join(" ")}
+	>
+	  <span className="break-words">{children}</span>
+	</motion.div>
   );
 }
 
-function MotionArrowLine({ children }: { children: React.ReactNode }) {
+function MotionPoint({ children }: { children: React.ReactNode }) {
   return (
 	<motion.div
 	  variants={{
@@ -253,23 +274,12 @@ function MotionArrowLine({ children }: { children: React.ReactNode }) {
 	  transition={{ duration: 0.5, ease: "easeOut" }}
 	  className="flex items-start gap-3 min-w-0"
 	>
-	  <span className="mt-[3px] text-black/70 font-semibold">→</span>
-	  <span className="text-black break-words">{children}</span>
-	</motion.div>
-  );
-}
-
-function MotionFadeLine({ children }: { children: React.ReactNode }) {
-  return (
-	<motion.div
-	  variants={{
-		hidden: { opacity: 0, y: 8, filter: "blur(8px)" },
-		show: { opacity: 1, y: 0, filter: "blur(0px)" },
-	  }}
-	  transition={{ duration: 0.5, ease: "easeOut" }}
-	  className="text-black break-words"
-	>
-	  {children}
+	  <span className="mt-[2px] h-6 w-6 shrink-0 rounded-full bg-yellow-400 text-black grid place-items-center ring-1 ring-black/10">
+		<span className="text-sm leading-none">✓</span>
+	  </span>
+	  <span className="text-black/85 break-words font-sans">
+		{children}
+	  </span>
 	</motion.div>
   );
 }

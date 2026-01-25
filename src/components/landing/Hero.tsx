@@ -78,9 +78,7 @@ function buildGridMinRepeats(images: string[], rows: number, cols: number) {
   return out;
 }
 
-/**
- * SplitText — оставляю как есть (НЕ ТРОГАЮ), просто сейчас не используется.
- */
+/** SplitText — оставляю (не используется) */
 function SplitText({
   text,
   className,
@@ -317,16 +315,11 @@ function GridMotionBg({ images }: { images: string[] }) {
   );
 }
 
-/* =========================
-   ✅ ОРАНЖЕВЫЙ БЛОК — 1 В 1 как во 2-м скрине
-   + добавили ТОЛЬКО одну кнопку "Стать счастливым" (scroll -> #programs)
-   КРУГОВАЯ СТРЕЛКА ОСТАЁТСЯ ВНУТРИ БЛОКА
-   ========================= */
 function ScrollBadge() {
   const text = "узнать подробнее • узнать подробнее • ";
 
   return (
-    <div className="relative h-[140px] w-[140px] sm:h-[160px] sm:w-[160px]">
+    <div className="relative h-[112px] w-[112px] sm:h-[160px] sm:w-[160px]">
       <motion.div
         animate={{ rotate: 360 }}
         transition={{ duration: 16, repeat: Infinity, ease: "linear" }}
@@ -346,8 +339,8 @@ function ScrollBadge() {
       </motion.div>
 
       <div className="absolute inset-0 flex items-center justify-center">
-        <div className="h-12 w-12 rounded-full bg-white/15 backdrop-blur-sm border border-white/25 flex items-center justify-center">
-          <ArrowDown className="h-6 w-6 text-white" />
+        <div className="h-10 w-10 sm:h-12 sm:w-12 rounded-full bg-white/15 backdrop-blur-sm border border-white/25 flex items-center justify-center">
+          <ArrowDown className="h-5 w-5 sm:h-6 sm:w-6 text-white" />
         </div>
       </div>
     </div>
@@ -363,18 +356,27 @@ function OrangeHeroBlock() {
 
   return (
     <div className="relative z-10 h-full w-full">
-     
-      <div className="h-full px-5 sm:px-10 lg:px-14 pt-[calc(1rem+88px)] pb-14 flex items-center justify-center">
+      {/* ✅ меньше воздуха сверху на мобиле */}
+      <div
+        className={[
+          "h-full flex items-center justify-center",
+          "px-4 sm:px-10 lg:px-14",
+          // было: pt-[calc(1rem+88px)] pb-14
+          // стало: компактно на мобиле, как было на sm+
+          "pt-[calc(0.25rem+88px)] pb-6",
+          "sm:pt-[calc(1rem+88px)] sm:pb-14",
+        ].join(" ")}
+      >
         <div className="w-full">
-        
-          <div className="rounded-[28px] sm:rounded-[36px] lg:rounded-[44px] bg-white/10 backdrop-blur-md border border-white/20 overflow-hidden shadow-2xl">
-            <div className="px-6 sm:px-10 lg:px-14 py-16 sm:py-20 lg:py-24">
+          <div className="rounded-[26px] sm:rounded-[36px] lg:rounded-[44px] bg-white/10 backdrop-blur-md border border-white/20 overflow-hidden shadow-2xl">
+            {/* ✅ уменьшаем внутренние отступы на мобиле */}
+            <div className="px-5 sm:px-10 lg:px-14 py-10 sm:py-20 lg:py-24">
               <div className="mx-auto max-w-5xl text-center">
                 <motion.h2
                   initial={{ opacity: 0, y: 18 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.6 }}
-                  className="font-sans font-extrabold tracking-tight text-white text-4xl sm:text-5xl md:text-6xl lg:text-7xl leading-[1.05]"
+                  className="font-sans font-extrabold tracking-tight text-white text-3xl sm:text-5xl md:text-6xl lg:text-7xl leading-[1.05]"
                 >
                   Академия счастья H.A.P.P.Y.
                 </motion.h2>
@@ -383,15 +385,15 @@ function OrangeHeroBlock() {
                   initial={{ opacity: 0, y: 18 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.6, delay: 0.08 }}
-                  className="mt-8 text-white font-sans text-base sm:text-lg md:text-xl leading-relaxed max-w-4xl mx-auto"
+                  className="mt-4 sm:mt-8 text-white font-sans text-[14px] sm:text-lg md:text-xl leading-relaxed max-w-4xl mx-auto"
                 >
                   Это путь к устойчивому состоянию, ясным решениям и действиям,
                   которые дают реальные результаты — без мотивационных иллюзий и
                   бесконечных стартов с нуля.
                 </motion.p>
 
-              
-                <div className="mt-10 flex justify-center">
+                {/* ✅ кнопку чуть ближе к тексту на мобиле */}
+                <div className="mt-7 sm:mt-10 flex justify-center">
                   <Button
                     size="xl"
                     onClick={goPrograms}
@@ -401,14 +403,13 @@ function OrangeHeroBlock() {
                   </Button>
                 </div>
 
-                
-                <div className="mt-10 sm:mt-12 flex justify-center">
+                {/* ✅ бейдж ближе и меньше на мобиле */}
+                <div className="mt-7 sm:mt-12 flex justify-center">
                   <ScrollBadge />
                 </div>
               </div>
             </div>
           </div>
-         
         </div>
       </div>
     </div>
@@ -450,17 +451,14 @@ const Hero = () => {
 
   return (
     <section className="relative w-screen h-[100svh] overflow-hidden">
-      
       <GridMotionBg images={bgImages} />
 
-     
       <div className="absolute inset-0 pointer-events-none">
         <div className="absolute inset-0 bg-black/20" />
         <div className="absolute inset-0 bg-gradient-to-b from-black/55 via-black/25 to-black/65" />
         <div className="absolute inset-0 bg-gradient-to-r from-black/35 via-transparent to-black/10" />
       </div>
 
-    
       <OrangeHeroBlock />
 
       <div className="pointer-events-none absolute inset-0 ring-1 ring-black/10" />

@@ -214,9 +214,9 @@ export default function MillionImpactSection() {
 			</p>
 
 			<div className="mt-4 space-y-2 font-sans text-black/75 text-base leading-relaxed">
-			  <div>— без невроза</div>
-			  <div>— без борьбы</div>
-			  <div>— с ясностью и созиданием</div>
+			  <div>без невроза</div>
+			  <div>без борьбы</div>
+			  <div>с ясностью и созиданием</div>
 			</div>
 		  </div>
 

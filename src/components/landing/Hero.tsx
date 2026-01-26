@@ -356,60 +356,64 @@ function OrangeHeroBlock() {
 
   return (
     <div className="relative z-10 h-full w-full">
-      {/* ✅ меньше воздуха сверху на мобиле */}
+      {/* ✅ FIX: на ПК делаем БЛОК ШИРЕ (меньше боковых отступов) */}
       <div
         className={[
           "h-full flex items-center justify-center",
-          "px-4 sm:px-10 lg:px-14",
-          // было: pt-[calc(1rem+88px)] pb-14
-          // стало: компактно на мобиле, как было на sm+
+          // было: px-4 sm:px-10 lg:px-14 (слишком много на ПК)
+          // стало: компактные поля на ПК, блок почти на всю ширину
+          "px-3 sm:px-6 lg:px-8 xl:px-10",
+          // вертикаль оставляем как у тебя (на мобиле уже компактно)
           "pt-[calc(0.25rem+88px)] pb-6",
-          "sm:pt-[calc(1rem+88px)] sm:pb-14",
+          "sm:pt-[calc(0.75rem+88px)] sm:pb-10",
+          "lg:pt-[calc(0.75rem+88px)] lg:pb-10",
         ].join(" ")}
       >
         <div className="w-full">
-          <div className="rounded-[26px] sm:rounded-[36px] lg:rounded-[44px] bg-white/10 backdrop-blur-md border border-white/20 overflow-hidden shadow-2xl">
-            {/* ✅ уменьшаем внутренние отступы на мобиле */}
-            <div className="px-5 sm:px-10 lg:px-14 py-10 sm:py-20 lg:py-24">
-              <div className="mx-auto max-w-5xl text-center">
-                <motion.h2
-                  initial={{ opacity: 0, y: 18 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.6 }}
-                  className="font-sans font-extrabold tracking-tight text-white text-3xl sm:text-5xl md:text-6xl lg:text-7xl leading-[1.05]"
-                >
-                  Академия счастья H.A.P.P.Y.
-                </motion.h2>
-
-                <motion.p
-                  initial={{ opacity: 0, y: 18 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.6, delay: 0.08 }}
-                  className="mt-4 sm:mt-8 text-white font-sans text-[14px] sm:text-lg md:text-xl leading-relaxed max-w-4xl mx-auto"
-                >
-                  Это путь к устойчивому состоянию, ясным решениям и действиям,
-                  которые дают реальные результаты — без мотивационных иллюзий и
-                  бесконечных стартов с нуля.
-                </motion.p>
-
-                {/* ✅ кнопку чуть ближе к тексту на мобиле */}
-                <div className="mt-7 sm:mt-10 flex justify-center">
-                  <Button
-                    size="xl"
-                    onClick={goPrograms}
-                    className="rounded-full px-10 bg-yellow-400 text-black hover:bg-yellow-300 font-semibold"
+          {/* ✅ FIX: ограничение ширины подняли, чтобы не было “узкого окна” */}
+          <div className="mx-auto w-full max-w-[1280px]">
+            <div className="rounded-[26px] sm:rounded-[36px] lg:rounded-[44px] bg-white/10 backdrop-blur-md border border-white/20 overflow-hidden shadow-2xl">
+              {/* ✅ FIX: внутри тоже меньше бокового воздуха на больших экранах */}
+              <div className="px-5 sm:px-8 lg:px-10 py-10 sm:py-16 lg:py-16">
+                <div className="mx-auto max-w-6xl text-center">
+                  <motion.h2
+                    initial={{ opacity: 0, y: 18 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.6 }}
+                    className="font-sans font-extrabold tracking-tight text-white text-3xl sm:text-5xl md:text-6xl lg:text-7xl leading-[1.05]"
                   >
-                    Стать счастливым
-                  </Button>
-                </div>
+                    Академия счастья H.A.P.P.Y.
+                  </motion.h2>
 
-                {/* ✅ бейдж ближе и меньше на мобиле */}
-                <div className="mt-7 sm:mt-12 flex justify-center">
-                  <ScrollBadge />
+                  <motion.p
+                    initial={{ opacity: 0, y: 18 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.6, delay: 0.08 }}
+                    className="mt-4 sm:mt-8 text-white font-sans text-[14px] sm:text-lg md:text-xl leading-relaxed max-w-5xl mx-auto"
+                  >
+                    Это путь к устойчивому состоянию, ясным решениям и действиям,
+                    которые дают реальные результаты — без мотивационных иллюзий и
+                    бесконечных стартов с нуля.
+                  </motion.p>
+
+                  <div className="mt-7 sm:mt-10 flex justify-center">
+                    <Button
+                      size="xl"
+                      onClick={goPrograms}
+                      className="rounded-full px-10 bg-yellow-400 text-black hover:bg-yellow-300 font-semibold"
+                    >
+                      Стать счастливым
+                    </Button>
+                  </div>
+
+                  <div className="mt-7 sm:mt-12 flex justify-center">
+                    <ScrollBadge />
+                  </div>
                 </div>
               </div>
             </div>
           </div>
+          {/* /max-width wrapper */}
         </div>
       </div>
     </div>

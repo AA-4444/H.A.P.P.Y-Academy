@@ -15,7 +15,6 @@ type Offer = {
   variant: "light" | "yellow";
 };
 
-/** ✅ Ровные галочки + текст */
 function CheckItem({ text }: { text: string }) {
   return (
     <li className="grid grid-cols-[24px_1fr] gap-3 items-start">
@@ -32,7 +31,6 @@ function CheckItem({ text }: { text: string }) {
   );
 }
 
-/** ✅ Модалка только для мобилки */
 function MobileBulletsModal({
   open,
   onClose,
@@ -46,7 +44,6 @@ function MobileBulletsModal({
     <AnimatePresence>
       {open && offer ? (
         <>
-          {/* backdrop */}
           <motion.button
             type="button"
             aria-label="Закрыть"
@@ -57,7 +54,6 @@ function MobileBulletsModal({
             exit={{ opacity: 0 }}
           />
 
-          {/* modal */}
           <motion.div
             className="fixed inset-x-0 bottom-0 z-[70] sm:hidden"
             initial={{ y: 40, opacity: 0 }}
@@ -167,7 +163,7 @@ export default function Programs() {
         description: "Полный проект вашего внутреннего дома.",
         mobileDescription: "Полная система из 10 ключевых элементов.",
         price: "49 €",
-        priceNote: "/ месяц",
+        priceNote: "/ М",
         bullets: [
           "Видео-уроки и тренинги",
           "Полная система 10 элементов",
@@ -232,7 +228,6 @@ export default function Programs() {
   return (
     <section id="programs" className="bg-[#F6F1E7]">
       <div className="mx-auto max-w-7xl px-6 sm:px-8 lg:px-12 py-12 sm:py-20">
-        {/* HEADER (как было) */}
         <motion.div
           className="max-w-4xl"
           initial="hidden"
@@ -305,7 +300,6 @@ export default function Programs() {
                 )}
 
                 <motion.div variants={inside} className="relative h-full flex flex-col">
-                  {/* ===== MOBILE (оставляем как сейчас: коротко + модалка) ===== */}
                   <div className="sm:hidden">
                     <div className="flex justify-between items-start">
                       <div className="max-w-[72%] min-w-0">
@@ -352,9 +346,7 @@ export default function Programs() {
                     </div>
                   </div>
 
-                  {/* ===== DESKTOP (ВОЗВРАЩАЕМ ТВОЮ ОРИГИНАЛЬНУЮ СТРУКТУРУ) ===== */}
                   <div className="hidden sm:block">
-                    {/* HEADER AREA */}
                     <div className="max-w-full">
                       <h3 className="font-sans font-extrabold tracking-tight text-3xl leading-tight text-black">
                         {o.title}
@@ -364,7 +356,6 @@ export default function Programs() {
                       </p>
                     </div>
 
-                    {/* PRICE (как было) */}
                     <div className="mt-7">
                       <div className="text-xs uppercase tracking-[0.18em] font-sans text-black/45">
                         Цена
@@ -381,7 +372,6 @@ export default function Programs() {
                       </div>
                     </div>
 
-                    {/* BUTTON + divider (как было) */}
                     <div className="mt-7">
                       <button
                         type="button"
@@ -404,7 +394,6 @@ export default function Programs() {
                       />
                     </div>
 
-                    {/* BULLETS (как было) */}
                     <div className="mt-6">
                       <div className="text-xs uppercase tracking-[0.18em] font-sans mb-4 text-black/45">
                         Что внутри
@@ -416,7 +405,6 @@ export default function Programs() {
                       </ul>
                     </div>
 
-                    {/* RESULT (как было) */}
                     <div>
                       {o.id === "path" ? (
                         <p className="mt-8 font-sans text-black/70 text-base leading-relaxed">
@@ -445,7 +433,6 @@ export default function Programs() {
         </div>
       </div>
 
-      {/* ✅ MOBILE MODAL */}
       <MobileBulletsModal open={modalOpen} onClose={closeMore} offer={activeOffer} />
     </section>
   );

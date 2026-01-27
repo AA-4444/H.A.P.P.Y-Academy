@@ -13,6 +13,13 @@ type Offer = {
   bullets: string[];
   cta: string;
   variant: "light" | "yellow";
+  ctaNote?: string;
+};
+
+type LeadFormData = {
+  name: string;
+  contact: string;
+  comment: string;
 };
 
 function CheckItem({ text }: { text: string }) {
@@ -138,6 +145,209 @@ function MobileBulletsModal({
   );
 }
 
+function LeadFormModal({
+  open,
+  onClose,
+  offer,
+}: {
+  open: boolean;
+  onClose: () => void;
+  offer: Offer | null;
+}) {
+  const [data, setData] = useState<LeadFormData>({
+    name: "",
+    contact: "",
+    comment: "",
+  });
+
+  const [sent, setSent] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+
+  const title = offer?.id === "club" ? "Заявка на спецпредложение" : "Заявка на курс";
+  const subtitle =
+    offer?.id === "club"
+      ? "Оставьте контакты — мы пришлём специальное предложение и детали."
+      : "Оставьте контакты — сообщим, когда курс откроется.";
+
+  const resetAndClose = () => {
+    setData({ name: "", contact: "", comment: "" });
+    setSent(false);
+    setSubmitting(false);
+    onClose();
+  };
+
+  const submit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (submitting) return;
+
+    const nameOk = data.name.trim().length >= 2;
+    const contactOk = data.contact.trim().length >= 5;
+    if (!nameOk || !contactOk) return;
+
+    setSubmitting(true);
+
+    // TODO: подключи отправку лида куда нужно (CRM/Telegram/Backend).
+    // Например:
+    // await fetch("/api/leads", { method:"POST", headers:{...}, body: JSON.stringify({ ...data, offerId: offer?.id }) })
+
+    await new Promise((r) => setTimeout(r, 450));
+    setSent(true);
+    setSubmitting(false);
+  };
+
+  return (
+    <AnimatePresence>
+      {open && offer ? (
+        <>
+          <motion.button
+            type="button"
+            aria-label="Закрыть"
+            onClick={resetAndClose}
+            className="fixed inset-0 z-[80] bg-black/55"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+          />
+
+          <motion.div
+            className="fixed inset-0 z-[90] flex items-end sm:items-center justify-center p-0 sm:p-6"
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 10 }}
+            transition={{ duration: 0.2, ease: "easeOut" }}
+          >
+            <div
+              className={[
+                "w-full sm:max-w-[620px]",
+                "rounded-t-[28px] sm:rounded-[28px]",
+                "bg-[#F6F1E7] border border-black/10 shadow-2xl overflow-hidden",
+              ].join(" ")}
+              style={{
+                paddingBottom: "max(16px, env(safe-area-inset-bottom))",
+              }}
+            >
+              <div className="px-5 sm:px-6 pt-5 sm:pt-6">
+                <div className="flex items-start justify-between gap-3">
+                  <div className="min-w-0">
+                    <div className="text-[10px] uppercase tracking-[0.18em] text-black/45 font-semibold">
+                      {offer.title}
+                    </div>
+                    <div className="mt-2 font-sans font-extrabold tracking-tight text-black text-[20px] sm:text-[22px] leading-[1.15]">
+                      {title}
+                    </div>
+                    <div className="mt-2 text-black/70 text-[13px] sm:text-[14px] leading-snug">
+                      {subtitle}
+                    </div>
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={resetAndClose}
+                    className="h-10 w-10 rounded-full bg-black/5 hover:bg-black/10 grid place-items-center shrink-0"
+                    aria-label="Закрыть"
+                  >
+                    <X className="h-5 w-5 text-black/70" />
+                  </button>
+                </div>
+
+                <div className="mt-4 h-px bg-black/10" />
+              </div>
+
+              <div className="px-5 sm:px-6 py-5 sm:py-6">
+                {sent ? (
+                  <div className="rounded-2xl bg-white/70 border border-black/10 p-4 sm:p-5">
+                    <div className="font-sans font-extrabold text-black text-[18px] sm:text-[20px]">
+                      Готово ✅
+                    </div>
+                    <div className="mt-2 text-black/70 text-sm sm:text-base leading-relaxed">
+                      Спасибо! Мы получили заявку и свяжемся с вами.
+                    </div>
+
+                    <Button
+                      size="lg"
+                      className="mt-4 w-full rounded-full h-12 font-semibold bg-yellow-400 text-black hover:bg-yellow-300"
+                      onClick={resetAndClose}
+                    >
+                      Закрыть
+                    </Button>
+                  </div>
+                ) : (
+                  <form onSubmit={submit} className="space-y-3">
+                    <div>
+                      <label className="block text-xs uppercase tracking-[0.18em] font-semibold text-black/55">
+                        Имя
+                      </label>
+                      <input
+                        value={data.name}
+                        onChange={(e) => setData((p) => ({ ...p, name: e.target.value }))}
+                        className="mt-2 w-full h-12 rounded-2xl px-4 bg-white/70 border border-black/10 outline-none focus:ring-2 focus:ring-black/20"
+                        placeholder="Как к вам обращаться?"
+                        autoComplete="name"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-xs uppercase tracking-[0.18em] font-semibold text-black/55">
+                        Телефон или Telegram
+                      </label>
+                      <input
+                        value={data.contact}
+                        onChange={(e) =>
+                          setData((p) => ({ ...p, contact: e.target.value }))
+                        }
+                        className="mt-2 w-full h-12 rounded-2xl px-4 bg-white/70 border border-black/10 outline-none focus:ring-2 focus:ring-black/20"
+                        placeholder="+49… или @username"
+                        autoComplete="tel"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-xs uppercase tracking-[0.18em] font-semibold text-black/55">
+                        Комментарий (необязательно)
+                      </label>
+                      <textarea
+                        value={data.comment}
+                        onChange={(e) =>
+                          setData((p) => ({ ...p, comment: e.target.value }))
+                        }
+                        className="mt-2 w-full min-h-[92px] rounded-2xl p-4 bg-white/70 border border-black/10 outline-none focus:ring-2 focus:ring-black/20 resize-none"
+                        placeholder="Удобное время / вопрос / город…"
+                      />
+                    </div>
+
+                    <Button
+                      size="lg"
+                      type="submit"
+                      disabled={
+                        submitting ||
+                        data.name.trim().length < 2 ||
+                        data.contact.trim().length < 5
+                      }
+                      className={[
+                        "w-full rounded-full h-12 font-semibold",
+                        offer.variant === "yellow"
+                          ? "bg-[#E64B1E] text-white hover:opacity-95"
+                          : "bg-yellow-400 text-black hover:bg-yellow-300",
+                      ].join(" ")}
+                    >
+                      {submitting ? "Отправляем..." : "Оставить заявку"}
+                    </Button>
+
+                    <div className="text-[12px] text-black/55 leading-snug">
+                      Нажимая «Оставить заявку», вы соглашаетесь на обработку данных для
+                      связи с вами.
+                    </div>
+                  </form>
+                )}
+              </div>
+            </div>
+          </motion.div>
+        </>
+      ) : null}
+    </AnimatePresence>
+  );
+}
+
 export default function Programs() {
   const offers = useMemo<Offer[]>(
     () => [
@@ -147,6 +357,7 @@ export default function Programs() {
         description: "Это фундамент. Первый этаж вашего дома.",
         mobileDescription: "Фундамент вашего устойчивого состояния.",
         price: "1 €",
+        ctaNote: "Скоро открываем курс",
         bullets: [
           "Курс из 22 писем от Ицхака",
           "Пошаговое внедрение элементов",
@@ -164,6 +375,7 @@ export default function Programs() {
         mobileDescription: "Полная система из 10 ключевых элементов.",
         price: "49 €",
         priceNote: "/ М",
+        ctaNote: "Оставь заявку на специальное предложение",
         bullets: [
           "Видео-уроки и тренинги",
           "Полная система 10 элементов",
@@ -207,7 +419,8 @@ export default function Programs() {
     },
   };
 
-  const [modalOpen, setModalOpen] = useState(false);
+  const [bulletsModalOpen, setBulletsModalOpen] = useState(false);
+  const [leadModalOpen, setLeadModalOpen] = useState(false);
   const [activeOfferId, setActiveOfferId] = useState<string | null>(null);
 
   const activeOffer = useMemo(
@@ -217,11 +430,21 @@ export default function Programs() {
 
   const openMore = (id: string) => {
     setActiveOfferId(id);
-    setModalOpen(true);
+    setBulletsModalOpen(true);
   };
 
   const closeMore = () => {
-    setModalOpen(false);
+    setBulletsModalOpen(false);
+    setActiveOfferId(null);
+  };
+
+  const openLead = (id: string) => {
+    setActiveOfferId(id);
+    setLeadModalOpen(true);
+  };
+
+  const closeLead = () => {
+    setLeadModalOpen(false);
     setActiveOfferId(null);
   };
 
@@ -324,6 +547,7 @@ export default function Programs() {
                     <div className="mt-4 flex flex-col gap-3">
                       <button
                         type="button"
+                        onClick={() => openLead(o.id)}
                         className={[
                           "w-full rounded-full h-12",
                           "font-sans font-bold flex items-center justify-center gap-2 transition shadow-lg",
@@ -343,6 +567,12 @@ export default function Programs() {
                       >
                         Узнать больше
                       </button>
+
+                      {o.ctaNote ? (
+                        <div className="text-[12px] text-black/60 leading-snug text-center">
+                          {o.ctaNote}
+                        </div>
+                      ) : null}
                     </div>
                   </div>
 
@@ -375,6 +605,7 @@ export default function Programs() {
                     <div className="mt-7">
                       <button
                         type="button"
+                        onClick={() => openLead(o.id)}
                         className={[
                           "w-full h-12 rounded-full",
                           "font-sans font-bold flex items-center justify-center gap-2 transition shadow-lg",
@@ -386,6 +617,13 @@ export default function Programs() {
                         {o.cta}
                         <ArrowRight className="h-5 w-5" />
                       </button>
+
+                      {o.ctaNote ? (
+                        <div className="mt-3 text-sm font-sans text-black/65">
+                          {o.ctaNote}
+                        </div>
+                      ) : null}
+
                       <div
                         className={[
                           "mt-6 border-t border-dashed",
@@ -433,7 +671,13 @@ export default function Programs() {
         </div>
       </div>
 
-      <MobileBulletsModal open={modalOpen} onClose={closeMore} offer={activeOffer} />
+      <MobileBulletsModal
+        open={bulletsModalOpen}
+        onClose={closeMore}
+        offer={activeOffer}
+      />
+
+      <LeadFormModal open={leadModalOpen} onClose={closeLead} offer={activeOffer} />
     </section>
   );
 }

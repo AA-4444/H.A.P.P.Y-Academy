@@ -1,6 +1,3 @@
-
-import type { VercelRequest, VercelResponse } from "@vercel/node";
-
 type Body = {
   offerId?: string;
   offerTitle?: string;
@@ -17,9 +14,9 @@ function escapeHtml(s: string) {
 	.replaceAll(">", "&gt;");
 }
 
-export default async function handler(req: VercelRequest, res: VercelResponse) {
+export default async function handler(req: any, res: any) {
   if (req.method !== "POST") {
-	res.setHeader("Allow", "POST");
+	res.setHeader?.("Allow", "POST");
 	return res.status(405).json({ ok: false, error: "Method Not Allowed" });
   }
 
@@ -53,45 +50,29 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
   const lines: string[] = [];
   lines.push("🧩 <b>Новая заявка</b>");
-  if (offerTitle || offerId) {
-	lines.push(
-	  `📦 <b>Продукт:</b> ${escapeHtml(offerTitle || offerId)}`
-	);
-  }
+  if (offerTitle || offerId) lines.push(`📦 <b>Продукт:</b> ${escapeHtml(offerTitle || offerId)}`);
   lines.push(`👤 <b>Имя:</b> ${escapeHtml(name)}`);
   lines.push(`📞 <b>Контакт:</b> ${escapeHtml(contact)}`);
   if (comment) lines.push(`💬 <b>Комментарий:</b> ${escapeHtml(comment)}`);
   if (pageUrl) lines.push(`🔗 <b>Страница:</b> ${escapeHtml(pageUrl)}`);
-  lines.push(`🕒 <b>Время:</b> ${new Date().toLocaleString("ru-RU")}`);
+  lines.push(`🕒 <b>Время:</b> ${escapeHtml(new Date().toLocaleString("ru-RU"))}`);
 
-  const text = lines.join("\n");
+  const tgRes = await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
+	method: "POST",
+	headers: { "Content-Type": "application/json" },
+	body: JSON.stringify({
+	  chat_id: CHAT_ID,
+	  text: lines.join("\n"),
+	  parse_mode: "HTML",
+	  disable_web_page_preview: true,
+	}),
+  });
 
-  const url = `https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`;
+  const tgJson = await tgRes.json().catch(() => ({}));
 
-  try {
-	const tgRes = await fetch(url, {
-	  method: "POST",
-	  headers: { "Content-Type": "application/json" },
-	  body: JSON.stringify({
-		chat_id: CHAT_ID,
-		text,
-		parse_mode: "HTML",
-		disable_web_page_preview: true,
-	  }),
-	});
-
-	const tgJson = await tgRes.json().catch(() => ({}));
-
-	if (!tgRes.ok || tgJson?.ok === false) {
-	  return res.status(502).json({
-		ok: false,
-		error: "Telegram API error",
-		details: tgJson,
-	  });
-	}
-
-	return res.status(200).json({ ok: true });
-  } catch (e: any) {
-	return res.status(500).json({ ok: false, error: e?.message ?? "Unknown error" });
+  if (!tgRes.ok || tgJson?.ok === false) {
+	return res.status(502).json({ ok: false, error: "Telegram API error", details: tgJson });
   }
+
+  return res.status(200).json({ ok: true });
 }

@@ -179,20 +179,42 @@ function LeadFormModal({
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (submitting) return;
-
+    if (!offer) return;
+  
     const nameOk = data.name.trim().length >= 2;
     const contactOk = data.contact.trim().length >= 5;
     if (!nameOk || !contactOk) return;
-
+  
     setSubmitting(true);
-
-    // TODO: подключи отправку лида куда нужно (CRM/Telegram/Backend).
-    // Например:
-    // await fetch("/api/leads", { method:"POST", headers:{...}, body: JSON.stringify({ ...data, offerId: offer?.id }) })
-
-    await new Promise((r) => setTimeout(r, 450));
-    setSent(true);
-    setSubmitting(false);
+  
+    try {
+      const payload = {
+        offerId: offer.id,
+        offerTitle: offer.title,
+        name: data.name.trim(),
+        contact: data.contact.trim(),
+        comment: data.comment.trim(),
+        pageUrl: typeof window !== "undefined" ? window.location.href : "",
+      };
+  
+      const res = await fetch("/api/lead", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+  
+      if (!res.ok) {
+        const text = await res.text().catch(() => "");
+        throw new Error(`Lead API error: ${res.status} ${text}`);
+      }
+  
+      setSent(true);
+    } catch (err) {
+      console.error(err);
+      alert("Ошибка отправки. Попробуйте ещё раз.");
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   return (

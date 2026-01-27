@@ -1,3 +1,5 @@
+lines.push(`🆔 <b>DEBUG:</b> ${escapeHtml(name)} | ${escapeHtml(contact)} | ${escapeHtml(comment)}`);
+
 type Body = {
   offerId?: string;
   offerTitle?: string;

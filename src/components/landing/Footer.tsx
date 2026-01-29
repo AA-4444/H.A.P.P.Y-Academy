@@ -1,6 +1,6 @@
 import React from "react";
 import { motion } from "framer-motion";
-import { ArrowUp, Instagram, Youtube, Send } from "lucide-react";
+import { ArrowUp, ArrowRight, Instagram, ArrowDown, Youtube, Send } from "lucide-react";
 import { FaTiktok } from "react-icons/fa";
 import logo from "@/assets/logo.svg";
 
@@ -28,12 +28,14 @@ const socials = [
 ];
 
 function ScrollToTopBadge({ onClick }: { onClick: () => void }) {
-  const text = "наверх • наверх • наверх • наверх • наверх • ";
+  const text = "наверх • наверх • наверх • наверх • ";
 
   return (
     <button
       onClick={onClick}
-      className="relative h-24 w-24 sm:h-32 sm:w-32 lg:h-36 lg:w-36 transition-transform hover:scale-105 active:scale-95 group"
+      type="button"
+      aria-label="Наверх"
+      className="relative h-24 w-24 sm:h-32 sm:w-32 transition-transform hover:scale-105 active:scale-95"
     >
       <motion.div
         animate={{ rotate: 360 }}
@@ -58,8 +60,8 @@ function ScrollToTopBadge({ onClick }: { onClick: () => void }) {
       </motion.div>
 
       <div className="absolute inset-0 flex items-center justify-center">
-        <div className="h-10 w-10 sm:h-12 sm:w-12 rounded-full bg-white/10 backdrop-blur-sm border border-white/30 flex items-center justify-center group-hover:bg-white/20 transition-colors">
-          <ArrowUp className="h-5 w-5 sm:h-6 sm:w-6 text-white" />
+        <div className="h-10 w-10 rounded-full bg-white/10 border border-white/30 flex items-center justify-center">
+          <ArrowUp className="h-5 w-5 text-white" />
         </div>
       </div>
     </button>
@@ -72,38 +74,58 @@ const Footer = () => {
   return (
     <footer className="bg-[#F6F1E7]">
       <div className="mx-auto w-full px-3 sm:px-4 lg:px-6 pb-8">
-        <div className="rounded-[32px] sm:rounded-[40px] lg:rounded-[48px] bg-[#F6B800] overflow-hidden">
-          <div className="mx-auto max-w-7xl px-6 sm:px-10 lg:px-14 py-24">
-            {/* TOP SECTION */}
+        <div className="rounded-[32px] sm:rounded-[40px] bg-[#F6B800] overflow-hidden">
+          <div className="mx-auto max-w-7xl px-6 sm:px-10 py-24">
             <div className="relative">
               <div className="flex justify-end sm:absolute sm:-top-12 sm:right-0 mb-8 sm:mb-0">
                 <ScrollToTopBadge onClick={scrollToTop} />
               </div>
 
-              {/* ✅ текст заменён */}
-              <p className="text-white/80 text-xl mb-6">
-                Остались вопросы ? Напишите Нам:
+              <p className="text-white/80 text-xl mb-4">
+                Остались вопросы? Напишите нам в Telegram:
               </p>
 
-              {/* ✅ ник заменён */}
-              <a
-                href="https://t.me/TataZakzheva"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="
-                  block font-sans font-extrabold text-white
-                  text-3xl sm:text-5xl md:text-6xl lg:text-8xl
-                  leading-tight sm:leading-[0.95]
-                  break-words
-                  max-w-full
-                "
-              >
-                @happiness_support
-              </a>
+     
+          
+          {/* TELEGRAM CTA */}
+          <div className="mt-6 flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
+           
+            <div className="flex flex-col items-center sm:flex-row sm:items-center gap-1 sm:gap-2">
+              <span className="text-white/85 text-sm sm:text-base font-semibold">
+                нажми
+              </span>
+          
+              {/* mobile  */}
+              <ArrowDown
+                className="block sm:hidden w-5 h-5 text-white/85"
+                aria-hidden="true"
+              />
+          
+              {/* desktop  */}
+              <ArrowRight
+                className="hidden sm:block w-5 h-5 text-white/85"
+                aria-hidden="true"
+              />
+            </div>
+          
+         
+            <a
+              href="https://t.me/TataZakzheva"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="
+                font-sans font-extrabold text-white
+                text-3xl sm:text-5xl md:text-6xl lg:text-8xl
+                leading-tight sm:leading-[0.95]
+                break-words
+                hover:underline
+              "
+            >
+              @happiness_support
+            </a>
+          </div>
 
-              <div className="mt-10 grid sm:grid-cols-2 gap-10">
-                <div className="text-white text-xl">Ицхак Пинтосевич</div>
-              </div>
+              <div className="mt-10 text-white text-xl">Ицхак Пинтосевич</div>
             </div>
 
             {/* SOCIALS */}
@@ -116,31 +138,21 @@ const Footer = () => {
                   rel="noopener noreferrer"
                   className="
                     flex items-center justify-center gap-3
-                    h-16 sm:h-14 px-8 min-w-[200px] sm:min-w-[180px]
-                    rounded-full
-                    bg-white text-black
-                    font-semibold text-base sm:text-sm
+                    h-14 px-8 min-w-[180px]
+                    rounded-full bg-white text-black
+                    font-semibold text-sm
                     hover:bg-white/90 transition
                   "
                 >
-                  <s.icon className="w-6 h-6 sm:w-5 sm:h-5" />
+                  <s.icon className="w-5 h-5" />
                   {s.label}
                 </a>
               ))}
             </div>
 
             {/* BOTTOM BAR */}
-            <div
-              className="mt-20 pt-10 border-t border-white/30
-                            flex flex-col md:flex-row items-center
-                            justify-between gap-6 text-white/85 text-sm"
-            >
-              <img
-                src={logo}
-                alt="H.A.P.P.Y Academy"
-                className="h-8"
-                draggable={false}
-              />
+            <div className="mt-20 pt-10 border-t border-white/30 flex flex-col md:flex-row items-center justify-between gap-6 text-white/85 text-sm">
+              <img src={logo} alt="H.A.P.P.Y Academy" className="h-8" draggable={false} />
 
               <div className="flex flex-wrap items-center gap-4 justify-center">
                 <a href="#" className="hover:text-white">

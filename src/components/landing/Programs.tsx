@@ -160,14 +160,15 @@ function LeadFormModal({
     comment: "",
   });
 
+  // sent теперь используем как "уходим на оплату"
   const [sent, setSent] = useState(false);
   const [submitting, setSubmitting] = useState(false);
 
   const title = offer?.id === "club" ? "Заявка на спецпредложение" : "Заявка на курс";
   const subtitle =
     offer?.id === "club"
-      ? "Оставьте контакты — мы пришлём специальное предложение и детали."
-      : "Оставьте контакты — сообщим, когда курс откроется.";
+      ? "Оставьте контакты — вы перейдёте к оплате, а после успешной оплаты мы пришлём детали."
+      : "Оставьте контакты — вы перейдёте к оплате, а после успешной оплаты мы пришлём доступ.";
 
   const resetAndClose = () => {
     setData({ name: "", contact: "", comment: "" });
@@ -180,13 +181,13 @@ function LeadFormModal({
     e.preventDefault();
     if (submitting) return;
     if (!offer) return;
-  
+
     const nameOk = data.name.trim().length >= 2;
     const contactOk = data.contact.trim().length >= 5;
     if (!nameOk || !contactOk) return;
-  
+
     setSubmitting(true);
-  
+
     try {
       const payload = {
         offerId: offer.id,
@@ -196,23 +197,27 @@ function LeadFormModal({
         comment: data.comment.trim(),
         pageUrl: typeof window !== "undefined" ? window.location.href : "",
       };
-  
-      const res = await fetch("/api/lead", {
+
+      // ВАЖНО: идём в checkout, а не /api/lead
+      const res = await fetch("/api/stripe/checkout", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
       });
-  
+
       if (!res.ok) {
         const text = await res.text().catch(() => "");
-        throw new Error(`Lead API error: ${res.status} ${text}`);
+        throw new Error(`Checkout API error: ${res.status} ${text}`);
       }
-  
-      setSent(true);
+
+      const json = await res.json().catch(() => ({} as any));
+      if (!json?.url) throw new Error("No checkout url returned");
+
+      setSent(true); // покажем экран "перенаправляем"
+      window.location.href = json.url; // редирект на Stripe Checkout
     } catch (err) {
       console.error(err);
-      alert("Ошибка отправки. Попробуйте ещё раз.");
-    } finally {
+      alert("Ошибка. Попробуйте ещё раз.");
       setSubmitting(false);
     }
   };
@@ -279,10 +284,11 @@ function LeadFormModal({
                 {sent ? (
                   <div className="rounded-2xl bg-white/70 border border-black/10 p-4 sm:p-5">
                     <div className="font-sans font-extrabold text-black text-[18px] sm:text-[20px]">
-                      Готово ✅
+                      Перенаправляем на оплату…
                     </div>
                     <div className="mt-2 text-black/70 text-sm sm:text-base leading-relaxed">
-                      Спасибо! Мы получили заявку и свяжемся с вами.
+                      Сейчас откроется безопасная страница оплаты Stripe.
+                      После успешной оплаты заявка придёт нам в Telegram и мы свяжемся с вами.
                     </div>
 
                     <Button
@@ -314,9 +320,7 @@ function LeadFormModal({
                       </label>
                       <input
                         value={data.contact}
-                        onChange={(e) =>
-                          setData((p) => ({ ...p, contact: e.target.value }))
-                        }
+                        onChange={(e) => setData((p) => ({ ...p, contact: e.target.value }))}
                         className="mt-2 w-full h-12 rounded-2xl px-4 bg-white/70 border border-black/10 outline-none focus:ring-2 focus:ring-black/20"
                         placeholder="+49… или @username"
                         autoComplete="tel"
@@ -329,9 +333,7 @@ function LeadFormModal({
                       </label>
                       <textarea
                         value={data.comment}
-                        onChange={(e) =>
-                          setData((p) => ({ ...p, comment: e.target.value }))
-                        }
+                        onChange={(e) => setData((p) => ({ ...p, comment: e.target.value }))}
                         className="mt-2 w-full min-h-[92px] rounded-2xl p-4 bg-white/70 border border-black/10 outline-none focus:ring-2 focus:ring-black/20 resize-none"
                         placeholder="Удобное время / вопрос / город…"
                       />
@@ -352,12 +354,11 @@ function LeadFormModal({
                           : "bg-yellow-400 text-black hover:bg-yellow-300",
                       ].join(" ")}
                     >
-                      {submitting ? "Отправляем..." : "Оставить заявку"}
+                      {submitting ? "Переходим к оплате..." : "Перейти к оплате"}
                     </Button>
 
                     <div className="text-[12px] text-black/55 leading-snug">
-                      Нажимая «Оставить заявку», вы соглашаетесь на обработку данных для
-                      связи с вами.
+                      Нажимая «Перейти к оплате», вы соглашаетесь на обработку данных для связи с вами.
                     </div>
                   </form>
                 )}
@@ -498,8 +499,7 @@ export default function Programs() {
             variants={headerItem}
             className="mt-6 font-sans text-black/70 text-base sm:text-lg leading-relaxed"
           >
-            Начните с фундамента — или заходите в полный проект и стройте устойчивое
-            состояние системно.
+            Начните с фундамента — или заходите в полный проект и стройте устойчивое состояние системно.
           </motion.p>
         </motion.div>
 
@@ -693,12 +693,7 @@ export default function Programs() {
         </div>
       </div>
 
-      <MobileBulletsModal
-        open={bulletsModalOpen}
-        onClose={closeMore}
-        offer={activeOffer}
-      />
-
+      <MobileBulletsModal open={bulletsModalOpen} onClose={closeMore} offer={activeOffer} />
       <LeadFormModal open={leadModalOpen} onClose={closeLead} offer={activeOffer} />
     </section>
   );

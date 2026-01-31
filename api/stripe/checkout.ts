@@ -26,12 +26,13 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 	  return res.status(405).json({ ok: false, error: "Method Not Allowed" });
 	}
 
-	
 	if (!process.env.STRIPE_SECRET_KEY) {
 	  return res.status(500).json({ ok: false, error: "Missing STRIPE_SECRET_KEY" });
 	}
 
-	const body: Body = typeof req.body === "string" ? JSON.parse(req.body) : (req.body ?? {});
+	const body: Body =
+	  typeof req.body === "string" ? JSON.parse(req.body) : (req.body ?? {});
+
 	const offerId = (body.offerId ?? "").trim();
 	const offerTitle = (body.offerTitle ?? "").trim();
 	const name = (body.name ?? "").trim();
@@ -51,7 +52,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 	  });
 	}
 
-	
 	const origin =
 	  (req.headers.origin as string) ||
 	  process.env.NEXT_PUBLIC_SITE_URL ||
@@ -61,10 +61,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 	  mode: "subscription",
 	  line_items: [{ price: priceId, quantity: 1 }],
 
-	 
-	  customer_creation: "always",
-
-	 
+	  
 	  metadata: {
 		offerId,
 		offerTitle,

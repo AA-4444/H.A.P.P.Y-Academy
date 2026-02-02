@@ -160,15 +160,18 @@ function LeadFormModal({
     comment: "",
   });
 
-  // sent теперь используем как "уходим на оплату"
+  // sent теперь используем как "отправили заявку"
   const [sent, setSent] = useState(false);
   const [submitting, setSubmitting] = useState(false);
 
-  const title = offer?.id === "club" ? "Заявка на спецпредложение" : "Заявка на курс";
+  const title =
+    offer?.id === "club" ? "Заявка на спецпредложение" : "Заявка на курс";
+
+  // ✅ ВОЗВРАЩАЕМ ФЛОУ БЕЗ ОПЛАТЫ (только лид)
   const subtitle =
     offer?.id === "club"
-      ? "Оставьте контакты — вы перейдёте к оплате, а после успешной оплаты мы пришлём детали."
-      : "Оставьте контакты — вы перейдёте к оплате, а после успешной оплаты мы пришлём доступ.";
+      ? "Оставьте контакты — мы свяжемся с вами и расскажем детали."
+      : "Оставьте контакты — мы пришлём информацию и свяжемся с вами.";
 
   const resetAndClose = () => {
     setData({ name: "", contact: "", comment: "" });
@@ -198,8 +201,27 @@ function LeadFormModal({
         pageUrl: typeof window !== "undefined" ? window.location.href : "",
       };
 
-      // ВАЖНО: идём в checkout, а не /api/lead
-      const res = await fetch("/api/stripe/checkout", {
+      // ===========================
+      // ❌ ОПЛАТА ВРЕМЕННО ВЫКЛЮЧЕНА
+      // ===========================
+      // const res = await fetch("/api/stripe/checkout", {
+      //   method: "POST",
+      //   headers: { "Content-Type": "application/json" },
+      //   body: JSON.stringify(payload),
+      // });
+      // if (!res.ok) {
+      //   const text = await res.text().catch(() => "");
+      //   throw new Error(`Checkout API error: ${res.status} ${text}`);
+      // }
+      // const json = await res.json().catch(() => ({} as any));
+      // if (!json?.url) throw new Error("No checkout url returned");
+      // setSent(true);
+      // window.location.href = json.url;
+
+      // ===========================
+      // ✅ ВОЗВРАЩАЕМ КАК БЫЛО: /api/lead
+      // ===========================
+      const res = await fetch("/api/lead", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
@@ -207,14 +229,10 @@ function LeadFormModal({
 
       if (!res.ok) {
         const text = await res.text().catch(() => "");
-        throw new Error(`Checkout API error: ${res.status} ${text}`);
+        throw new Error(`Lead API error: ${res.status} ${text}`);
       }
 
-      const json = await res.json().catch(() => ({} as any));
-      if (!json?.url) throw new Error("No checkout url returned");
-
-      setSent(true); // покажем экран "перенаправляем"
-      window.location.href = json.url; // редирект на Stripe Checkout
+      setSent(true);
     } catch (err) {
       console.error(err);
       alert("Ошибка. Попробуйте ещё раз.");
@@ -284,11 +302,10 @@ function LeadFormModal({
                 {sent ? (
                   <div className="rounded-2xl bg-white/70 border border-black/10 p-4 sm:p-5">
                     <div className="font-sans font-extrabold text-black text-[18px] sm:text-[20px]">
-                      Перенаправляем на оплату…
+                      Заявка отправлена ✅
                     </div>
                     <div className="mt-2 text-black/70 text-sm sm:text-base leading-relaxed">
-                      Сейчас откроется безопасная страница оплаты Stripe.
-                      После успешной оплаты заявка придёт нам в Telegram и мы свяжемся с вами.
+                      Мы получили вашу заявку и скоро свяжемся с вами.
                     </div>
 
                     <Button
@@ -307,7 +324,9 @@ function LeadFormModal({
                       </label>
                       <input
                         value={data.name}
-                        onChange={(e) => setData((p) => ({ ...p, name: e.target.value }))}
+                        onChange={(e) =>
+                          setData((p) => ({ ...p, name: e.target.value }))
+                        }
                         className="mt-2 w-full h-12 rounded-2xl px-4 bg-white/70 border border-black/10 outline-none focus:ring-2 focus:ring-black/20"
                         placeholder="Как к вам обращаться?"
                         autoComplete="name"
@@ -320,7 +339,9 @@ function LeadFormModal({
                       </label>
                       <input
                         value={data.contact}
-                        onChange={(e) => setData((p) => ({ ...p, contact: e.target.value }))}
+                        onChange={(e) =>
+                          setData((p) => ({ ...p, contact: e.target.value }))
+                        }
                         className="mt-2 w-full h-12 rounded-2xl px-4 bg-white/70 border border-black/10 outline-none focus:ring-2 focus:ring-black/20"
                         placeholder="+49… или @username"
                         autoComplete="tel"
@@ -333,7 +354,9 @@ function LeadFormModal({
                       </label>
                       <textarea
                         value={data.comment}
-                        onChange={(e) => setData((p) => ({ ...p, comment: e.target.value }))}
+                        onChange={(e) =>
+                          setData((p) => ({ ...p, comment: e.target.value }))
+                        }
                         className="mt-2 w-full min-h-[92px] rounded-2xl p-4 bg-white/70 border border-black/10 outline-none focus:ring-2 focus:ring-black/20 resize-none"
                         placeholder="Удобное время / вопрос / город…"
                       />
@@ -354,11 +377,12 @@ function LeadFormModal({
                           : "bg-yellow-400 text-black hover:bg-yellow-300",
                       ].join(" ")}
                     >
-                      {submitting ? "Переходим к оплате..." : "Перейти к оплате"}
+                      {submitting ? "Отправляем..." : "Отправить заявку"}
                     </Button>
 
                     <div className="text-[12px] text-black/55 leading-snug">
-                      Нажимая «Перейти к оплате», вы соглашаетесь на обработку данных для связи с вами.
+                      Нажимая «Отправить заявку», вы соглашаетесь на обработку
+                      данных для связи с вами.
                     </div>
                   </form>
                 )}
@@ -499,7 +523,8 @@ export default function Programs() {
             variants={headerItem}
             className="mt-6 font-sans text-black/70 text-base sm:text-lg leading-relaxed"
           >
-            Начните с фундамента — или заходите в полный проект и стройте устойчивое состояние системно.
+            Начните с фундамента — или заходите в полный проект и стройте
+            устойчивое состояние системно.
           </motion.p>
         </motion.div>
 
@@ -544,7 +569,10 @@ export default function Programs() {
                   </div>
                 )}
 
-                <motion.div variants={inside} className="relative h-full flex flex-col">
+                <motion.div
+                  variants={inside}
+                  className="relative h-full flex flex-col"
+                >
                   <div className="sm:hidden">
                     <div className="flex justify-between items-start">
                       <div className="max-w-[72%] min-w-0">
@@ -668,7 +696,8 @@ export default function Programs() {
                     <div>
                       {o.id === "path" ? (
                         <p className="mt-8 font-sans text-black/70 text-base leading-relaxed">
-                          Вы начинаете чувствовать опору, ясность и баланс уже в процессе.
+                          Вы начинаете чувствовать опору, ясность и баланс уже в
+                          процессе.
                         </p>
                       ) : (
                         <div className="mt-8">
@@ -693,7 +722,11 @@ export default function Programs() {
         </div>
       </div>
 
-      <MobileBulletsModal open={bulletsModalOpen} onClose={closeMore} offer={activeOffer} />
+      <MobileBulletsModal
+        open={bulletsModalOpen}
+        onClose={closeMore}
+        offer={activeOffer}
+      />
       <LeadFormModal open={leadModalOpen} onClose={closeLead} offer={activeOffer} />
     </section>
   );

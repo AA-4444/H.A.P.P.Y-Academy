@@ -8,10 +8,11 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
-import slide1 from "@/assets/bg8.png";
-import slide3 from "@/assets/bg5.png";
-import slide4 from "@/assets/bg6.png";
-import slide5 from "@/assets/bg7.png";
+import slide1 from "@/assets/new1.png";
+import slide3 from "@/assets/new2.png";
+import slide4 from "@/assets/new3.png";
+import slide5 from "@/assets/new4.png";
+import slide6 from "@/assets/new5.png";
 
 /* =========================
    reduced motion
@@ -37,7 +38,7 @@ function usePrefersReducedMotion() {
 }
 
 const HappyAcademySection = () => {
-  const slides = useMemo(() => [slide1, slide3, slide4, slide5], []);
+  const slides = useMemo(() => [slide1, slide3, slide4, slide5, slide6], []);
 
   const rootRef = useRef<HTMLDivElement | null>(null);
   const prefersReducedMotion = usePrefersReducedMotion();

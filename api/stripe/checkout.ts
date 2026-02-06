@@ -19,6 +19,12 @@ const PRICE_BY_OFFER: Record<string, string | undefined> = {
   club: process.env.STRIPE_PRICE_CLUB,
 };
 
+// ✅ club = подписка, path = разовая оплата
+const MODE_BY_OFFER: Record<string, Stripe.Checkout.SessionCreateParams.Mode> = {
+  path: "payment",
+  club: "subscription",
+};
+
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   try {
 	if (req.method !== "POST") {
@@ -52,16 +58,20 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 	  });
 	}
 
+	const mode = MODE_BY_OFFER[offerId];
+	if (!mode) {
+	  return res.status(400).json({ ok: false, error: `Unknown offerId=${offerId}` });
+	}
+
 	const origin =
 	  (req.headers.origin as string) ||
 	  process.env.NEXT_PUBLIC_SITE_URL ||
 	  "http://localhost:3000";
 
 	const session = await stripe.checkout.sessions.create({
-	  mode: "subscription",
+	  mode,
 	  line_items: [{ price: priceId, quantity: 1 }],
 
-	  
 	  metadata: {
 		offerId,
 		offerTitle,

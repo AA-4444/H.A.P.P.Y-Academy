@@ -1,6 +1,6 @@
-import Header from "@/components/Header";
-import Footer from "@/components/Footer";
-import Programs from "@/components/Programs"; 
+import Header from "@/components/landing/Header";
+import Footer from "@/components/landing/Footer";
+import Programs from "@/components/landing/Programs";
 
 export default function ProgramsOnlyPage() {
   return (

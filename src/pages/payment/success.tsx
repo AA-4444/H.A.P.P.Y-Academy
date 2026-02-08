@@ -6,21 +6,20 @@ import { Button } from "@/components/ui/button";
 export default function PaymentSuccess() {
   const supportHref = "https://t.me/TataZakzheva/";
 
-  // ✅ ССЫЛКА НА КУРС/БОТА (подставь свою)
-  const courseBotHref = "https://t.me/YOUR_BOT_USERNAME";
+  const courseBotHref = "https://t.me/happi10_bot";
 
   const search =
 	typeof window !== "undefined" ? new URLSearchParams(window.location.search) : null;
 
   const sessionId = search ? search.get("session_id") : null;
 
-  // ✅ узнаём, какой продукт оплачен
+
   const offerId = search ? search.get("offerId") : null;
 
   const nowText =
 	typeof window !== "undefined" ? new Date().toLocaleString("ru-RU") : "";
 
-  const showCourseButton = offerId === "path"; // ✅ только для курса 1€
+  const showCourseButton = offerId === "path"; // только для курса 1€
 
   return (
 	<section

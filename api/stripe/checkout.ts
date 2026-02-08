@@ -81,7 +81,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 		pageUrl,
 	  },
 
-	  success_url: `${origin}/payment/success?session_id={CHECKOUT_SESSION_ID}`,
+	  
+	  success_url: `${origin}/payment/success?session_id={CHECKOUT_SESSION_ID}&offerId=${encodeURIComponent(
+		offerId
+	  )}`,
 	  cancel_url: `${origin}/payment/cancel?offerId=${encodeURIComponent(offerId)}`,
 	});
 

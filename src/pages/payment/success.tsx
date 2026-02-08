@@ -6,13 +6,21 @@ import { Button } from "@/components/ui/button";
 export default function PaymentSuccess() {
   const supportHref = "https://t.me/TataZakzheva/";
 
-  const sessionId =
-	typeof window !== "undefined"
-	  ? new URLSearchParams(window.location.search).get("session_id")
-	  : null;
+  // ✅ ССЫЛКА НА КУРС/БОТА (подставь свою)
+  const courseBotHref = "https://t.me/YOUR_BOT_USERNAME";
+
+  const search =
+	typeof window !== "undefined" ? new URLSearchParams(window.location.search) : null;
+
+  const sessionId = search ? search.get("session_id") : null;
+
+  // ✅ узнаём, какой продукт оплачен
+  const offerId = search ? search.get("offerId") : null;
 
   const nowText =
 	typeof window !== "undefined" ? new Date().toLocaleString("ru-RU") : "";
+
+  const showCourseButton = offerId === "path"; // ✅ только для курса 1€
 
   return (
 	<section
@@ -74,16 +82,14 @@ export default function PaymentSuccess() {
 					  Total
 					</div>
 					<div className="font-sans font-extrabold text-black text-[16px]">
-					  Успешно 
+					  Успешно
 					</div>
 				  </div>
 				</div>
 			  </div>
 
 			  <div className="mt-6">
-				<div className="text-[12px] font-semibold text-black/60">
-				  Summary
-				</div>
+				<div className="text-[12px] font-semibold text-black/60">Summary</div>
 				<div className="mt-3 space-y-2">
 				  <div className="flex items-center justify-between text-[13px] text-black/70">
 					<span>Связь с менеджером</span>
@@ -106,6 +112,23 @@ export default function PaymentSuccess() {
 					Вернуться на сайт
 				  </Button>
 				</Link>
+
+				{/* ✅ КНОПКА ТОЛЬКО ДЛЯ 1€ (path) */}
+				{showCourseButton ? (
+				  <a
+					href={courseBotHref}
+					target="_blank"
+					rel="noreferrer"
+					className="w-full"
+				  >
+					<Button
+					  size="lg"
+					  className="w-full rounded-full h-12 font-semibold bg-yellow-400 text-black hover:bg-yellow-300"
+					>
+					  Перейти к курсу <ArrowRight className="ml-2 h-5 w-5" />
+					</Button>
+				  </a>
+				) : null}
 
 				<a href={supportHref} target="_blank" rel="noreferrer" className="w-full">
 				  <Button

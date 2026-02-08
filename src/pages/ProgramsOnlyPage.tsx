@@ -1,0 +1,15 @@
+import Header from "@/components/Header";
+import Footer from "@/components/Footer";
+import Programs from "@/components/Programs"; 
+
+export default function ProgramsOnlyPage() {
+  return (
+	<div className="min-h-screen bg-[#F6F1E7] flex flex-col">
+	  <Header />
+	  <main className="flex-1">
+		<Programs />
+	  </main>
+	  <Footer />
+	</div>
+  );
+}

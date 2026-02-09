@@ -18,7 +18,7 @@ export default function PaymentSuccess() {
   const nowText =
 	typeof window !== "undefined" ? new Date().toLocaleString("ru-RU") : "";
 
-  const showCourseButtons = offerId === "path"; // только для курса 1€
+  const showCourseButtons = offerId === "path"; //  для курса 1€
 
   return (
 	<section

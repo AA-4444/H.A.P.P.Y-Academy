@@ -4,7 +4,7 @@ import { Menu, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import logo from "@/assets/logo.svg";
 
-const TELEGRAM_BOT_URL = "https://t.me/happiness4people_bot";
+const TELEGRAM_BOT_URL = "https://t.me/TataZakzheva";
 
 const navItems = [
   { label: "Ицхак Пинтосевич", href: "#about" },
@@ -119,7 +119,7 @@ const Header = () => {
               onClick={() => window.open(TELEGRAM_BOT_URL, "_blank")}
               className="bg-yellow-400 text-black hover:bg-yellow-300 font-semibold rounded-full px-6 whitespace-nowrap"
             >
-              Начать сейчас
+              Задать вопрос
             </Button>
           </motion.div>
 
@@ -234,7 +234,7 @@ const Header = () => {
                         className="w-full bg-yellow-400 text-black hover:bg-yellow-300 font-semibold rounded-full"
                         onClick={() => window.open(TELEGRAM_BOT_URL, "_blank")}
                       >
-                        Начать сейчас
+                        Задать вопрос 
                       </Button>
                     </motion.div>
                   </motion.nav>

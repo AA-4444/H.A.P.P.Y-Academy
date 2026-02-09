@@ -79,14 +79,7 @@ const CTA = () => {
 
                         {/* ✅ CTA — 3 кнопки */}
                         <div className="mt-8 sm:mt-10 flex flex-col sm:flex-row items-center justify-center gap-4">
-                          {/* 1) Войти в клуб -> Telegram */}
-                          <Button
-                            size="xl"
-                            onClick={() => window.open(TELEGRAM_BOT_URL, "_blank")}
-                            className="w-full sm:w-auto max-w-[320px] sm:max-w-none px-8 sm:px-12 rounded-full bg-accent text-white hover:opacity-95 font-semibold"
-                          >
-                            Войти в клуб
-                          </Button>
+                        
 
                           {/* 2) О программе -> Видео */}
                           <Button

@@ -53,11 +53,35 @@ function CheckItem({ text }: { text: string }) {
   );
 }
 
-/**
- * ✅ Один модал для мобилы и ПК:
- * - мобила: bottom sheet
- * - ПК: центрированный модал
- */
+function useLockBodyScroll(locked: boolean) {
+  useEffect(() => {
+    if (!locked) return;
+
+    const body = document.body;
+    const html = document.documentElement;
+
+    // Сохраняем текущие значения
+    const prevBodyOverflow = body.style.overflow;
+    const prevBodyPaddingRight = body.style.paddingRight;
+    const prevHtmlOverflow = html.style.overflow;
+
+    // Компенсируем исчезновение scrollbar на десктопе
+    const scrollbarWidth = window.innerWidth - html.clientWidth;
+    if (scrollbarWidth > 0) {
+      body.style.paddingRight = `${scrollbarWidth}px`;
+    }
+
+    // Блокируем скролл без position:fixed (без прыжков)
+    body.style.overflow = "hidden";
+    html.style.overflow = "hidden";
+
+    return () => {
+      body.style.overflow = prevBodyOverflow;
+      body.style.paddingRight = prevBodyPaddingRight;
+      html.style.overflow = prevHtmlOverflow;
+    };
+  }, [locked]);
+}
 function BulletsModal({
   open,
   onClose,
@@ -67,6 +91,8 @@ function BulletsModal({
   onClose: () => void;
   offer: Offer | null;
 }) {
+  useLockBodyScroll(open);
+
   // close on ESC (ПК удобно)
   useEffect(() => {
     if (!open) return;
@@ -131,7 +157,7 @@ function BulletsModal({
                 <div className="mt-4 h-px bg-black/10" />
               </div>
 
-              <div className="px-4 pt-4 max-h-[55vh] overflow-auto pr-2">
+              <div className="px-4 pt-4 max-h-[55vh] max-h-[55dvh] overflow-auto pr-2">
                 <ul className="space-y-3 pb-2">
                   {offer.bullets.map((b, i) => (
                     <CheckItem key={i} text={b} />
@@ -219,7 +245,7 @@ function BulletsModal({
                 <div className="mt-5 h-px bg-black/10" />
               </div>
 
-              <div className="px-6 py-6 max-h-[62vh] overflow-auto pr-4">
+              <div className="px-6 py-6 max-h-[62vh] max-h-[62dvh] overflow-auto pr-4">
                 <ul className="space-y-3">
                   {offer.bullets.map((b, i) => (
                     <CheckItem key={i} text={b} />
@@ -285,6 +311,8 @@ function LeadFormModal({
   onClose: () => void;
   offer: Offer | null;
 }) {
+  useLockBodyScroll(open);
+
   const [data, setData] = useState<LeadFormData>({
     name: "",
     contact: "",
@@ -544,7 +572,7 @@ export default function Programs() {
           "Практическое введение в систему «Архитектура Счастья».\n3 урока о базовых элементах счастья.",
         mobileDescription:
           "Практическое введение в систему «Архитектура Счастья».\n3 урока о базовых элементах счастья.",
-        price: "1 €",
+        price: "10 €",
         bullets: [
           "Практическое введение в систему «Архитектура Счастья».",
           "3 урока о базовых элементах счастья.",
@@ -568,7 +596,7 @@ export default function Programs() {
         priceNote: "/ М",
         ctaNote:
           cd.msLeft > 0
-            ? `Открытие продаж через: ${cd.days}д ${cd.hours}:${cd.mins}:${cd.secs}`
+            ? `${cd.days}д ${cd.hours}:${cd.mins}:${cd.secs}`
             : "Продажи открыты",
         bullets: [
           "Видео-уроки и тренинги",
@@ -678,6 +706,7 @@ export default function Programs() {
           {offers.map((o, idx) => {
             const isYellow = o.variant === "yellow";
             const isLight = o.variant === "light";
+            const hidePrimaryCta = o.id === "club"; // ✅ убираем кнопку "войти в клуб"
 
             return (
               <motion.article
@@ -693,10 +722,10 @@ export default function Programs() {
                   mass: 0.9,
                   delay: idx * 0.12,
                 }}
-                whileHover={{ y: -4 }}
                 className={[
                   "relative flex flex-col",
                   "rounded-[32px] sm:rounded-[40px] overflow-hidden border",
+                  // одинаковая высота на ПК, без жесткой высоты на мобиле (чтобы не резало из-за табов)
                   "lg:min-h-[650px]",
                   "p-5 sm:p-10",
                   isYellow
@@ -739,27 +768,36 @@ export default function Programs() {
                       </div>
                     </div>
 
+                    {/* ✅ ТАЙМЕР — по центру, больше, красный */}
                     {o.ctaNote ? (
-                      <div className="mt-3 text-[12px] font-extrabold text-black/80">
-                        {o.ctaNote}
+                      <div className="mt-4 text-center">
+                        <div className="text-[11px] uppercase tracking-[0.18em] font-semibold text-black/55">
+                          Открытие продаж через
+                        </div>
+                        <div className="mt-1 font-black text-red-600 text-[20px] leading-none">
+                          {o.ctaNote}
+                        </div>
                       </div>
                     ) : null}
 
-                    <div className="mt-4 flex flex-col gap-3">
-                      <button
-                        type="button"
-                        onClick={() => openLead(o.id)}
-                        className={[
-                          "w-full rounded-full h-12",
-                          "font-sans font-bold flex items-center justify-center gap-2 transition shadow-lg",
-                          isYellow
-                            ? "bg-[#E64B1E] text-white hover:opacity-95"
-                            : "bg-yellow-400 text-black hover:bg-yellow-300",
-                        ].join(" ")}
-                      >
-                        <span className="text-[14px]">{o.cta}</span>
-                        <ArrowRight className="h-4 w-4" />
-                      </button>
+                    <div className="mt-5 flex flex-col gap-3">
+                      {/* ✅ убрали кнопку на 49€ (club) */}
+                      {!hidePrimaryCta ? (
+                        <button
+                          type="button"
+                          onClick={() => openLead(o.id)}
+                          className={[
+                            "w-full rounded-full h-12",
+                            "font-sans font-bold flex items-center justify-center gap-2 transition shadow-lg",
+                            isYellow
+                              ? "bg-[#E64B1E] text-white hover:opacity-95"
+                              : "bg-yellow-400 text-black hover:bg-yellow-300",
+                          ].join(" ")}
+                        >
+                          <span className="text-[14px]">{o.cta}</span>
+                          <ArrowRight className="h-4 w-4" />
+                        </button>
+                      ) : null}
 
                       <button
                         type="button"
@@ -799,9 +837,15 @@ export default function Programs() {
                           ) : null}
                         </div>
 
+                        {/* ✅ ТАЙМЕР — по центру, больше, красный */}
                         {o.ctaNote ? (
-                          <div className="mt-4 text-sm font-extrabold text-black/80">
-                            {o.ctaNote}
+                          <div className="mt-5 text-center">
+                            <div className="text-[11px] uppercase tracking-[0.18em] font-semibold text-black/55">
+                              Открытие продаж через
+                            </div>
+                            <div className="mt-1 font-black text-red-600 text-2xl leading-none">
+                              {o.ctaNote}
+                            </div>
                           </div>
                         ) : null}
                       </div>
@@ -842,21 +886,28 @@ export default function Programs() {
                       )}
                     </div>
 
+                    {/* низ = кнопки на одной линии у обеих карточек */}
                     <div className="mt-auto pt-7">
-                      <button
-                        type="button"
-                        onClick={() => openLead(o.id)}
-                        className={[
-                          "w-full h-12 rounded-full",
-                          "font-sans font-bold flex items-center justify-center gap-2 transition shadow-lg",
-                          isYellow
-                            ? "bg-[#E64B1E] text-white hover:opacity-95"
-                            : "bg-yellow-400 text-black hover:bg-yellow-300",
-                        ].join(" ")}
-                      >
-                        {o.cta}
-                        <ArrowRight className="h-5 w-5" />
-                      </button>
+                      {/* ✅ убрали кнопку "войти в клуб" */}
+                      {!hidePrimaryCta ? (
+                        <button
+                          type="button"
+                          onClick={() => openLead(o.id)}
+                          className={[
+                            "w-full h-12 rounded-full",
+                            "font-sans font-bold flex items-center justify-center gap-2 transition shadow-lg",
+                            isYellow
+                              ? "bg-[#E64B1E] text-white hover:opacity-95"
+                              : "bg-yellow-400 text-black hover:bg-yellow-300",
+                          ].join(" ")}
+                        >
+                          {o.cta}
+                          <ArrowRight className="h-5 w-5" />
+                        </button>
+                      ) : (
+                        // сохраняем место, чтобы нижняя кнопка оставалась на той же высоте
+                        <div className="h-12" />
+                      )}
 
                       <button
                         type="button"
@@ -874,9 +925,7 @@ export default function Programs() {
         </div>
       </div>
 
-      {/* ✅ теперь работает и на мобиле, и на ПК */}
       <BulletsModal open={bulletsModalOpen} onClose={closeMore} offer={activeOffer} />
-
       <LeadFormModal open={leadModalOpen} onClose={closeLead} offer={activeOffer} />
     </section>
   );

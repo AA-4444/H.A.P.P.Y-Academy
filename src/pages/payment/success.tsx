@@ -7,19 +7,18 @@ export default function PaymentSuccess() {
   const supportHref = "https://t.me/TataZakzheva/";
 
   const courseBotHref = "https://t.me/happi10_bot";
+  const courseGroupHref = "https://t.me/+tKh9MjOHcAxmOWI0";
 
   const search =
 	typeof window !== "undefined" ? new URLSearchParams(window.location.search) : null;
 
   const sessionId = search ? search.get("session_id") : null;
-
-
   const offerId = search ? search.get("offerId") : null;
 
   const nowText =
 	typeof window !== "undefined" ? new Date().toLocaleString("ru-RU") : "";
 
-  const showCourseButton = offerId === "path"; // только для курса 1€
+  const showCourseButtons = offerId === "path"; // только для курса 1€
 
   return (
 	<section
@@ -33,10 +32,8 @@ export default function PaymentSuccess() {
 		  transition={{ duration: 0.5, ease: "easeOut" }}
 		  className="w-full max-w-[520px]"
 		>
-		  {/* ONE card only */}
 		  <div className="rounded-[32px] border border-black/10 bg-white shadow-2xl overflow-hidden">
 			<div className="p-6 sm:p-8">
-			  {/* Big check in circle */}
 			  <div className="flex justify-center">
 				<div className="h-16 w-16 rounded-full bg-[#EAF7EF] border border-black/10 grid place-items-center">
 				  <Check className="h-8 w-8 text-[#16A34A]" strokeWidth={3} />
@@ -55,7 +52,6 @@ export default function PaymentSuccess() {
 
 			  <div className="mt-6 h-px bg-black/10" />
 
-			  {/* Info blocks like receipt but in your style */}
 			  <div className="mt-5 grid gap-3">
 				<div className="rounded-2xl bg-[#F6F1E7] border border-black/10 p-4">
 				  <div className="text-[10px] uppercase tracking-[0.18em] text-black/45 font-semibold">
@@ -70,9 +66,7 @@ export default function PaymentSuccess() {
 				  <div className="text-[10px] uppercase tracking-[0.18em] text-black/45 font-semibold">
 					Date & time
 				  </div>
-				  <div className="mt-2 text-[13px] text-black/75">
-					{nowText || "—"}
-				  </div>
+				  <div className="mt-2 text-[13px] text-black/75">{nowText || "—"}</div>
 				</div>
 
 				<div className="rounded-2xl bg-[#F6F1E7] border border-black/10 p-4">
@@ -101,7 +95,6 @@ export default function PaymentSuccess() {
 				</div>
 			  </div>
 
-			  {/* Buttons */}
 			  <div className="mt-8 grid gap-3">
 				<Link to="/#programs" className="w-full">
 				  <Button
@@ -112,21 +105,37 @@ export default function PaymentSuccess() {
 				  </Button>
 				</Link>
 
-				{/* ✅ КНОПКА ТОЛЬКО ДЛЯ 1€ (path) */}
-				{showCourseButton ? (
-				  <a
-					href={courseBotHref}
-					target="_blank"
-					rel="noreferrer"
-					className="w-full"
-				  >
-					<Button
-					  size="lg"
-					  className="w-full rounded-full h-12 font-semibold bg-yellow-400 text-black hover:bg-yellow-300"
+				{/* ✅ КНОПКИ ТОЛЬКО ДЛЯ 1€ (path) */}
+				{showCourseButtons ? (
+				  <>
+					<a
+					  href={courseBotHref}
+					  target="_blank"
+					  rel="noreferrer"
+					  className="w-full"
 					>
-					  Перейти к курсу <ArrowRight className="ml-2 h-5 w-5" />
-					</Button>
-				  </a>
+					  <Button
+						size="lg"
+						className="w-full rounded-full h-12 font-semibold bg-yellow-400 text-black hover:bg-yellow-300"
+					  >
+						Перейти к курсу <ArrowRight className="ml-2 h-5 w-5" />
+					  </Button>
+					</a>
+
+					<a
+					  href={courseGroupHref}
+					  target="_blank"
+					  rel="noreferrer"
+					  className="w-full"
+					>
+					  <Button
+						size="lg"
+						className="w-full rounded-full h-12 font-semibold bg-yellow-400 text-black hover:bg-yellow-300"
+					  >
+						Группа счастья <ArrowRight className="ml-2 h-5 w-5" />
+					  </Button>
+					</a>
+				  </>
 				) : null}
 
 				<a href={supportHref} target="_blank" rel="noreferrer" className="w-full">

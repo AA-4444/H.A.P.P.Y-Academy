@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ArrowRight, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -14,6 +14,7 @@ type Offer = {
   cta: string;
   variant: "light" | "yellow";
   ctaNote?: string;
+  longDescription?: string;
 };
 
 type LeadFormData = {
@@ -21,6 +22,20 @@ type LeadFormData = {
   contact: string;
   comment: string;
 };
+
+function TitleWithBreaks({ text }: { text: string }) {
+  const lines = String(text ?? "").split("\n");
+  return (
+    <>
+      {lines.map((line, i) => (
+        <span key={i}>
+          {line}
+          {i < lines.length - 1 ? <br /> : null}
+        </span>
+      ))}
+    </>
+  );
+}
 
 function CheckItem({ text }: { text: string }) {
   return (
@@ -38,7 +53,12 @@ function CheckItem({ text }: { text: string }) {
   );
 }
 
-function MobileBulletsModal({
+/**
+ * ✅ Один модал для мобилы и ПК:
+ * - мобила: bottom sheet
+ * - ПК: центрированный модал
+ */
+function BulletsModal({
   open,
   onClose,
   offer,
@@ -47,22 +67,34 @@ function MobileBulletsModal({
   onClose: () => void;
   offer: Offer | null;
 }) {
+  // close on ESC (ПК удобно)
+  useEffect(() => {
+    if (!open) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onClose();
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [open, onClose]);
+
   return (
     <AnimatePresence>
       {open && offer ? (
         <>
+          {/* overlay */}
           <motion.button
             type="button"
             aria-label="Закрыть"
             onClick={onClose}
-            className="fixed inset-0 z-[60] bg-black/50 sm:hidden"
+            className="fixed inset-0 z-[80] bg-black/55"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
           />
 
+          {/* ✅ MOBILE bottom sheet */}
           <motion.div
-            className="fixed inset-x-0 bottom-0 z-[70] sm:hidden"
+            className="fixed inset-x-0 bottom-0 z-[90] sm:hidden"
             initial={{ y: 40, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             exit={{ y: 40, opacity: 0 }}
@@ -79,9 +111,9 @@ function MobileBulletsModal({
                       Что внутри
                     </div>
                     <div className="mt-2 font-sans font-extrabold tracking-tight text-black text-[18px] leading-[1.15]">
-                      {offer.title}
+                      <TitleWithBreaks text={offer.title} />
                     </div>
-                    <div className="mt-2 text-black/70 text-[13px] leading-snug">
+                    <div className="mt-2 text-black/70 text-[13px] leading-snug whitespace-pre-line">
                       {offer.mobileDescription}
                     </div>
                   </div>
@@ -105,6 +137,17 @@ function MobileBulletsModal({
                     <CheckItem key={i} text={b} />
                   ))}
                 </ul>
+
+                {offer.longDescription ? (
+                  <div className="mt-4 rounded-2xl bg-white/60 border border-black/10 p-3">
+                    <div className="text-[10px] uppercase tracking-[0.18em] text-black/45 font-semibold">
+                      Подробнее
+                    </div>
+                    <div className="mt-2 text-black/70 text-[13px] leading-relaxed whitespace-pre-line">
+                      {offer.longDescription}
+                    </div>
+                  </div>
+                ) : null}
               </div>
 
               <div className="px-4 pt-3">
@@ -113,10 +156,10 @@ function MobileBulletsModal({
                     <div className="text-black/60 text-xs uppercase tracking-[0.18em] font-semibold">
                       Цена
                     </div>
-                    <div className="text-black font-black text-xl leading-none">
+                    <div className="text-black font-black text-xl leading-none whitespace-nowrap">
                       {offer.price}
                       {offer.priceNote ? (
-                        <span className="ml-1 text-black/60 text-sm font-semibold">
+                        <span className="ml-1 text-black/60 text-sm font-semibold whitespace-nowrap">
                           {offer.priceNote}
                         </span>
                       ) : null}
@@ -128,6 +171,94 @@ function MobileBulletsModal({
                   size="lg"
                   className={[
                     "mt-3 w-full rounded-full h-12 font-semibold",
+                    offer.variant === "yellow"
+                      ? "bg-[#E64B1E] text-white hover:opacity-95"
+                      : "bg-yellow-400 text-black hover:bg-yellow-300",
+                  ].join(" ")}
+                  onClick={onClose}
+                >
+                  Понятно
+                </Button>
+              </div>
+            </div>
+          </motion.div>
+
+          {/* ✅ DESKTOP centered modal */}
+          <motion.div
+            className="fixed inset-0 z-[90] hidden sm:flex items-center justify-center p-6"
+            initial={{ opacity: 0, y: 10, filter: "blur(8px)" }}
+            animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+            exit={{ opacity: 0, y: 10, filter: "blur(8px)" }}
+            transition={{ duration: 0.2, ease: "easeOut" }}
+          >
+            <div className="w-full max-w-[820px] rounded-[28px] bg-[#F6F1E7] border border-black/10 shadow-2xl overflow-hidden">
+              <div className="px-6 pt-6">
+                <div className="flex items-start justify-between gap-4">
+                  <div className="min-w-0">
+                    <div className="text-[10px] uppercase tracking-[0.18em] text-black/45 font-semibold">
+                      Что внутри
+                    </div>
+                    <div className="mt-2 font-sans font-extrabold tracking-tight text-black text-[26px] leading-[1.15]">
+                      <TitleWithBreaks text={offer.title} />
+                    </div>
+                    <div className="mt-3 text-black/70 text-[14px] leading-relaxed whitespace-pre-line max-w-[64ch]">
+                      {offer.description}
+                    </div>
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={onClose}
+                    className="h-10 w-10 rounded-full bg-black/5 hover:bg-black/10 grid place-items-center shrink-0"
+                    aria-label="Закрыть"
+                  >
+                    <X className="h-5 w-5 text-black/70" />
+                  </button>
+                </div>
+
+                <div className="mt-5 h-px bg-black/10" />
+              </div>
+
+              <div className="px-6 py-6 max-h-[62vh] overflow-auto pr-4">
+                <ul className="space-y-3">
+                  {offer.bullets.map((b, i) => (
+                    <CheckItem key={i} text={b} />
+                  ))}
+                </ul>
+
+                {offer.longDescription ? (
+                  <div className="mt-5 rounded-2xl bg-white/60 border border-black/10 p-4">
+                    <div className="text-[10px] uppercase tracking-[0.18em] text-black/45 font-semibold">
+                      Подробнее
+                    </div>
+                    <div className="mt-2 text-black/70 text-[14px] leading-relaxed whitespace-pre-line">
+                      {offer.longDescription}
+                    </div>
+                  </div>
+                ) : null}
+              </div>
+
+              <div className="px-6 pb-6">
+                <div className="rounded-2xl bg-white/60 border border-black/10 p-4">
+                  <div className="flex items-baseline justify-between">
+                    <div className="text-black/60 text-xs uppercase tracking-[0.18em] font-semibold">
+                      Цена
+                    </div>
+                    <div className="text-black font-black text-2xl leading-none whitespace-nowrap">
+                      {offer.price}
+                      {offer.priceNote ? (
+                        <span className="ml-2 text-black/60 text-base font-semibold whitespace-nowrap">
+                          {offer.priceNote}
+                        </span>
+                      ) : null}
+                    </div>
+                  </div>
+                </div>
+
+                <Button
+                  size="lg"
+                  className={[
+                    "mt-4 w-full rounded-full h-12 font-semibold",
                     offer.variant === "yellow"
                       ? "bg-[#E64B1E] text-white hover:opacity-95"
                       : "bg-yellow-400 text-black hover:bg-yellow-300",
@@ -160,11 +291,11 @@ function LeadFormModal({
     comment: "",
   });
 
-  // sent теперь используем как "уходим на оплату"
   const [sent, setSent] = useState(false);
   const [submitting, setSubmitting] = useState(false);
 
-  const title = offer?.id === "club" ? "Заявка на спецпредложение" : "Заявка на курс";
+  const title =
+    offer?.id === "club" ? "Заявка на спецпредложение" : "Заявка на курс";
   const subtitle =
     offer?.id === "club"
       ? "Оставьте контакты — вы перейдёте к оплате, а после успешной оплаты мы пришлём детали."
@@ -198,7 +329,6 @@ function LeadFormModal({
         pageUrl: typeof window !== "undefined" ? window.location.href : "",
       };
 
-      // ВАЖНО: идём в checkout, а не /api/lead
       const res = await fetch("/api/stripe/checkout", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -213,8 +343,8 @@ function LeadFormModal({
       const json = await res.json().catch(() => ({} as any));
       if (!json?.url) throw new Error("No checkout url returned");
 
-      setSent(true); // покажем экран "перенаправляем"
-      window.location.href = json.url; // редирект на Stripe Checkout
+      setSent(true);
+      window.location.href = json.url;
     } catch (err) {
       console.error(err);
       alert("Ошибка. Попробуйте ещё раз.");
@@ -288,7 +418,8 @@ function LeadFormModal({
                     </div>
                     <div className="mt-2 text-black/70 text-sm sm:text-base leading-relaxed">
                       Сейчас откроется безопасная страница оплаты Stripe.
-                      После успешной оплаты заявка придёт нам в Telegram и мы свяжемся с вами.
+                      После успешной оплаты заявка придёт нам в Telegram и мы
+                      свяжемся с вами.
                     </div>
 
                     <Button
@@ -307,7 +438,9 @@ function LeadFormModal({
                       </label>
                       <input
                         value={data.name}
-                        onChange={(e) => setData((p) => ({ ...p, name: e.target.value }))}
+                        onChange={(e) =>
+                          setData((p) => ({ ...p, name: e.target.value }))
+                        }
                         className="mt-2 w-full h-12 rounded-2xl px-4 bg-white/70 border border-black/10 outline-none focus:ring-2 focus:ring-black/20"
                         placeholder="Как к вам обращаться?"
                         autoComplete="name"
@@ -320,7 +453,9 @@ function LeadFormModal({
                       </label>
                       <input
                         value={data.contact}
-                        onChange={(e) => setData((p) => ({ ...p, contact: e.target.value }))}
+                        onChange={(e) =>
+                          setData((p) => ({ ...p, contact: e.target.value }))
+                        }
                         className="mt-2 w-full h-12 rounded-2xl px-4 bg-white/70 border border-black/10 outline-none focus:ring-2 focus:ring-black/20"
                         placeholder="+49… или @username"
                         autoComplete="tel"
@@ -333,7 +468,9 @@ function LeadFormModal({
                       </label>
                       <textarea
                         value={data.comment}
-                        onChange={(e) => setData((p) => ({ ...p, comment: e.target.value }))}
+                        onChange={(e) =>
+                          setData((p) => ({ ...p, comment: e.target.value }))
+                        }
                         className="mt-2 w-full min-h-[92px] rounded-2xl p-4 bg-white/70 border border-black/10 outline-none focus:ring-2 focus:ring-black/20 resize-none"
                         placeholder="Удобное время / вопрос / город…"
                       />
@@ -358,7 +495,8 @@ function LeadFormModal({
                     </Button>
 
                     <div className="text-[12px] text-black/55 leading-snug">
-                      Нажимая «Перейти к оплате», вы соглашаетесь на обработку данных для связи с вами.
+                      Нажимая «Перейти к оплате», вы соглашаетесь на обработку
+                      данных для связи с вами.
                     </div>
                   </form>
                 )}
@@ -371,25 +509,55 @@ function LeadFormModal({
   );
 }
 
+function useCountdown(target: Date) {
+  const [msLeft, setMsLeft] = useState(() =>
+    Math.max(0, target.getTime() - Date.now())
+  );
+
+  useEffect(() => {
+    const id = window.setInterval(() => {
+      setMsLeft(Math.max(0, target.getTime() - Date.now()));
+    }, 1000);
+    return () => window.clearInterval(id);
+  }, [target]);
+
+  const totalSec = Math.floor(msLeft / 1000);
+  const days = Math.floor(totalSec / 86400);
+  const hours = Math.floor((totalSec % 86400) / 3600);
+  const mins = Math.floor((totalSec % 3600) / 60);
+  const secs = totalSec % 60;
+
+  const pad2 = (n: number) => String(n).padStart(2, "0");
+  return { msLeft, days, hours: pad2(hours), mins: pad2(mins), secs: pad2(secs) };
+}
+
 export default function Programs() {
+  const salesOpenDate = useMemo(() => new Date(2026, 1, 18, 0, 0, 0), []);
+  const cd = useCountdown(salesOpenDate);
+
   const offers = useMemo<Offer[]>(
     () => [
       {
         id: "path",
-        title: "Путь к счастью",
-        description: "Это фундамент. Первый этаж вашего дома.",
-        mobileDescription: "Фундамент вашего устойчивого состояния.",
+        title: "3 первых шага к мастерству.\nТри элемента счастья",
+        description:
+          "Практическое введение в систему «Архитектура Счастья».\n3 урока о базовых элементах счастья.",
+        mobileDescription:
+          "Практическое введение в систему «Архитектура Счастья».\n3 урока о базовых элементах счастья.",
         price: "1 €",
-        ctaNote: "Скоро открываем курс",
         bullets: [
-          "Курс из 22 писем от Ицхака",
-          "Пошаговое внедрение элементов",
-          "Практические задания",
-          "Финальное видео Ицхака",
-          "Коуч-сессия с учеником Ицхака",
+          "Практическое введение в систему «Архитектура Счастья».",
+          "3 урока о базовых элементах счастья.",
         ],
         cta: "Стать счастливым",
         variant: "light",
+        longDescription: `Этот 3-дневный курс - практическое введение в систему «Архитектура Счастья».
+Он создан для людей, которые устали искать мотивацию, вдохновение или «правильное состояние» - и хотят понять, как реально управлять своим внутренним состоянием в повседневной жизни.
+
+Здесь нет абстрактной философии, эзотерики или эмоциональных качелей.
+Курс построен как рабочая модель: ты получаешь понятные объяснения, выполняешь простые, но точные практики — и наблюдаешь изменения в ощущении себя, уровне энергии и ясности мышления.
+Без мотивационных лозунгов — только работающие практики, которые переключают мозг из режима дефицита в состояние энергии, ясности и внутренней опоры.
+Если пройти курс честно — первые изменения ощущаются уже на 3-й день.`,
       },
       {
         id: "club",
@@ -398,7 +566,10 @@ export default function Programs() {
         mobileDescription: "Полная система из 10 ключевых элементов.",
         price: "49 €",
         priceNote: "/ М",
-        ctaNote: "Оставь заявку на специальное предложение",
+        ctaNote:
+          cd.msLeft > 0
+            ? `Открытие продаж через: ${cd.days}д ${cd.hours}:${cd.mins}:${cd.secs}`
+            : "Продажи открыты",
         bullets: [
           "Видео-уроки и тренинги",
           "Полная система 10 элементов",
@@ -410,7 +581,7 @@ export default function Programs() {
         variant: "yellow",
       },
     ],
-    []
+    [cd.days, cd.hours, cd.mins, cd.secs, cd.msLeft]
   );
 
   const headerItem = {
@@ -473,7 +644,7 @@ export default function Programs() {
 
   return (
     <section id="programs" className="bg-[#F6F1E7]">
-      <div className="mx-auto max-w-7xl px-6 sm:px-8 lg:px-12 py-12 sm:py-20">
+      <div className="mx-auto max-w-7xl px-6 sm:px-8 lg:px-12 py-12 sm:py-16">
         <motion.div
           className="max-w-4xl"
           initial="hidden"
@@ -482,7 +653,7 @@ export default function Programs() {
         >
           <motion.span
             variants={headerItem}
-            className="inline-flex items-center gap-2 text-[10px] sm:text-[12px] font-semibold tracking-[0.2em] text-black/45 uppercase mb-6 sm:mb-8"
+            className="inline-flex items-center gap-2 text-[10px] sm:text-[12px] font-semibold tracking-[0.2em] text-black/45 uppercase mb-6 sm:mb-7"
           >
             <span className="w-2 h-2 rounded-full bg-[#E64B1E]" />
             Программы и продукты
@@ -497,13 +668,13 @@ export default function Programs() {
 
           <motion.p
             variants={headerItem}
-            className="mt-6 font-sans text-black/70 text-base sm:text-lg leading-relaxed"
+            className="mt-5 font-sans text-black/70 text-base sm:text-lg leading-relaxed"
           >
             Начните с фундамента — или заходите в полный проект и стройте устойчивое состояние системно.
           </motion.p>
         </motion.div>
 
-        <div className="mt-10 sm:mt-12 grid gap-6 lg:gap-8 lg:grid-cols-2 items-stretch">
+        <div className="mt-9 sm:mt-10 grid gap-6 lg:gap-8 lg:grid-cols-2 items-stretch">
           {offers.map((o, idx) => {
             const isYellow = o.variant === "yellow";
             const isLight = o.variant === "light";
@@ -526,6 +697,7 @@ export default function Programs() {
                 className={[
                   "relative flex flex-col",
                   "rounded-[32px] sm:rounded-[40px] overflow-hidden border",
+                  "lg:min-h-[650px]",
                   "p-5 sm:p-10",
                   isYellow
                     ? "bg-yellow-400 border-black/15 shadow-xl"
@@ -545,26 +717,33 @@ export default function Programs() {
                 )}
 
                 <motion.div variants={inside} className="relative h-full flex flex-col">
+                  {/* MOBILE */}
                   <div className="sm:hidden">
                     <div className="flex justify-between items-start">
                       <div className="max-w-[72%] min-w-0">
                         <h3 className="font-sans font-extrabold tracking-tight text-[18px] leading-[1.15] text-black">
-                          {o.title}
+                          <TitleWithBreaks text={o.title} />
                         </h3>
-                        <p className="mt-2 text-black/70 text-[14px] leading-snug">
+                        <p className="mt-2 text-black/70 text-[14px] leading-snug whitespace-pre-line">
                           {o.mobileDescription}
                         </p>
                       </div>
 
-                      <div className="text-3xl font-black text-black leading-none">
+                      <div className="text-3xl font-black text-black leading-none whitespace-nowrap">
                         {o.price}
                         {o.priceNote ? (
-                          <span className="ml-1 text-black/60 text-base font-semibold">
+                          <span className="ml-1 text-black/60 text-base font-semibold whitespace-nowrap">
                             {o.priceNote}
                           </span>
                         ) : null}
                       </div>
                     </div>
+
+                    {o.ctaNote ? (
+                      <div className="mt-3 text-[12px] font-extrabold text-black/80">
+                        {o.ctaNote}
+                      </div>
+                    ) : null}
 
                     <div className="mt-4 flex flex-col gap-3">
                       <button
@@ -589,62 +768,43 @@ export default function Programs() {
                       >
                         Узнать больше
                       </button>
-
-                      {o.ctaNote ? (
-                        <div className="text-[12px] text-black/60 leading-snug text-center">
-                          {o.ctaNote}
-                        </div>
-                      ) : null}
                     </div>
                   </div>
 
-                  <div className="hidden sm:block">
-                    <div className="max-w-full">
-                      <h3 className="font-sans font-extrabold tracking-tight text-3xl leading-tight text-black">
-                        {o.title}
-                      </h3>
-                      <p className="mt-3 font-sans text-black/65 text-base leading-relaxed">
-                        {o.description}
-                      </p>
-                    </div>
-
-                    <div className="mt-7">
-                      <div className="text-xs uppercase tracking-[0.18em] font-sans text-black/45">
-                        Цена
+                  {/* DESKTOP */}
+                  <div className="hidden sm:flex flex-col h-full">
+                    <div>
+                      <div className="max-w-full">
+                        <h3 className="font-sans font-extrabold tracking-tight text-3xl leading-tight text-black">
+                          <TitleWithBreaks text={o.title} />
+                        </h3>
+                        <p className="mt-3 font-sans text-black/65 text-base leading-relaxed whitespace-pre-line">
+                          {o.description}
+                        </p>
                       </div>
-                      <div className="mt-2 flex flex-wrap items-end gap-x-2 gap-y-1">
-                        <div className="font-sans font-extrabold tracking-tight text-5xl sm:text-6xl text-black leading-none">
-                          {o.price}
+
+                      <div className="mt-7">
+                        <div className="text-xs uppercase tracking-[0.18em] font-sans text-black/45">
+                          Цена
                         </div>
-                        {o.priceNote ? (
-                          <div className="pb-1 text-sm sm:text-base font-sans font-semibold text-black/60">
-                            {o.priceNote}
+
+                        <div className="mt-2 flex items-end gap-x-2 gap-y-1 flex-wrap">
+                          <div className="font-sans font-extrabold tracking-tight text-5xl sm:text-6xl text-black leading-none whitespace-nowrap">
+                            {o.price}
+                          </div>
+                          {o.priceNote ? (
+                            <div className="pb-1 text-sm sm:text-base font-sans font-semibold text-black/60 whitespace-nowrap">
+                              {o.priceNote}
+                            </div>
+                          ) : null}
+                        </div>
+
+                        {o.ctaNote ? (
+                          <div className="mt-4 text-sm font-extrabold text-black/80">
+                            {o.ctaNote}
                           </div>
                         ) : null}
                       </div>
-                    </div>
-
-                    <div className="mt-7">
-                      <button
-                        type="button"
-                        onClick={() => openLead(o.id)}
-                        className={[
-                          "w-full h-12 rounded-full",
-                          "font-sans font-bold flex items-center justify-center gap-2 transition shadow-lg",
-                          isYellow
-                            ? "bg-[#E64B1E] text-white hover:opacity-95"
-                            : "bg-yellow-400 text-black hover:bg-yellow-300",
-                        ].join(" ")}
-                      >
-                        {o.cta}
-                        <ArrowRight className="h-5 w-5" />
-                      </button>
-
-                      {o.ctaNote ? (
-                        <div className="mt-3 text-sm font-sans text-black/65">
-                          {o.ctaNote}
-                        </div>
-                      ) : null}
 
                       <div
                         className={[
@@ -663,14 +823,8 @@ export default function Programs() {
                           <CheckItem key={i} text={b} />
                         ))}
                       </ul>
-                    </div>
 
-                    <div>
-                      {o.id === "path" ? (
-                        <p className="mt-8 font-sans text-black/70 text-base leading-relaxed">
-                          Вы начинаете чувствовать опору, ясность и баланс уже в процессе.
-                        </p>
-                      ) : (
+                      {o.id === "club" ? (
                         <div className="mt-8">
                           <div className="font-sans font-semibold text-black/80 mb-3">
                             Результат
@@ -681,11 +835,38 @@ export default function Programs() {
                             <li>— живётся без внутреннего шума</li>
                           </ul>
                         </div>
+                      ) : (
+                        <p className="mt-8 font-sans text-black/70 text-base leading-relaxed">
+                          Вы начинаете чувствовать опору, ясность и баланс уже в процессе.
+                        </p>
                       )}
                     </div>
-                  </div>
 
-                  <div className="mt-auto" />
+                    <div className="mt-auto pt-7">
+                      <button
+                        type="button"
+                        onClick={() => openLead(o.id)}
+                        className={[
+                          "w-full h-12 rounded-full",
+                          "font-sans font-bold flex items-center justify-center gap-2 transition shadow-lg",
+                          isYellow
+                            ? "bg-[#E64B1E] text-white hover:opacity-95"
+                            : "bg-yellow-400 text-black hover:bg-yellow-300",
+                        ].join(" ")}
+                      >
+                        {o.cta}
+                        <ArrowRight className="h-5 w-5" />
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => openMore(o.id)}
+                        className="mt-3 w-full h-11 rounded-full bg-white/70 text-black border border-black/10 font-sans font-semibold hover:bg-white transition"
+                      >
+                        Узнать больше
+                      </button>
+                    </div>
+                  </div>
                 </motion.div>
               </motion.article>
             );
@@ -693,7 +874,9 @@ export default function Programs() {
         </div>
       </div>
 
-      <MobileBulletsModal open={bulletsModalOpen} onClose={closeMore} offer={activeOffer} />
+      {/* ✅ теперь работает и на мобиле, и на ПК */}
+      <BulletsModal open={bulletsModalOpen} onClose={closeMore} offer={activeOffer} />
+
       <LeadFormModal open={leadModalOpen} onClose={closeLead} offer={activeOffer} />
     </section>
   );

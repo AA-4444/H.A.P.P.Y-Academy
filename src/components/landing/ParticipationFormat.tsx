@@ -5,8 +5,6 @@ import { Button } from "@/components/ui/button";
 
 import f1 from "@/assets/bg2.png"; // ОДНА ФОТКА
 
-const TELEGRAM_BOT_URL = "https://www.instagram.com/isaacpintosevich/";
-
 export default function ParticipationFormat() {
   const ref = useRef(null);
   const isInView = useInView(ref, { once: true, margin: "-100px" });
@@ -16,13 +14,10 @@ export default function ParticipationFormat() {
 	if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
   };
 
-  const handleGift = () => window.open(TELEGRAM_BOT_URL, "_blank");
-
   return (
-	<section id="viral-offer" ref={ref} className="bg-[#F6F1E7] py-20 md:py-24">
+	<section id="avtor" ref={ref} className="bg-[#F6F1E7] py-20 md:py-24">
 	  <div className="mx-auto max-w-7xl px-6 sm:px-8 lg:px-12">
 		<div className="grid lg:grid-cols-[1fr_1.15fr] gap-14 lg:gap-16 items-center">
-		  
 		  {/* LEFT */}
 		  <motion.div
 			initial={{ opacity: 0, x: -28 }}
@@ -31,34 +26,34 @@ export default function ParticipationFormat() {
 		  >
 			<div className="inline-flex items-center gap-2 text-[11px] font-semibold tracking-widest uppercase text-black/45">
 			  <span className="h-2 w-2 rounded-full bg-accent" />
-			  ВИРУСНЫЙ ОФФЕР
+			  ОБ АВТОРЕ
 			</div>
 
 			<h2 className="mt-5 font-sans font-extrabold tracking-tight text-black text-3xl sm:text-4xl md:text-5xl leading-[1.05]">
-			  Получите подарок от Ицхака Пинтосевича
+			  Ицхак Пинтосевич
 			</h2>
 
-			{/* ОДИН ТЕКСТ */}
+			{/* ОСНОВНОЙ ТЕКСТ */}
 			<motion.p
 			  initial={{ opacity: 0, y: 10, filter: "blur(8px)" }}
 			  animate={isInView ? { opacity: 1, y: 0, filter: "blur(0px)" } : {}}
 			  transition={{ duration: 0.55, delay: 0.12, ease: "easeOut" }}
-			  className="mt-10 font-serif text-black text-2xl sm:text-3xl md:text-4xl leading-tight"
+			  className="mt-10 font-serif text-black text-xl sm:text-2xl md:text-3xl leading-tight"
 			>
-			  Поделись рилсом в Инстаграм сторис
+			  12 книг • 2+ млн аудитории • 20&nbsp;000+ выпускников авторских марафонов
 			</motion.p>
 
 			<motion.p
 			  initial={{ opacity: 0, y: 10, filter: "blur(8px)" }}
 			  animate={isInView ? { opacity: 1, y: 0, filter: "blur(0px)" } : {}}
-			  transition={{ duration: 0.55, delay: 0.16, ease: "easeOut" }}
-			  className="mt-8 font-sans text-black/65 text-sm sm:text-base leading-relaxed max-w-xl"
+			  transition={{ duration: 0.55, delay: 0.18, ease: "easeOut" }}
+			  className="mt-6 font-sans text-black/70 text-sm sm:text-base leading-relaxed max-w-xl"
 			>
-			  После этого вы получите личный подарок от Ицхака Пинтосевича.
+			  Цель — сделать 1&nbsp;000&nbsp;000 людей на планете счастливыми!
 			</motion.p>
 
-			{/* 2 КНОПКИ */}
-			<div className="mt-10 flex flex-col sm:flex-row gap-4">
+			{/* КНОПКА */}
+			<div className="mt-10">
 			  <Button
 				size="lg"
 				onClick={goPrograms}
@@ -73,24 +68,9 @@ export default function ParticipationFormat() {
 				Стать счастливым
 				<ArrowRight className="ml-2 h-5 w-5" />
 			  </Button>
-
-			  <Button
-				size="lg"
-				onClick={handleGift}
-				className="
-				  w-full sm:w-auto
-				  rounded-full
-				  px-8
-				  bg-accent text-white hover:opacity-95
-				  font-semibold
-				"
-			  >
-				Получить подарок
-			  </Button>
 			</div>
 		  </motion.div>
 
-		  {/* RIGHT — ОДНА ФОТКА */}
 		  {/* RIGHT — ОДНА ФОТКА */}
 		  <motion.div
 			initial={{ opacity: 0, x: 28 }}
@@ -107,8 +87,6 @@ export default function ParticipationFormat() {
 			  />
 			</div>
 		  </motion.div>
-			
-
 		</div>
 	  </div>
 	</section>

@@ -5,11 +5,17 @@ import { Button } from "@/components/ui/button";
 import heroImage from "@/assets/cta.png";
 
 const TELEGRAM_BOT_URL = "https://t.me/happiness4people_bot";
-const VIDEO_URL = "https://youtu.be/VZhCbEQUD-A?si=akJc1rkK_nx2LxL4";
+const VIDEO_URL = "";
 const HEADER_H = 0;
 
 function goPrograms() {
   const el = document.getElementById("programs");
+  if (!el) return;
+  el.scrollIntoView({ behavior: "smooth", block: "start" });
+}
+
+function goAuthor() {
+  const el = document.getElementById("avtor");
   if (!el) return;
   el.scrollIntoView({ behavior: "smooth", block: "start" });
 }
@@ -77,20 +83,15 @@ const CTA = () => {
                           Его строят шаг за шагом.
                         </p>
 
-                        {/* ✅ CTA — 3 кнопки */}
                         <div className="mt-8 sm:mt-10 flex flex-col sm:flex-row items-center justify-center gap-4">
-                        
-
-                          {/* 2) О программе -> Видео */}
                           <Button
                             size="xl"
-                            onClick={() => window.open(VIDEO_URL, "_blank")}
+                            onClick={goAuthor}
                             className="w-full sm:w-auto max-w-[320px] sm:max-w-none px-8 sm:px-12 rounded-full bg-yellow-400 text-black hover:bg-yellow-300 font-semibold"
                           >
                             О программе
                           </Button>
 
-                          {/* 3) Стать счастливым -> programs */}
                           <Button
                             size="xl"
                             onClick={goPrograms}

@@ -228,7 +228,7 @@ function BulletsModal({
                   </div>
                 </div>
 
-                {/* ✅ Для 49€ — 2 кнопки */}
+                {/* ✅ Для 49€ — 2 кнопки (лид-форма + вопросы) */}
                 {offer.id === "club" ? (
                   <div className="mt-3 grid gap-3">
                     <Button
@@ -401,11 +401,11 @@ function LeadFormModal({
   const [submitting, setSubmitting] = useState(false);
 
   const title =
-    offer?.id === "club" ? "Заявка на спецпредложение" : "Заявка на курс";
+    offer?.id === "club" ? "Заявка в клуб" : "Заявка на курс";
   const subtitle =
     offer?.id === "club"
-      ? "Оставьте контакты — вы перейдёте к оплате, а после успешной оплаты мы пришлём детали."
-      : "Оставьте контакты — вы перейдёте к оплате, а после успешной оплаты мы пришлём доступ.";
+      ? "Оставьте контакты — мы свяжемся с вами и пришлём детали."
+      : "Оставьте контакты — мы свяжемся с вами и пришлём доступ.";
 
   const resetAndClose = () => {
     setData({ name: "", contact: "", comment: "" });
@@ -435,7 +435,9 @@ function LeadFormModal({
         pageUrl: typeof window !== "undefined" ? window.location.href : "",
       };
 
-      const res = await fetch("/api/stripe/checkout", {
+      // ✅ ОПЛАТУ УБРАЛИ: теперь просто отправляем лид (сделай свой endpoint)
+      // ВАЖНО: создай /api/leads (или поменяй URL на свой), чтобы оно улетало в Telegram/CRM.
+      const res = await fetch("/api/leads", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
@@ -443,14 +445,15 @@ function LeadFormModal({
 
       if (!res.ok) {
         const text = await res.text().catch(() => "");
-        throw new Error(`Checkout API error: ${res.status} ${text}`);
+        throw new Error(`Lead API error: ${res.status} ${text}`);
       }
 
-      const json = await res.json().catch(() => ({} as any));
-      if (!json?.url) throw new Error("No checkout url returned");
-
       setSent(true);
-      window.location.href = json.url;
+      setSubmitting(false);
+
+      // ❌ Stripe checkout выключен
+      // const res = await fetch("/api/stripe/checkout", ...)
+      // window.location.href = json.url;
     } catch (err) {
       console.error(err);
       alert("Ошибка. Попробуйте ещё раз.");
@@ -520,11 +523,10 @@ function LeadFormModal({
                 {sent ? (
                   <div className="rounded-2xl bg-white/70 border border-black/10 p-4 sm:p-5">
                     <div className="font-sans font-extrabold text-black text-[18px] sm:text-[20px]">
-                      Перенаправляем на оплату…
+                      ✅ Заявка отправлена
                     </div>
                     <div className="mt-2 text-black/70 text-sm sm:text-base leading-relaxed">
-                      Сейчас откроется безопасная страница оплаты Stripe. После успешной
-                      оплаты заявка придёт нам в Telegram и мы свяжемся с вами.
+                      Спасибо! Мы получили вашу заявку и скоро свяжемся с вами.
                     </div>
 
                     <Button
@@ -596,11 +598,11 @@ function LeadFormModal({
                           : "bg-yellow-400 text-black hover:bg-yellow-300",
                       ].join(" ")}
                     >
-                      {submitting ? "Переходим к оплате..." : "Перейти к оплате"}
+                      {submitting ? "Отправляем..." : "Отправить заявку"}
                     </Button>
 
                     <div className="text-[12px] text-black/55 leading-snug">
-                      Нажимая «Перейти к оплате», вы соглашаетесь на обработку данных
+                      Нажимая «Отправить заявку», вы соглашаетесь на обработку данных
                       для связи с вами.
                     </div>
                   </form>
@@ -787,7 +789,6 @@ export default function Programs() {
         return;
       }
 
-      // если параметров нет — закрываем всё
       setLeadModalOpen(false);
       setBulletsModalOpen(false);
       setActiveOfferId(null);

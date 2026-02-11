@@ -3,24 +3,21 @@ import { useRef } from "react";
 import { ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import heroImage from "@/assets/cta.png";
+import { useNavigate } from "react-router-dom";
 
 const TELEGRAM_BOT_URL = "https://t.me/happiness4people_bot";
 const VIDEO_URL = "";
 const HEADER_H = 0;
 
-function goPrograms() {
-  const el = document.getElementById("programs");
+function scrollToId(id: string) {
+  const el = document.getElementById(id);
   if (!el) return;
   el.scrollIntoView({ behavior: "smooth", block: "start" });
 }
 
-function goAuthor() {
-  const el = document.getElementById("avtor");
-  if (!el) return;
-  el.scrollIntoView({ behavior: "smooth", block: "start" });
-}
+export default function CTA() {
+  const navigate = useNavigate();
 
-const CTA = () => {
   const ref = useRef(null);
   const isInView = useInView(ref, { once: true, margin: "-120px" });
 
@@ -32,6 +29,24 @@ const CTA = () => {
 
   const scale = useTransform(scrollYProgress, [0, 0.5], [0.8, 1]);
   const opacity = useTransform(scrollYProgress, [0, 0.3], [0, 1]);
+
+  // ✅ Открыть модал "club" (49€) "Узнать больше" прямо из CTA
+  // Programs читает: ?details=1&offerId=club
+  const openClubDetails = () => {
+    navigate(
+      { pathname: "/", search: "?details=1&offerId=club", hash: "#programs" },
+      { replace: false }
+    );
+
+    // ✅ ВАЖНО: navigate/pushState НЕ триггерит popstate.
+    // А Programs у тебя слушает popstate -> поэтому вручную триггерим событие.
+    window.dispatchEvent(new PopStateEvent("popstate"));
+
+    // На всякий случай докрутим до секции (в SPA hash иногда не идеально)
+    window.requestAnimationFrame(() => scrollToId("programs"));
+  };
+
+  const goPrograms = () => scrollToId("programs");
 
   return (
     <section ref={containerRef} className="bg-[#F6F1E7]">
@@ -84,9 +99,10 @@ const CTA = () => {
                         </p>
 
                         <div className="mt-8 sm:mt-10 flex flex-col sm:flex-row items-center justify-center gap-4">
+                          {/* ✅ теперь открывает модал "club" */}
                           <Button
                             size="xl"
-                            onClick={goAuthor}
+                            onClick={openClubDetails}
                             className="w-full sm:w-auto max-w-[320px] sm:max-w-none px-8 sm:px-12 rounded-full bg-yellow-400 text-black hover:bg-yellow-300 font-semibold"
                           >
                             О программе
@@ -116,6 +132,4 @@ const CTA = () => {
       </motion.div>
     </section>
   );
-};
-
-export default CTA;
+}

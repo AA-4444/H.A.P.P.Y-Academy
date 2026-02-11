@@ -6,44 +6,50 @@ const reviews = [
   {
 	name: "Мария К.",
 	role: "Предприниматель",
-	text: "За 3 недели я наконец-то перестала ходить по кругу. Ицхак даёт не мотивашки, а реальный план действий.",
+	text: "Я наконец-то перестала ходить по кругу. Ицхак даёт не мотивацию, а чёткую систему действий.",
 	rating: 5,
-	avatar: "https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=200&h=200&q=80",
+	avatar:
+	  "https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=200&h=200&q=80",
   },
   {
 	name: "Дмитрий П.",
 	role: "IT-специалист",
-	text: "Я скептически относился к подобным курсам, но здесь всё по-другому. Это действительно архитектура жизни.",
+	text: "Я скептически относился к подобным программам, но здесь всё по-другому. Это действительно архитектура жизни.",
 	rating: 5,
-	avatar: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=200&h=200&q=80",
+	avatar:
+	  "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=200&h=200&q=80",
   },
   {
 	name: "Елена С.",
 	role: "Психолог",
-	text: "Наконец-то нашла то, что искала годами. Мой уровень счастья вырос с 5 до 9 за 2 месяца.",
+	text: "Я наконец-то нашла то, что искала годами. Уровень внутреннего состояния и устойчивости вырос кардинально.",
 	rating: 5,
-	avatar: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?auto=format&fit=crop&w=200&h=200&q=80",
+	avatar:
+	  "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?auto=format&fit=crop&w=200&h=200&q=80",
   },
   {
 	name: "Алексей В.",
 	role: "Руководитель",
-	text: "Инвестиция окупилась уже в первый месяц — не деньгами, а качеством жизни.",
+	text: "Эта инвестиция полностью себя оправдала. Качество жизни и ясность мышления вышли на другой уровень.",
 	rating: 5,
-	avatar: "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&w=200&h=200&q=80",
+	avatar:
+	  "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&w=200&h=200&q=80",
   },
   {
 	name: "Анна М.",
 	role: "Коуч",
-	text: "Клуб стал моей точкой опоры. Zoom-сессии с Ицхаком — это мощно.",
+	text: "Клуб стал моей точкой опоры. Встречи с Ицхаком — это глубокая и сильная работа.",
 	rating: 5,
-	avatar: "https://images.unsplash.com/photo-1548142813-c348350df52b?auto=format&fit=crop&w=200&h=200&q=80",
+	avatar:
+	  "https://images.unsplash.com/photo-1548142813-c348350df52b?auto=format&fit=crop&w=200&h=200&q=80",
   },
   {
 	name: "Игорь Л.",
 	role: "Маркетолог",
-	text: "Это была лучшая инвестиция в себя за последние 5 лет. Рекомендую всем.",
+	text: "Это одна из самых сильных инвестиций в себя. Я рекомендую этот формат всем, кто хочет системных изменений.",
 	rating: 5,
-	avatar: "https://images.unsplash.com/photo-1520975916090-3105956dac38?auto=format&fit=crop&w=200&h=200&q=80",
+	avatar:
+	  "https://images.unsplash.com/photo-1520975916090-3105956dac38?auto=format&fit=crop&w=200&h=200&q=80",
   },
 ];
 
@@ -64,7 +70,7 @@ function Card({ review }: { review: (typeof reviews)[number] }) {
 	  </div>
 
 	  <p className="text-base sm:text-lg text-black/90 leading-relaxed min-h-[120px] sm:min-h-[140px] mb-6">
-		"{review.text}"
+		“{review.text}”
 	  </p>
 
 	  <div className="mt-auto flex items-center gap-4">
@@ -115,7 +121,6 @@ export default function QuickReviews() {
 		</h2>
 	  </div>
 
-	  {/* mobile: manual scroll */}
 	  {isMobile && (
 		<div className="flex gap-4 px-6 overflow-x-auto snap-x snap-mandatory scrollbar-hide">
 		  {reviews.map((r, i) => (
@@ -126,16 +131,21 @@ export default function QuickReviews() {
 		</div>
 	  )}
 
-	  {/* desktop: scroll animation */}
 	  {!isMobile && (
 		<>
-		  <motion.div style={{ x: x1 }} className="flex gap-6 mb-6 px-6 sm:px-8 lg:px-12">
+		  <motion.div
+			style={{ x: x1 }}
+			className="flex gap-6 mb-6 px-6 sm:px-8 lg:px-12"
+		  >
 			{[...reviews.slice(0, 3), ...reviews.slice(0, 3)].map((r, i) => (
 			  <Card key={`r1-${i}`} review={r} />
 			))}
 		  </motion.div>
 
-		  <motion.div style={{ x: x2 }} className="flex gap-6 px-6 sm:px-8 lg:px-12 -ml-48">
+		  <motion.div
+			style={{ x: x2 }}
+			className="flex gap-6 px-6 sm:px-8 lg:px-12 -ml-48"
+		  >
 			{[...reviews.slice(3, 6), ...reviews.slice(3, 6)].map((r, i) => (
 			  <Card key={`r2-${i}`} review={r} />
 			))}

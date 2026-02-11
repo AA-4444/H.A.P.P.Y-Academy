@@ -23,6 +23,8 @@ type LeadFormData = {
   comment: string;
 };
 
+const SUPPORT_HREF = "https://t.me/TataZakzheva/";
+
 function TitleWithBreaks({ text }: { text: string }) {
   const lines = String(text ?? "").split("\n");
   return (
@@ -53,6 +55,7 @@ function CheckItem({ text }: { text: string }) {
   );
 }
 
+/** ✅ Лочим скролл без прыжков */
 function useLockBodyScroll(locked: boolean) {
   useEffect(() => {
     if (!locked) return;
@@ -60,18 +63,13 @@ function useLockBodyScroll(locked: boolean) {
     const body = document.body;
     const html = document.documentElement;
 
-    // Сохраняем текущие значения
     const prevBodyOverflow = body.style.overflow;
     const prevBodyPaddingRight = body.style.paddingRight;
     const prevHtmlOverflow = html.style.overflow;
 
-    // Компенсируем исчезновение scrollbar на десктопе
     const scrollbarWidth = window.innerWidth - html.clientWidth;
-    if (scrollbarWidth > 0) {
-      body.style.paddingRight = `${scrollbarWidth}px`;
-    }
+    if (scrollbarWidth > 0) body.style.paddingRight = `${scrollbarWidth}px`;
 
-    // Блокируем скролл без position:fixed (без прыжков)
     body.style.overflow = "hidden";
     html.style.overflow = "hidden";
 
@@ -82,18 +80,44 @@ function useLockBodyScroll(locked: boolean) {
     };
   }, [locked]);
 }
+
+/** ✅ URL helpers */
+function setModalUrl(kind: "lead" | "details", offerId: string) {
+  if (typeof window === "undefined") return;
+  const url = new URL(window.location.href);
+  url.searchParams.delete("lead");
+  url.searchParams.delete("details");
+  url.searchParams.delete("offerId");
+
+  url.searchParams.set(kind, "1");
+  url.searchParams.set("offerId", offerId);
+
+  // hash не трогаем, чтобы не было лишних скроллов
+  window.history.pushState({ kind, offerId }, "", url.toString());
+}
+
+function clearModalUrl() {
+  if (typeof window === "undefined") return;
+  const url = new URL(window.location.href);
+  url.searchParams.delete("lead");
+  url.searchParams.delete("details");
+  url.searchParams.delete("offerId");
+  window.history.replaceState({}, "", url.toString());
+}
+
 function BulletsModal({
   open,
   onClose,
   offer,
+  onJoinClub,
 }: {
   open: boolean;
   onClose: () => void;
   offer: Offer | null;
+  onJoinClub: () => void;
 }) {
   useLockBodyScroll(open);
 
-  // close on ESC (ПК удобно)
   useEffect(() => {
     if (!open) return;
     const onKey = (e: KeyboardEvent) => {
@@ -103,11 +127,15 @@ function BulletsModal({
     return () => window.removeEventListener("keydown", onKey);
   }, [open, onClose]);
 
+  // ✅ safe top: чтобы на iPhone Chrome не съедало верх/скругления
+  const mobileSheetMaxH =
+    "calc(100dvh - env(safe-area-inset-top) - 12px)";
+  const mobileSheetTopGap = "calc(env(safe-area-inset-top) + 10px)";
+
   return (
     <AnimatePresence>
       {open && offer ? (
         <>
-          {/* overlay */}
           <motion.button
             type="button"
             aria-label="Закрыть"
@@ -127,10 +155,15 @@ function BulletsModal({
             transition={{ duration: 0.22, ease: "easeOut" }}
           >
             <div
-              className="mx-auto w-full max-w-[520px] rounded-t-[28px] bg-[#F6F1E7] shadow-2xl border border-black/10"
-              style={{ paddingBottom: "max(16px, env(safe-area-inset-bottom))" }}
+              className="mx-auto w-full max-w-[520px] rounded-t-[28px] bg-[#F6F1E7] shadow-2xl border border-black/10 overflow-hidden flex flex-col"
+              style={{
+                paddingBottom: "max(16px, env(safe-area-inset-bottom))",
+                maxHeight: mobileSheetMaxH,
+                marginTop: mobileSheetTopGap,
+              }}
             >
-              <div className="px-4 pt-4">
+              {/* header */}
+              <div className="px-4 pt-4 shrink-0">
                 <div className="flex items-start justify-between gap-3">
                   <div className="min-w-0">
                     <div className="text-[10px] uppercase tracking-[0.18em] text-black/45 font-semibold">
@@ -157,7 +190,8 @@ function BulletsModal({
                 <div className="mt-4 h-px bg-black/10" />
               </div>
 
-              <div className="px-4 pt-4 max-h-[55vh] max-h-[55dvh] overflow-auto pr-2">
+              {/* body scroll */}
+              <div className="px-4 pt-4 pr-2 overflow-auto min-h-0 flex-1">
                 <ul className="space-y-3 pb-2">
                   {offer.bullets.map((b, i) => (
                     <CheckItem key={i} text={b} />
@@ -176,7 +210,8 @@ function BulletsModal({
                 ) : null}
               </div>
 
-              <div className="px-4 pt-3">
+              {/* footer */}
+              <div className="px-4 pt-3 pb-4 shrink-0">
                 <div className="rounded-2xl bg-white/60 border border-black/10 p-3">
                   <div className="flex items-baseline justify-between">
                     <div className="text-black/60 text-xs uppercase tracking-[0.18em] font-semibold">
@@ -193,18 +228,40 @@ function BulletsModal({
                   </div>
                 </div>
 
-                <Button
-                  size="lg"
-                  className={[
-                    "mt-3 w-full rounded-full h-12 font-semibold",
-                    offer.variant === "yellow"
-                      ? "bg-[#E64B1E] text-white hover:opacity-95"
-                      : "bg-yellow-400 text-black hover:bg-yellow-300",
-                  ].join(" ")}
-                  onClick={onClose}
-                >
-                  Понятно
-                </Button>
+                {/* ✅ Для 49€ — 2 кнопки */}
+                {offer.id === "club" ? (
+                  <div className="mt-3 grid gap-3">
+                    <Button
+                      size="lg"
+                      className="w-full rounded-full h-12 font-semibold bg-[#E64B1E] text-white hover:opacity-95"
+                      onClick={onJoinClub}
+                    >
+                      Вступить в клуб <ArrowRight className="ml-2 h-5 w-5" />
+                    </Button>
+
+                    <a
+                      href={SUPPORT_HREF}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="w-full"
+                    >
+                      <Button
+                        size="lg"
+                        className="w-full rounded-full h-12 font-semibold bg-white/70 text-black border border-black/10 hover:bg-white"
+                      >
+                        Возникли вопросы <ArrowRight className="ml-2 h-5 w-5" />
+                      </Button>
+                    </a>
+                  </div>
+                ) : (
+                  <Button
+                    size="lg"
+                    className="mt-3 w-full rounded-full h-12 font-semibold bg-yellow-400 text-black hover:bg-yellow-300"
+                    onClick={onClose}
+                  >
+                    Понятно
+                  </Button>
+                )}
               </div>
             </div>
           </motion.div>
@@ -245,7 +302,7 @@ function BulletsModal({
                 <div className="mt-5 h-px bg-black/10" />
               </div>
 
-              <div className="px-6 py-6 max-h-[62vh] max-h-[62dvh] overflow-auto pr-4">
+              <div className="px-6 py-6 max-h-[62vh] supports-[height:62dvh]:max-h-[62dvh] overflow-auto pr-4">
                 <ul className="space-y-3">
                   {offer.bullets.map((b, i) => (
                     <CheckItem key={i} text={b} />
@@ -281,18 +338,39 @@ function BulletsModal({
                   </div>
                 </div>
 
-                <Button
-                  size="lg"
-                  className={[
-                    "mt-4 w-full rounded-full h-12 font-semibold",
-                    offer.variant === "yellow"
-                      ? "bg-[#E64B1E] text-white hover:opacity-95"
-                      : "bg-yellow-400 text-black hover:bg-yellow-300",
-                  ].join(" ")}
-                  onClick={onClose}
-                >
-                  Понятно
-                </Button>
+                {offer.id === "club" ? (
+                  <div className="mt-4 grid gap-3">
+                    <Button
+                      size="lg"
+                      className="w-full rounded-full h-12 font-semibold bg-[#E64B1E] text-white hover:opacity-95"
+                      onClick={onJoinClub}
+                    >
+                      Вступить в клуб <ArrowRight className="ml-2 h-5 w-5" />
+                    </Button>
+
+                    <a
+                      href={SUPPORT_HREF}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="w-full"
+                    >
+                      <Button
+                        size="lg"
+                        className="w-full rounded-full h-12 font-semibold bg-white/70 text-black border border-black/10 hover:bg-white"
+                      >
+                        Возникли вопросы <ArrowRight className="ml-2 h-5 w-5" />
+                      </Button>
+                    </a>
+                  </div>
+                ) : (
+                  <Button
+                    size="lg"
+                    className="mt-4 w-full rounded-full h-12 font-semibold bg-yellow-400 text-black hover:bg-yellow-300"
+                    onClick={onClose}
+                  >
+                    Понятно
+                  </Button>
+                )}
               </div>
             </div>
           </motion.div>
@@ -445,9 +523,8 @@ function LeadFormModal({
                       Перенаправляем на оплату…
                     </div>
                     <div className="mt-2 text-black/70 text-sm sm:text-base leading-relaxed">
-                      Сейчас откроется безопасная страница оплаты Stripe.
-                      После успешной оплаты заявка придёт нам в Telegram и мы
-                      свяжемся с вами.
+                      Сейчас откроется безопасная страница оплаты Stripe. После успешной
+                      оплаты заявка придёт нам в Telegram и мы свяжемся с вами.
                     </div>
 
                     <Button
@@ -523,8 +600,8 @@ function LeadFormModal({
                     </Button>
 
                     <div className="text-[12px] text-black/55 leading-snug">
-                      Нажимая «Перейти к оплате», вы соглашаетесь на обработку
-                      данных для связи с вами.
+                      Нажимая «Перейти к оплате», вы соглашаетесь на обработку данных
+                      для связи с вами.
                     </div>
                   </form>
                 )}
@@ -595,9 +672,7 @@ export default function Programs() {
         price: "49 €",
         priceNote: "/ М",
         ctaNote:
-          cd.msLeft > 0
-            ? `${cd.days}д ${cd.hours}:${cd.mins}:${cd.secs}`
-            : "Продажи открыты",
+          cd.msLeft > 0 ? `${cd.days}д ${cd.hours}:${cd.mins}:${cd.secs}` : "Продажи открыты",
         bullets: [
           "Видео-уроки и тренинги",
           "Полная система 10 элементов",
@@ -650,25 +725,80 @@ export default function Programs() {
     [offers, activeOfferId]
   );
 
+  /** ✅ Открыть details + URL */
   const openMore = (id: string) => {
     setActiveOfferId(id);
     setBulletsModalOpen(true);
+    setLeadModalOpen(false);
+    setModalUrl("details", id);
   };
 
+  /** ✅ Закрыть details + очистить URL */
   const closeMore = () => {
     setBulletsModalOpen(false);
     setActiveOfferId(null);
+    clearModalUrl();
   };
 
+  /** ✅ Открыть lead + URL */
   const openLead = (id: string) => {
     setActiveOfferId(id);
     setLeadModalOpen(true);
+    setBulletsModalOpen(false);
+    setModalUrl("lead", id);
   };
 
+  /** ✅ Закрыть lead + очистить URL */
   const closeLead = () => {
     setLeadModalOpen(false);
     setActiveOfferId(null);
+    clearModalUrl();
   };
+
+  /** ✅ “Вступить в клуб” из details → открываем lead */
+  const joinClubFromMore = () => {
+    if (!activeOfferId) return;
+    setBulletsModalOpen(false);
+    setLeadModalOpen(true);
+    setModalUrl("lead", activeOfferId);
+  };
+
+  /** ✅ Синхронизация модалок по URL + back/forward */
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+
+    const applyFromUrl = () => {
+      const sp = new URLSearchParams(window.location.search);
+      const lead = sp.get("lead");
+      const details = sp.get("details");
+      const offerId = sp.get("offerId");
+
+      if (lead === "1" && offerId) {
+        setActiveOfferId(offerId);
+        setLeadModalOpen(true);
+        setBulletsModalOpen(false);
+        return;
+      }
+
+      if (details === "1" && offerId) {
+        setActiveOfferId(offerId);
+        setBulletsModalOpen(true);
+        setLeadModalOpen(false);
+        return;
+      }
+
+      // если параметров нет — закрываем всё
+      setLeadModalOpen(false);
+      setBulletsModalOpen(false);
+      setActiveOfferId(null);
+    };
+
+    applyFromUrl();
+
+    const onPop = () => applyFromUrl();
+    window.addEventListener("popstate", onPop);
+    return () => window.removeEventListener("popstate", onPop);
+  }, []);
 
   return (
     <section id="programs" className="bg-[#F6F1E7]">
@@ -706,7 +836,7 @@ export default function Programs() {
           {offers.map((o, idx) => {
             const isYellow = o.variant === "yellow";
             const isLight = o.variant === "light";
-            const hidePrimaryCta = o.id === "club"; // ✅ убираем кнопку "войти в клуб"
+            const hidePrimaryCta = o.id === "club";
 
             return (
               <motion.article
@@ -725,7 +855,6 @@ export default function Programs() {
                 className={[
                   "relative flex flex-col",
                   "rounded-[32px] sm:rounded-[40px] overflow-hidden border",
-                  // одинаковая высота на ПК, без жесткой высоты на мобиле (чтобы не резало из-за табов)
                   "lg:min-h-[650px]",
                   "p-5 sm:p-10",
                   isYellow
@@ -768,7 +897,6 @@ export default function Programs() {
                       </div>
                     </div>
 
-                    {/* ✅ ТАЙМЕР — по центру, больше, красный */}
                     {o.ctaNote ? (
                       <div className="mt-4 text-center">
                         <div className="text-[11px] uppercase tracking-[0.18em] font-semibold text-black/55">
@@ -781,7 +909,6 @@ export default function Programs() {
                     ) : null}
 
                     <div className="mt-5 flex flex-col gap-3">
-                      {/* ✅ убрали кнопку на 49€ (club) */}
                       {!hidePrimaryCta ? (
                         <button
                           type="button"
@@ -837,7 +964,6 @@ export default function Programs() {
                           ) : null}
                         </div>
 
-                        {/* ✅ ТАЙМЕР — по центру, больше, красный */}
                         {o.ctaNote ? (
                           <div className="mt-5 text-center">
                             <div className="text-[11px] uppercase tracking-[0.18em] font-semibold text-black/55">
@@ -886,9 +1012,7 @@ export default function Programs() {
                       )}
                     </div>
 
-                    {/* низ = кнопки на одной линии у обеих карточек */}
                     <div className="mt-auto pt-7">
-                      {/* ✅ убрали кнопку "войти в клуб" */}
                       {!hidePrimaryCta ? (
                         <button
                           type="button"
@@ -905,7 +1029,6 @@ export default function Programs() {
                           <ArrowRight className="h-5 w-5" />
                         </button>
                       ) : (
-                        // сохраняем место, чтобы нижняя кнопка оставалась на той же высоте
                         <div className="h-12" />
                       )}
 
@@ -925,7 +1048,13 @@ export default function Programs() {
         </div>
       </div>
 
-      <BulletsModal open={bulletsModalOpen} onClose={closeMore} offer={activeOffer} />
+      <BulletsModal
+        open={bulletsModalOpen}
+        onClose={closeMore}
+        offer={activeOffer}
+        onJoinClub={joinClubFromMore}
+      />
+
       <LeadFormModal open={leadModalOpen} onClose={closeLead} offer={activeOffer} />
     </section>
   );

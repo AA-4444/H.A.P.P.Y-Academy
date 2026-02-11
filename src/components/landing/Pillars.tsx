@@ -12,12 +12,10 @@ import { Button } from "@/components/ui/button";
 
 const TELEGRAM_BOT_URL = "https://t.me/happiness4people_bot";
 
-
-
 const itemsBase = [
-  { label: "30 базовых упражнений" },
-  { label: "10 недель базового цикла" },
-  { label: "~30 минут в день" },
+  { label: "10 элементов счастья — структурная система" },
+  { label: "Поддержка кураторов и сопровождение" },
+  { label: "Встречи Q&A с Ицхаком — живые разборы" },
 ];
 
 const Pillars = () => {
@@ -32,13 +30,20 @@ const Pillars = () => {
     offset: ["start start", "end end"],
   });
 
-  const progress = useSpring(scrollYProgress, { stiffness: 140, damping: 24, mass: 0.8 });
+  const progress = useSpring(scrollYProgress, {
+    stiffness: 140,
+    damping: 24,
+    mass: 0.8,
+  });
 
   const [activeIndex, setActiveIndex] = useState(0);
 
   useEffect(() => {
     const unsub = progress.on("change", (v) => {
-      const idx = Math.max(0, Math.min(items.length - 1, Math.floor(v * items.length)));
+      const idx = Math.max(
+        0,
+        Math.min(items.length - 1, Math.floor(v * items.length))
+      );
       setActiveIndex(idx);
     });
     return () => unsub();
@@ -47,15 +52,12 @@ const Pillars = () => {
   const buttonsOpacity = useTransform(progress, [0.8, 0.95], [0, 1]);
   const buttonsY = useTransform(progress, [0.8, 0.95], [40, 0]);
   const buttonsBlur = useTransform(progress, [0.8, 0.95], [15, 0]);
-  
-  const goPrograms = () => {
-  const el = document.getElementById("programs");
-  if (!el) return;
-  
-  
-  el.scrollIntoView({ behavior: "smooth", block: "start" });
-  };
 
+  const goPrograms = () => {
+    const el = document.getElementById("programs");
+    if (!el) return;
+    el.scrollIntoView({ behavior: "smooth", block: "start" });
+  };
 
   return (
     <section
@@ -65,12 +67,19 @@ const Pillars = () => {
         minHeight: `calc(100vh + ${items.length * 200}px)`,
       }}
     >
-      <div ref={stickyRef} className="sticky top-0 h-screen flex items-center justify-center">
+      <div
+        ref={stickyRef}
+        className="sticky top-0 h-screen flex items-center justify-center"
+      >
         <div className="container mx-auto px-4 sm:px-6 flex justify-center">
           <div className="max-w-fit w-full flex flex-col items-start">
             <motion.div
               initial={{ opacity: 0, x: -20, filter: "blur(10px)" }}
-              animate={isInView ? { opacity: 1, x: 0, filter: "blur(0px)" } : {}}
+              animate={
+                isInView
+                  ? { opacity: 1, x: 0, filter: "blur(0px)" }
+                  : {}
+              }
               transition={{ duration: 0.8 }}
               className="w-full"
             >
@@ -80,7 +89,7 @@ const Pillars = () => {
               </span>
 
               <h2 className="font-sans font-extrabold tracking-tight text-black text-4xl sm:text-4xl md:text-6xl leading-[1.1] mb-8 sm:mb-12">
-                Это не мотивация. Это протокол внедрения.
+                Это не мотивация. Это система.
               </h2>
 
               <div className="flex flex-col w-full">
@@ -97,17 +106,20 @@ const Pillars = () => {
                   ))}
                 </div>
 
-               
                 <motion.p
                   initial={{ opacity: 0, y: 10, filter: "blur(8px)" }}
-                  animate={isInView ? { opacity: 1, y: 0, filter: "blur(0px)" } : {}}
+                  animate={
+                    isInView
+                      ? { opacity: 1, y: 0, filter: "blur(0px)" }
+                      : {}
+                  }
                   transition={{ duration: 0.6, delay: 0.12, ease: "easeOut" }}
-                  className="mt-8 sm:mt-10 font-sans text-black/60 text-sm sm:text-base leading-relaxed max-w-[60ch]"
+                  className="mt-8 sm:mt-10 font-sans text-black/65 text-base sm:text-lg leading-relaxed max-w-[60ch]"
                 >
-                  Система встраивается в мышление, внимание и поведение.
+                  Ты выстраиваешь внутреннюю опору и баланс — через систему, а не
+                  через вдохновение.
                 </motion.p>
 
-               
                 <motion.div
                   className="mt-10 sm:mt-14 flex flex-col gap-3 sm:gap-4 w-full"
                   style={{
@@ -118,13 +130,11 @@ const Pillars = () => {
                 >
                   <Button
                     size="lg"
-                   onClick={goPrograms}
+                    onClick={goPrograms}
                     className="w-full rounded-full bg-yellow-400 text-black hover:bg-yellow-300 font-bold h-14 sm:h-16 text-sm sm:text-lg shadow-sm"
                   >
-                   Стать счастливым
+                    Стать счастливым
                   </Button>
-
-               
                 </motion.div>
               </div>
             </motion.div>

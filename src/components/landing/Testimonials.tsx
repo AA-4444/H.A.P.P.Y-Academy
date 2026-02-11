@@ -20,21 +20,24 @@ export default function Testimonials() {
         id: "rybakov",
         avatar: avaNatalya,
         name: "Игорь Рыбаков",
-        subtitle: "Долларовый миллиардер. В ТОП-100 Forbes.",
+        subtitle:
+          "Миллиардер, со-основатель корпорации ТЕХНОНИКОЛЬ, инвестор, участник списка Forbes",
         text: `«Ицхак спасибо! Ты первый человек, который так мощно сделал заход в «духовно-материальные планы». Все думают, что в духовном и материальном плане у меня все амбиции удовлетворены. Но конечно же не все))) Спасибо тебе мой дорогой друг!».`,
       },
       {
         id: "chernyak",
         avatar: avaOlga,
         name: "Евгений Черняк",
-        subtitle: "Долларовый мультимиллионер.",
+        subtitle:
+          "Предприниматель, основатель Global Spirits. Автор бизнес-подкаста Big Money, мультимиллионер",
         text: `«Ицхак — тренер №1, по нашим замерам, после которого растет эффективность торговой команды».`,
       },
       {
         id: "hartmann",
         avatar: avaGalina,
         name: "Оскар Хартманн",
-        subtitle: "Долларовый мультимиллионер. Серийный предприниматель.",
+        subtitle:
+          "Серийный предприниматель и венчурный инвестор. Со-основатель KupiVIP, инвестор 100+ стартапов, мультимиллионер",
         text: `«Ицхак — один из лидирующих людей, который говорит про все вопросы, про которые не говорят в школе».
 
 Предисловие из книги «Делай Просто. Просто делай»:
@@ -46,11 +49,8 @@ export default function Testimonials() {
 
   const [active, setActive] = useState(0);
   const [isHovering, setIsHovering] = useState(false);
-
-  // пауза автопереключения после ручного действия
   const [pausedUntil, setPausedUntil] = useState<number>(0);
 
-  // фиксируем высоту блока, чтобы секция не "прыгала"
   const [fixedHeight, setFixedHeight] = useState<number | null>(null);
   const measureRefs = useRef<(HTMLDivElement | null)[]>([]);
 
@@ -100,7 +100,7 @@ export default function Testimonials() {
           </div>
         </div>
 
-        {/* измеритель: скрытый, но участвует в расчёте высоты */}
+        {/* измеритель */}
         <div className="pointer-events-none absolute opacity-0 -z-10">
           {testimonials.map((x, i) => (
             <div
@@ -116,14 +116,23 @@ export default function Testimonials() {
               <p className="mt-4 font-sans text-lg md:text-2xl">
                 {x.subtitle}
               </p>
-              <p className="mt-8 font-sans text-lg md:text-2xl leading-relaxed whitespace-pre-line">
-                {x.text}
-              </p>
+             <p
+               className="
+                 mt-8
+                 font-serif italic
+                 text-black/90
+                 text-lg sm:text-xl lg:text-2xl
+                 leading-relaxed sm:leading-[1.55] lg:leading-[1.6]
+                 whitespace-pre-line
+               "
+             >
+               {t.text}
+             </p>
             </div>
           ))}
         </div>
 
-        {/* центральный текст */}
+        {/* основной контент */}
         <div
           className="mt-12 text-center mx-auto max-w-5xl"
           style={fixedHeight ? { minHeight: fixedHeight } : undefined}
@@ -136,7 +145,6 @@ export default function Testimonials() {
               exit={{ opacity: 0, y: -10 }}
               transition={{ duration: 0.35, ease: "easeOut" }}
             >
-              {/* НА ПК БОЛЬШЕ */}
               <h3 className="font-sans font-extrabold tracking-tight text-4xl sm:text-5xl lg:text-6xl text-black leading-[1.05]">
                 {t.name}
               </h3>
@@ -175,20 +183,15 @@ export default function Testimonials() {
                     <div
                       className={[
                         "rounded-full transition",
-                        // НА ПК БОЛЬШЕ кольцо
                         "ring-[3px] lg:ring-[4px]",
                         "ring-offset-4 lg:ring-offset-6",
                         "ring-offset-[#F7F3EE]",
-                        isActive ? "ring-accent" : "ring-black/10 group-hover:ring-black/25",
+                        isActive
+                          ? "ring-accent"
+                          : "ring-black/10 group-hover:ring-black/25",
                       ].join(" ")}
                     >
-                      <div
-                        className={[
-                          "rounded-full overflow-hidden",
-                          // НА ПК БОЛЬШЕ фото
-                          "h-20 w-20 sm:h-24 sm:w-24 lg:h-32 lg:w-32",
-                        ].join(" ")}
-                      >
+                      <div className="rounded-full overflow-hidden h-20 w-20 sm:h-24 sm:w-24 lg:h-32 lg:w-32">
                         <img
                           src={p.avatar}
                           alt={p.name}
@@ -201,9 +204,10 @@ export default function Testimonials() {
                     <div
                       className={[
                         "text-center font-sans font-semibold leading-tight transition",
-                        // НА ПК БОЛЬШЕ подпись
                         "text-sm sm:text-base lg:text-lg",
-                        isActive ? "text-black" : "text-black/55 group-hover:text-black/75",
+                        isActive
+                          ? "text-black"
+                          : "text-black/55 group-hover:text-black/75",
                       ].join(" ")}
                     >
                       {p.name}

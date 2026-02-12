@@ -47,7 +47,7 @@ export default function ReviewPage() {
 		pageUrl: typeof window !== "undefined" ? window.location.href : "",
 	  };
 
-	  const res = await fetch("/api/leads", {
+	  const res = await fetch("/api/lead", {
 		method: "POST",
 		headers: { "Content-Type": "application/json" },
 		body: JSON.stringify(payload),

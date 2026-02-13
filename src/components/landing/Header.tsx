@@ -3,6 +3,9 @@ import { motion, AnimatePresence, LayoutGroup } from "framer-motion";
 import { Menu, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import logo from "@/assets/logo.svg";
+import { Link } from "react-router-dom";
+
+const MotionLink = motion(Link);
 
 const TELEGRAM_BOT_URL = "https://t.me/TataZakzheva";
 
@@ -68,28 +71,28 @@ const Header = () => {
       >
         {/* TOP BAR */}
         <div className="mx-auto max-w-7xl px-4 md:px-6 h-16 md:h-20 flex items-center justify-between gap-3 min-w-0">
-          {/* Logo */}
-          <motion.a
-            href="#"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.45 }}
-            className="flex items-center min-w-0"
-            aria-label="H.A.P.P.Y Academy"
-          >
-            <img
-              src={logo}
-              alt="H.A.P.P.Y Academy"
-              draggable={false}
-              className="
-                h-10 sm:h-11 md:h-12 lg:h-14
-                w-auto
-                max-w-[180px] sm:max-w-[200px]
-                object-contain
-                shrink
-              "
-            />
-          </motion.a>
+        {/* Logo */}
+        <MotionLink
+          to="/"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.45 }}
+          className="flex items-center min-w-0"
+          aria-label="H.A.P.P.Y Academy"
+        >
+          <img
+            src={logo}
+            alt="H.A.P.P.Y Academy"
+            draggable={false}
+            className="
+              h-10 sm:h-11 md:h-12 lg:h-14
+              w-auto
+              max-w-[180px] sm:max-w-[200px]
+              object-contain
+              shrink
+            "
+          />
+        </MotionLink>
 
           {/* Desktop Nav */}
           <nav className="hidden md:flex items-center gap-8 shrink-0">

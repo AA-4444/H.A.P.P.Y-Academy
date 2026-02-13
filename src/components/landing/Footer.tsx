@@ -150,22 +150,29 @@ const Footer = () => {
               ))}
             </div>
 
-            {/* BOTTOM BAR */}
-            <div className="mt-20 pt-10 border-t border-white/30 flex flex-col md:flex-row items-center justify-between gap-6 text-white/85 text-sm">
-              <img src={logo} alt="H.A.P.P.Y Academy" className="h-8" draggable={false} />
-
-              <div className="flex flex-wrap items-center gap-4 justify-center">
-                <a href="#" className="hover:text-white">
-                  Политика конфиденциальности
-                </a>
-                <span className="opacity-50">|</span>
-                <a href="#" className="hover:text-white">
-                  Условия использования
-                </a>
-                <span className="opacity-50">|</span>
-                <span>© 2026. Все права защищены.</span>
-              </div>
+          {/* BOTTOM BAR */}
+          <div className="mt-20 pt-10 border-t border-white/30 flex flex-col md:flex-row items-center justify-between gap-6 text-white/85 text-sm">
+            <img src={logo} alt="H.A.P.P.Y Academy" className="h-8" draggable={false} />
+          
+            <div className="flex flex-wrap items-center gap-4 justify-center">
+              <a href="/privacy" className="hover:text-white">
+                Политика конфиденциальности
+              </a>
+              <span className="opacity-50">|</span>
+          
+              <a href="/terms" className="hover:text-white">
+                Условия использования
+              </a>
+              <span className="opacity-50">|</span>
+          
+              <a href="/refund" className="hover:text-white">
+                Возврат
+              </a>
+              <span className="opacity-50">|</span>
+          
+              <span>© 2026. Все права защищены.</span>
             </div>
+          </div>
           </div>
         </div>
       </div>

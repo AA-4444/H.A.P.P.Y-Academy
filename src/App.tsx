@@ -6,6 +6,9 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import ProgramsOnlyPage from "./pages/ProgramsOnlyPage";
 import ClubPage from "./pages/ClubPage";
 import ReviewPage from "./pages/ReviewPage";
+import PrivacyPage from "./pages/PrivacyPage";
+import TermsPage from "./pages/TermsPage";
+import RefundPage from "./pages/RefundPage";
 
 
 import Index from "./pages/Index";
@@ -29,8 +32,11 @@ const App = () => (
          <Route path="/programs" element={<ProgramsOnlyPage />} />
           <Route path="/payment/success" element={<PaymentSuccess />} />
           <Route path="/payment/cancel" element={<PaymentCancel />} />
-            <Route path="/club" element={<ClubPage />} />
-              <Route path="/review" element={<ReviewPage />} />
+          <Route path="/club" element={<ClubPage />} />
+          <Route path="/review" element={<ReviewPage />} />
+            <Route path="/privacy" element={<PrivacyPage />} />
+            <Route path="/terms" element={<TermsPage />} />
+            <Route path="/refund" element={<RefundPage />} />
 
          
           <Route path="*" element={<NotFound />} />

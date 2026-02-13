@@ -19,7 +19,8 @@ type Offer = {
 
 type LeadFormData = {
   name: string;
-  contact: string;
+  phone: string;
+  telegram: string;
   comment: string;
 };
 
@@ -128,8 +129,7 @@ function BulletsModal({
   }, [open, onClose]);
 
   // ✅ safe top: чтобы на iPhone Chrome не съедало верх/скругления
-  const mobileSheetMaxH =
-    "calc(100dvh - env(safe-area-inset-top) - 12px)";
+  const mobileSheetMaxH = "calc(100dvh - env(safe-area-inset-top) - 12px)";
   const mobileSheetTopGap = "calc(env(safe-area-inset-top) + 10px)";
 
   return (
@@ -231,7 +231,14 @@ function BulletsModal({
                 {/* ✅ Для 49€ — 2 кнопки */}
                 {offer.id === "club" ? (
                   <div className="mt-3 grid gap-3">
-                 
+                    <Button
+                      size="lg"
+                      className="w-full rounded-full h-12 font-semibold bg-[#E64B1E] text-white hover:opacity-95"
+                      onClick={onJoinClub}
+                    >
+                      Вступить в клуб <ArrowRight className="ml-2 h-5 w-5" />
+                    </Button>
+
                     <a
                       href={SUPPORT_HREF}
                       target="_blank"
@@ -333,7 +340,13 @@ function BulletsModal({
 
                 {offer.id === "club" ? (
                   <div className="mt-4 grid gap-3">
-                    
+                    <Button
+                      size="lg"
+                      className="w-full rounded-full h-12 font-semibold bg-[#E64B1E] text-white hover:opacity-95"
+                      onClick={onJoinClub}
+                    >
+                      Вступить в клуб <ArrowRight className="ml-2 h-5 w-5" />
+                    </Button>
 
                     <a
                       href={SUPPORT_HREF}
@@ -367,6 +380,25 @@ function BulletsModal({
   );
 }
 
+function normalizeTelegram(raw: string) {
+  const t = String(raw ?? "").trim();
+  if (!t) return "";
+
+  // убираем ВСЕ ведущие @, потом добавим один
+  const noAt = t.replace(/^@+/, "");
+
+  // Telegram username: латиница/цифры/underscore, 5..32 (часто)
+  // оставим мягкую нормализацию: выкинуть пробелы
+  const cleaned = noAt.replace(/\s+/g, "");
+
+  return cleaned ? `@${cleaned}` : "";
+}
+
+function isTelegramValid(tg: string) {
+  // @ + [a-zA-Z0-9_]{4,31}  => итого 5..32
+  return /^@[a-zA-Z0-9_]{4,31}$/.test(tg);
+}
+
 function LeadFormModal({
   open,
   onClose,
@@ -380,22 +412,22 @@ function LeadFormModal({
 
   const [data, setData] = useState<LeadFormData>({
     name: "",
-    contact: "",
+    phone: "",
+    telegram: "",
     comment: "",
   });
 
   const [sent, setSent] = useState(false);
   const [submitting, setSubmitting] = useState(false);
 
-  const title =
-    offer?.id === "club" ? "Заявка на спецпредложение" : "Заявка на курс";
+  const title = offer?.id === "club" ? "Заявка на клуб" : "Заявка на курс";
   const subtitle =
     offer?.id === "club"
       ? "Оставьте контакты — вы перейдёте к оплате, а после успешной оплаты мы пришлём детали."
       : "Оставьте контакты — вы перейдёте к оплате, а после успешной оплаты мы пришлём доступ.";
 
   const resetAndClose = () => {
-    setData({ name: "", contact: "", comment: "" });
+    setData({ name: "", phone: "", telegram: "", comment: "" });
     setSent(false);
     setSubmitting(false);
     onClose();
@@ -406,9 +438,15 @@ function LeadFormModal({
     if (submitting) return;
     if (!offer) return;
 
-    const nameOk = data.name.trim().length >= 2;
-    const contactOk = data.contact.trim().length >= 5;
-    if (!nameOk || !contactOk) return;
+    const name = data.name.trim();
+    const phone = data.phone.trim();
+    const telegram = normalizeTelegram(data.telegram);
+
+    const nameOk = name.length >= 2;
+    const phoneOk = phone.length >= 5;
+    const tgOk = isTelegramValid(telegram);
+
+    if (!nameOk || !phoneOk || !tgOk) return;
 
     setSubmitting(true);
 
@@ -416,8 +454,9 @@ function LeadFormModal({
       const payload = {
         offerId: offer.id,
         offerTitle: offer.title,
-        name: data.name.trim(),
-        contact: data.contact.trim(),
+        name,
+        // ✅ contact оставляем строкой, чтобы не ломать бэк (и чтобы не было @@)
+        contact: `Телефон: ${phone} | Telegram: ${telegram}`,
         comment: data.comment.trim(),
         pageUrl: typeof window !== "undefined" ? window.location.href : "",
       };
@@ -444,6 +483,9 @@ function LeadFormModal({
       setSubmitting(false);
     }
   };
+
+  const telegramNormalizedPreview = normalizeTelegram(data.telegram);
+  const tgValidNow = telegramNormalizedPreview ? isTelegramValid(telegramNormalizedPreview) : false;
 
   return (
     <AnimatePresence>
@@ -510,8 +552,8 @@ function LeadFormModal({
                       Перенаправляем на оплату…
                     </div>
                     <div className="mt-2 text-black/70 text-sm sm:text-base leading-relaxed">
-                      Сейчас откроется безопасная страница оплаты Stripe. После успешной
-                      оплаты заявка придёт нам в Telegram и мы свяжемся с вами.
+                      Сейчас откроется безопасная страница оплаты Stripe. После успешной оплаты
+                      заявка придёт нам в Telegram и мы свяжемся с вами.
                     </div>
 
                     <Button
@@ -541,17 +583,52 @@ function LeadFormModal({
 
                     <div>
                       <label className="block text-xs uppercase tracking-[0.18em] font-semibold text-black/55">
-                        Телефон или Telegram
+                        Телефон
                       </label>
                       <input
-                        value={data.contact}
+                        value={data.phone}
                         onChange={(e) =>
-                          setData((p) => ({ ...p, contact: e.target.value }))
+                          setData((p) => ({ ...p, phone: e.target.value }))
                         }
                         className="mt-2 w-full h-12 rounded-2xl px-4 bg-white/70 border border-black/10 outline-none focus:ring-2 focus:ring-black/20"
-                        placeholder="+49… или @username"
+                        placeholder="+49…"
                         autoComplete="tel"
+                        inputMode="tel"
                       />
+                    </div>
+
+                    <div>
+                      <label className="block text-xs uppercase tracking-[0.18em] font-semibold text-black/55">
+                        Telegram (обязательно)
+                      </label>
+                      <input
+                        value={data.telegram}
+                        onChange={(e) =>
+                          setData((p) => ({ ...p, telegram: e.target.value }))
+                        }
+                        onBlur={() =>
+                          setData((p) => ({ ...p, telegram: normalizeTelegram(p.telegram) }))
+                        }
+                        className={[
+                          "mt-2 w-full h-12 rounded-2xl px-4 bg-white/70 border outline-none focus:ring-2 focus:ring-black/20",
+                          telegramNormalizedPreview.length === 0
+                            ? "border-black/10"
+                            : tgValidNow
+                            ? "border-black/10"
+                            : "border-red-500/40",
+                        ].join(" ")}
+                        placeholder="@username"
+                        autoComplete="off"
+                      />
+                      {telegramNormalizedPreview && !tgValidNow ? (
+                        <div className="mt-2 text-xs text-red-700">
+                          Введите Telegram-ник в формате <b>@username</b> (латиница/цифры/underscore).
+                        </div>
+                      ) : (
+                        <div className="mt-2 text-xs text-black/45">
+                          Формат: <b>@username</b>. Мы сами уберём лишние «@», чтобы не было @@.
+                        </div>
+                      )}
                     </div>
 
                     <div>
@@ -574,7 +651,8 @@ function LeadFormModal({
                       disabled={
                         submitting ||
                         data.name.trim().length < 2 ||
-                        data.contact.trim().length < 5
+                        data.phone.trim().length < 5 ||
+                        !isTelegramValid(normalizeTelegram(data.telegram))
                       }
                       className={[
                         "w-full rounded-full h-12 font-semibold",
@@ -824,6 +902,7 @@ export default function Programs() {
             const isYellow = o.variant === "yellow";
             const isLight = o.variant === "light";
             const hidePrimaryCta = o.id === "club";
+            const showArrowInCta = o.id !== "path"; // ✅ убрали стрелку только у "Стать счастливым"
 
             return (
               <motion.article
@@ -909,7 +988,7 @@ export default function Programs() {
                           ].join(" ")}
                         >
                           <span className="text-[14px]">{o.cta}</span>
-                          <ArrowRight className="h-4 w-4" />
+                          {showArrowInCta ? <ArrowRight className="h-4 w-4" /> : null}
                         </button>
                       ) : null}
 
@@ -1013,7 +1092,7 @@ export default function Programs() {
                           ].join(" ")}
                         >
                           {o.cta}
-                          <ArrowRight className="h-5 w-5" />
+                          {showArrowInCta ? <ArrowRight className="h-5 w-5" /> : null}
                         </button>
                       ) : (
                         <div className="h-12" />

@@ -15,7 +15,7 @@ const TELEGRAM_BOT_URL = "https://t.me/happiness4people_bot";
 const itemsBase = [
   { label: "10 элементов счастья — структурная система" },
   { label: "Поддержка кураторов и сопровождение" },
-  { label: "Встречи Q&A с Ицхаком — живые разборы" },
+  { label: "Видео-уроки и практические занятия" },
 ];
 
 const Pillars = () => {

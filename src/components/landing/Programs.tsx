@@ -231,13 +231,7 @@ function BulletsModal({
                 {/* ✅ Для 49€ — 2 кнопки */}
                 {offer.id === "club" ? (
                   <div className="mt-3 grid gap-3">
-                    <Button
-                      size="lg"
-                      className="w-full rounded-full h-12 font-semibold bg-[#E64B1E] text-white hover:opacity-95"
-                      onClick={onJoinClub}
-                    >
-                      Вступить в клуб <ArrowRight className="ml-2 h-5 w-5" />
-                    </Button>
+                   
 
                     <a
                       href={SUPPORT_HREF}
@@ -340,13 +334,7 @@ function BulletsModal({
 
                 {offer.id === "club" ? (
                   <div className="mt-4 grid gap-3">
-                    <Button
-                      size="lg"
-                      className="w-full rounded-full h-12 font-semibold bg-[#E64B1E] text-white hover:opacity-95"
-                      onClick={onJoinClub}
-                    >
-                      Вступить в клуб <ArrowRight className="ml-2 h-5 w-5" />
-                    </Button>
+                   
 
                     <a
                       href={SUPPORT_HREF}

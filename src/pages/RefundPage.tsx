@@ -46,9 +46,19 @@ export default function RefundPage() {
 				</section>
 
 				<section>
-				  <h2 className="text-black font-bold text-lg">4. Контакты поддержки</h2>
+				  <h2 className="text-black font-bold text-lg">
+					4. Контакты поддержки
+				  </h2>
 				  <p className="mt-2">
-					Telegram: <b>@TataZakzheva</b>
+					Telegram:{" "}
+					<a
+					  href="https://t.me/TataZakzheva"
+					  target="_blank"
+					  rel="noopener noreferrer"
+					  className="font-semibold text-[#E64B1E] hover:underline"
+					>
+					  @TataZakzheva
+					</a>
 				  </p>
 				</section>
 

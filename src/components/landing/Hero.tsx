@@ -356,24 +356,23 @@ function OrangeHeroBlock() {
 
   return (
     <div className="relative z-10 h-full w-full">
-      {/* ✅ FIX: на ПК делаем БЛОК ШИРЕ (меньше боковых отступов) */}
+      
       <div
         className={[
           "h-full flex items-center justify-center",
-          // было: px-4 sm:px-10 lg:px-14 (слишком много на ПК)
-          // стало: компактные поля на ПК, блок почти на всю ширину
+   
           "px-3 sm:px-6 lg:px-8 xl:px-10",
-          // вертикаль оставляем как у тебя (на мобиле уже компактно)
+         
           "pt-[calc(0.25rem+88px)] pb-6",
           "sm:pt-[calc(0.75rem+88px)] sm:pb-10",
           "lg:pt-[calc(0.75rem+88px)] lg:pb-10",
         ].join(" ")}
       >
         <div className="w-full">
-          {/* ✅ FIX: ограничение ширины подняли, чтобы не было “узкого окна” */}
+         
           <div className="mx-auto w-full max-w-[1280px]">
             <div className="rounded-[26px] sm:rounded-[36px] lg:rounded-[44px] bg-white/10 backdrop-blur-md border border-white/20 overflow-hidden shadow-2xl">
-              {/* ✅ FIX: внутри тоже меньше бокового воздуха на больших экранах */}
+              
               <div className="px-5 sm:px-8 lg:px-10 py-10 sm:py-16 lg:py-16">
                 <div className="mx-auto max-w-6xl text-center">
                   <motion.h2
@@ -402,7 +401,7 @@ function OrangeHeroBlock() {
                       onClick={goPrograms}
                       className="rounded-full px-10 bg-yellow-400 text-black hover:bg-yellow-300 font-semibold"
                     >
-                      Стать счастливым
+                      О программе
                     </Button>
                   </div>
 

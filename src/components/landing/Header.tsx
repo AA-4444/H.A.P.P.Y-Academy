@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { motion, AnimatePresence, LayoutGroup } from "framer-motion";
 import { Menu, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import logo from "@/assets/logo.svg";
+import logo from "@/assets/newlogo.svg";
 import { useNavigate, useLocation } from "react-router-dom";
 
 const TELEGRAM_BOT_URL = "https://t.me/TataZakzheva";

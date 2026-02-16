@@ -10,7 +10,7 @@ import {
   User,
 } from "lucide-react";
 import { FaTiktok } from "react-icons/fa";
-import logo from "@/assets/logo.svg";
+import logo from "@/assets/newlogo.svg";
 
 type SocialItem = {
   label: string;

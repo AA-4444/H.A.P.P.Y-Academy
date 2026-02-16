@@ -1,3 +1,4 @@
+// Programs.tsx
 import { useEffect, useMemo, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ArrowRight, X } from "lucide-react";
@@ -231,8 +232,6 @@ function BulletsModal({
                 {/* ✅ Для 49€ — 2 кнопки */}
                 {offer.id === "club" ? (
                   <div className="mt-3 grid gap-3">
-                   
-
                     <a
                       href={SUPPORT_HREF}
                       target="_blank"
@@ -334,8 +333,6 @@ function BulletsModal({
 
                 {offer.id === "club" ? (
                   <div className="mt-4 grid gap-3">
-                   
-
                     <a
                       href={SUPPORT_HREF}
                       target="_blank"
@@ -371,20 +368,25 @@ function BulletsModal({
 function normalizeTelegram(raw: string) {
   const t = String(raw ?? "").trim();
   if (!t) return "";
-
-  // убираем ВСЕ ведущие @, потом добавим один
   const noAt = t.replace(/^@+/, "");
-
-  // Telegram username: латиница/цифры/underscore, 5..32 (часто)
-  // оставим мягкую нормализацию: выкинуть пробелы
   const cleaned = noAt.replace(/\s+/g, "");
-
   return cleaned ? `@${cleaned}` : "";
 }
 
 function isTelegramValid(tg: string) {
-  // @ + [a-zA-Z0-9_]{4,31}  => итого 5..32
   return /^@[a-zA-Z0-9_]{4,31}$/.test(tg);
+}
+
+/** ✅ стабильный leadId, чтобы связать "заявка создана" и "оплата успешна" */
+function createLeadId() {
+  // современно: crypto.randomUUID()
+  // fallback: простая генерация
+  try {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const c: any = typeof crypto !== "undefined" ? crypto : null;
+    if (c?.randomUUID) return c.randomUUID();
+  } catch {}
+  return `lead_${Date.now()}_${Math.random().toString(16).slice(2)}`;
 }
 
 function LeadFormModal({
@@ -411,8 +413,8 @@ function LeadFormModal({
   const title = offer?.id === "club" ? "Заявка на клуб" : "Заявка на курс";
   const subtitle =
     offer?.id === "club"
-      ? "Оставьте контакты — вы перейдёте к оплате, а после успешной оплаты мы пришлём детали."
-      : "Оставьте контакты — вы перейдёте к оплате, а после успешной оплаты мы пришлём доступ.";
+      ? "Оставьте контакты — вы перейдёте к оплате. После успешной оплаты мы пришлём детали."
+      : "Оставьте контакты — вы перейдёте к оплате. После успешной оплаты мы пришлём доступ.";
 
   const resetAndClose = () => {
     setData({ name: "", phone: "", telegram: "", comment: "" });
@@ -433,17 +435,31 @@ function LeadFormModal({
     const nameOk = name.length >= 2;
     const phoneOk = phone.length >= 5;
     const tgOk = isTelegramValid(telegram);
-
     if (!nameOk || !phoneOk || !tgOk) return;
 
     setSubmitting(true);
 
+    // ✅ один id на этот checkout (его же кладём в Stripe metadata на бэке)
+    const leadId = createLeadId();
+
     try {
+      /**
+       * ВАЖНО: логика разделена так:
+       * 1) сейчас отправляем "ЛИД СОЗДАН / ОЖИДАЕТ ОПЛАТЫ" (или бэк пусть это сделает)
+       * 2) после успешной оплаты — Stripe webhook присылает второе сообщение "ОПЛАЧЕНО"
+       *
+       * Для этого мы передаём leadId на /api/stripe/checkout,
+       * а бэкенд должен:
+       * - отправить Telegram "pre_payment" при создании checkout
+       * - записать leadId в metadata Stripe session/payment_intent
+       * - в webhook (checkout.session.completed) отправить Telegram "paid"
+       */
       const payload = {
+        leadId,
+        stage: "pre_payment" as const, // 👈 чтобы бэк явно знал, что это "до оплаты"
         offerId: offer.id,
         offerTitle: offer.title,
         name,
-        // ✅ contact оставляем строкой, чтобы не ломать бэк (и чтобы не было @@)
         contact: `Телефон: ${phone} | Telegram: ${telegram}`,
         comment: data.comment.trim(),
         pageUrl: typeof window !== "undefined" ? window.location.href : "",
@@ -460,7 +476,9 @@ function LeadFormModal({
         throw new Error(`Checkout API error: ${res.status} ${text}`);
       }
 
-      const json = await res.json().catch(() => ({} as any));
+      const json = (await res.json().catch(() => ({} as any))) as {
+        url?: string;
+      };
       if (!json?.url) throw new Error("No checkout url returned");
 
       setSent(true);
@@ -473,7 +491,9 @@ function LeadFormModal({
   };
 
   const telegramNormalizedPreview = normalizeTelegram(data.telegram);
-  const tgValidNow = telegramNormalizedPreview ? isTelegramValid(telegramNormalizedPreview) : false;
+  const tgValidNow = telegramNormalizedPreview
+    ? isTelegramValid(telegramNormalizedPreview)
+    : false;
 
   return (
     <AnimatePresence>
@@ -540,8 +560,10 @@ function LeadFormModal({
                       Перенаправляем на оплату…
                     </div>
                     <div className="mt-2 text-black/70 text-sm sm:text-base leading-relaxed">
-                      Сейчас откроется безопасная страница оплаты Stripe. После успешной оплаты
-                      заявка придёт нам в Telegram и мы свяжемся с вами.
+                      Сейчас откроется безопасная страница оплаты Stripe.
+                      <br />
+                      <b>Важно:</b> в Telegram уже ушла заявка <i>«ожидает оплаты»</i>. После успешной
+                      оплаты придёт второе сообщение <i>«оплачено»</i> (из Stripe webhook).
                     </div>
 
                     <Button
@@ -595,7 +617,10 @@ function LeadFormModal({
                           setData((p) => ({ ...p, telegram: e.target.value }))
                         }
                         onBlur={() =>
-                          setData((p) => ({ ...p, telegram: normalizeTelegram(p.telegram) }))
+                          setData((p) => ({
+                            ...p,
+                            telegram: normalizeTelegram(p.telegram),
+                          }))
                         }
                         className={[
                           "mt-2 w-full h-12 rounded-2xl px-4 bg-white/70 border outline-none focus:ring-2 focus:ring-black/20",
@@ -610,7 +635,8 @@ function LeadFormModal({
                       />
                       {telegramNormalizedPreview && !tgValidNow ? (
                         <div className="mt-2 text-xs text-red-700">
-                          Введите Telegram-ник в формате <b>@username</b> (латиница/цифры/underscore).
+                          Введите Telegram-ник в формате <b>@username</b>{" "}
+                          (латиница/цифры/underscore).
                         </div>
                       ) : (
                         <div className="mt-2 text-xs text-black/45">
@@ -653,8 +679,8 @@ function LeadFormModal({
                     </Button>
 
                     <div className="text-[12px] text-black/55 leading-snug">
-                      Нажимая «Перейти к оплате», вы соглашаетесь на обработку данных
-                      для связи с вами.
+                      Нажимая «Перейти к оплате», вы соглашаетесь на обработку данных для связи с
+                      вами.
                     </div>
                   </form>
                 )}
@@ -686,7 +712,13 @@ function useCountdown(target: Date) {
   const secs = totalSec % 60;
 
   const pad2 = (n: number) => String(n).padStart(2, "0");
-  return { msLeft, days, hours: pad2(hours), mins: pad2(mins), secs: pad2(secs) };
+  return {
+    msLeft,
+    days,
+    hours: pad2(hours),
+    mins: pad2(mins),
+    secs: pad2(secs),
+  };
 }
 
 export default function Programs() {
@@ -707,7 +739,8 @@ export default function Programs() {
           "Практическое введение в систему «Архитектура Счастья».",
           "3 урока о базовых элементах счастья.",
         ],
-        cta: "Стать счастливым",
+        // ✅ было: "Стать счастливым"
+        cta: "Добавить в корзину",
         variant: "light",
         longDescription: `Этот 3-дневный курс - практическое введение в систему «Архитектура Счастья».
 Он создан для людей, которые устали искать мотивацию, вдохновение или «правильное состояние» - и хотят понять, как реально управлять своим внутренним состоянием в повседневной жизни.
@@ -840,7 +873,6 @@ export default function Programs() {
         return;
       }
 
-      // если параметров нет — закрываем всё
       setLeadModalOpen(false);
       setBulletsModalOpen(false);
       setActiveOfferId(null);
@@ -881,7 +913,8 @@ export default function Programs() {
             variants={headerItem}
             className="mt-5 font-sans text-black/70 text-base sm:text-lg leading-relaxed"
           >
-            Начните с фундамента — или заходите в полный проект и стройте устойчивое состояние системно.
+            Начните с фундамента — или заходите в полный проект и стройте устойчивое состояние
+            системно.
           </motion.p>
         </motion.div>
 
@@ -890,7 +923,7 @@ export default function Programs() {
             const isYellow = o.variant === "yellow";
             const isLight = o.variant === "light";
             const hidePrimaryCta = o.id === "club";
-            const showArrowInCta = o.id !== "path"; // ✅ убрали стрелку только у "Стать счастливым"
+            const showArrowInCta = o.id !== "path"; // ✅ убрали стрелку только у "path"
 
             return (
               <motion.article

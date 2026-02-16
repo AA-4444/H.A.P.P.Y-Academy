@@ -1,3 +1,5 @@
+// PaymentSuccess.tsx
+import { useMemo } from "react";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Check, ArrowRight } from "lucide-react";
@@ -10,15 +12,24 @@ export default function PaymentSuccess() {
   const courseGroupHref = "https://t.me/+tKh9MjOHcAxmOWI0";
 
   const search =
-	typeof window !== "undefined" ? new URLSearchParams(window.location.search) : null;
+	typeof window !== "undefined"
+	  ? new URLSearchParams(window.location.search)
+	  : null;
 
   const sessionId = search ? search.get("session_id") : null;
   const offerId = search ? search.get("offerId") : null;
+  const leadId = search ? search.get("leadId") : null;
 
   const nowText =
 	typeof window !== "undefined" ? new Date().toLocaleString("ru-RU") : "";
 
-  const showCourseButtons = offerId === "path"; //  для курса 1€
+  const showCourseButtons = offerId === "path"; // для курса (пример)
+
+  const badgeText = useMemo(() => {
+	// UI-текст: успех страница не подтверждает оплату "с клиента",
+	// подтверждение делается webhook'ом на сервере.
+	return "Оплачено (подтверждение на сервере)";
+  }, []);
 
   return (
 	<section
@@ -55,10 +66,19 @@ export default function PaymentSuccess() {
 			  <div className="mt-5 grid gap-3">
 				<div className="rounded-2xl bg-[#F6F1E7] border border-black/10 p-4">
 				  <div className="text-[10px] uppercase tracking-[0.18em] text-black/45 font-semibold">
-					Transaction
+					Transaction (Stripe session)
 				  </div>
 				  <div className="mt-2 font-mono text-[12px] text-black/75 break-all">
 					{sessionId || "—"}
+				  </div>
+				</div>
+
+				<div className="rounded-2xl bg-[#F6F1E7] border border-black/10 p-4">
+				  <div className="text-[10px] uppercase tracking-[0.18em] text-black/45 font-semibold">
+					Lead ID
+				  </div>
+				  <div className="mt-2 font-mono text-[12px] text-black/75 break-all">
+					{leadId || "—"}
 				  </div>
 				</div>
 
@@ -72,10 +92,10 @@ export default function PaymentSuccess() {
 				<div className="rounded-2xl bg-[#F6F1E7] border border-black/10 p-4">
 				  <div className="flex items-center justify-between gap-3">
 					<div className="text-[10px] uppercase tracking-[0.18em] text-black/45 font-semibold">
-					  Total
+					  Status
 					</div>
-					<div className="font-sans font-extrabold text-black text-[16px]">
-					  Успешно
+					<div className="font-sans font-extrabold text-black text-[14px]">
+					  {badgeText}
 					</div>
 				  </div>
 				</div>
@@ -105,7 +125,7 @@ export default function PaymentSuccess() {
 				  </Button>
 				</Link>
 
-				{/* ✅ КНОПКИ ТОЛЬКО ДЛЯ 1€ (path) */}
+				{/* ✅ КНОПКИ ТОЛЬКО ДЛЯ path */}
 				{showCourseButtons ? (
 				  <>
 					<a
@@ -150,6 +170,8 @@ export default function PaymentSuccess() {
 
 			  <div className="mt-6 text-center text-[12px] text-black/50 leading-snug">
 				Если окно оплаты закрылось — мы получили ваш платёж.
+				<br />
+				Финальное подтверждение + уведомление в Telegram должно приходить с сервера через Stripe webhook.
 			  </div>
 			</div>
 		  </div>

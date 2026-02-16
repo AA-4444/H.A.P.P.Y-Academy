@@ -690,7 +690,7 @@ function useCountdown(target: Date) {
 }
 
 export default function Programs() {
-  const salesOpenDate = useMemo(() => new Date(2026, 1, 18, 0, 0, 0), []);
+  const salesOpenDate = useMemo(() => new Date(2026, 1, 21, 0, 0, 0), []);
   const cd = useCountdown(salesOpenDate);
 
   const offers = useMemo<Offer[]>(

@@ -21,7 +21,7 @@ type Offer = {
 type LeadFormData = {
   name: string;
   phone: string;
-  telegram: string;
+  telegram: string; // теперь НЕ обязательно
   comment: string;
 };
 
@@ -94,7 +94,6 @@ function setModalUrl(kind: "lead" | "details", offerId: string) {
   url.searchParams.set(kind, "1");
   url.searchParams.set("offerId", offerId);
 
-  // hash не трогаем, чтобы не было лишних скроллов
   window.history.pushState({ kind, offerId }, "", url.toString());
 }
 
@@ -111,12 +110,11 @@ function BulletsModal({
   open,
   onClose,
   offer,
-  onJoinClub,
 }: {
   open: boolean;
   onClose: () => void;
   offer: Offer | null;
-  onJoinClub: () => void;
+  onJoinClub: () => void; // оставили сигнатуру, но внутри клуба у тебя только саппорт
 }) {
   useLockBodyScroll(open);
 
@@ -129,7 +127,6 @@ function BulletsModal({
     return () => window.removeEventListener("keydown", onKey);
   }, [open, onClose]);
 
-  // ✅ safe top: чтобы на iPhone Chrome не съедало верх/скругления
   const mobileSheetMaxH = "calc(100dvh - env(safe-area-inset-top) - 12px)";
   const mobileSheetTopGap = "calc(env(safe-area-inset-top) + 10px)";
 
@@ -147,7 +144,7 @@ function BulletsModal({
             exit={{ opacity: 0 }}
           />
 
-          {/* ✅ MOBILE bottom sheet */}
+          {/* MOBILE bottom sheet */}
           <motion.div
             className="fixed inset-x-0 bottom-0 z-[90] sm:hidden"
             initial={{ y: 40, opacity: 0 }}
@@ -163,7 +160,6 @@ function BulletsModal({
                 marginTop: mobileSheetTopGap,
               }}
             >
-              {/* header */}
               <div className="px-4 pt-4 shrink-0">
                 <div className="flex items-start justify-between gap-3">
                   <div className="min-w-0">
@@ -191,7 +187,6 @@ function BulletsModal({
                 <div className="mt-4 h-px bg-black/10" />
               </div>
 
-              {/* body scroll */}
               <div className="px-4 pt-4 pr-2 overflow-auto min-h-0 flex-1">
                 <ul className="space-y-3 pb-2">
                   {offer.bullets.map((b, i) => (
@@ -211,7 +206,6 @@ function BulletsModal({
                 ) : null}
               </div>
 
-              {/* footer */}
               <div className="px-4 pt-3 pb-4 shrink-0">
                 <div className="rounded-2xl bg-white/60 border border-black/10 p-3">
                   <div className="flex items-baseline justify-between">
@@ -229,7 +223,6 @@ function BulletsModal({
                   </div>
                 </div>
 
-                {/* ✅ Для 49€ — 2 кнопки */}
                 {offer.id === "club" ? (
                   <div className="mt-3 grid gap-3">
                     <a
@@ -259,7 +252,7 @@ function BulletsModal({
             </div>
           </motion.div>
 
-          {/* ✅ DESKTOP centered modal */}
+          {/* DESKTOP centered modal */}
           <motion.div
             className="fixed inset-0 z-[90] hidden sm:flex items-center justify-center p-6"
             initial={{ opacity: 0, y: 10, filter: "blur(8px)" }}
@@ -379,14 +372,24 @@ function isTelegramValid(tg: string) {
 
 /** ✅ стабильный leadId, чтобы связать "заявка создана" и "оплата успешна" */
 function createLeadId() {
-  // современно: crypto.randomUUID()
-  // fallback: простая генерация
   try {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const c: any = typeof crypto !== "undefined" ? crypto : null;
     if (c?.randomUUID) return c.randomUUID();
   } catch {}
   return `lead_${Date.now()}_${Math.random().toString(16).slice(2)}`;
+}
+
+function buildContact(phone: string, telegram: string) {
+  const parts: string[] = [];
+  const p = phone.trim();
+  const tg = normalizeTelegram(telegram);
+
+  if (p) parts.push(`Телефон: ${p}`);
+  // ✅ telegram optional — добавляем только если введён и валиден
+  if (tg && isTelegramValid(tg)) parts.push(`Telegram: ${tg}`);
+
+  return parts.join(" | ");
 }
 
 function LeadFormModal({
@@ -430,37 +433,29 @@ function LeadFormModal({
 
     const name = data.name.trim();
     const phone = data.phone.trim();
-    const telegram = normalizeTelegram(data.telegram);
+    const telegram = data.telegram; // нормализуем ниже
 
     const nameOk = name.length >= 2;
     const phoneOk = phone.length >= 5;
-    const tgOk = isTelegramValid(telegram);
+
+    // ✅ Telegram НЕ обязателен. Если ввели — проверим формат.
+    const tgNormalized = normalizeTelegram(telegram);
+    const tgOk = tgNormalized ? isTelegramValid(tgNormalized) : true;
+
     if (!nameOk || !phoneOk || !tgOk) return;
 
     setSubmitting(true);
 
-    // ✅ один id на этот checkout (его же кладём в Stripe metadata на бэке)
     const leadId = createLeadId();
 
     try {
-      /**
-       * ВАЖНО: логика разделена так:
-       * 1) сейчас отправляем "ЛИД СОЗДАН / ОЖИДАЕТ ОПЛАТЫ" (или бэк пусть это сделает)
-       * 2) после успешной оплаты — Stripe webhook присылает второе сообщение "ОПЛАЧЕНО"
-       *
-       * Для этого мы передаём leadId на /api/stripe/checkout,
-       * а бэкенд должен:
-       * - отправить Telegram "pre_payment" при создании checkout
-       * - записать leadId в metadata Stripe session/payment_intent
-       * - в webhook (checkout.session.completed) отправить Telegram "paid"
-       */
       const payload = {
         leadId,
-        stage: "pre_payment" as const, // 👈 чтобы бэк явно знал, что это "до оплаты"
+        stage: "pre_payment" as const,
         offerId: offer.id,
         offerTitle: offer.title,
         name,
-        contact: `Телефон: ${phone} | Telegram: ${telegram}`,
+        contact: buildContact(phone, telegram), // ✅ telegram optional
         comment: data.comment.trim(),
         pageUrl: typeof window !== "undefined" ? window.location.href : "",
       };
@@ -476,9 +471,7 @@ function LeadFormModal({
         throw new Error(`Checkout API error: ${res.status} ${text}`);
       }
 
-      const json = (await res.json().catch(() => ({} as any))) as {
-        url?: string;
-      };
+      const json = (await res.json().catch(() => ({} as any))) as { url?: string };
       if (!json?.url) throw new Error("No checkout url returned");
 
       setSent(true);
@@ -493,7 +486,7 @@ function LeadFormModal({
   const telegramNormalizedPreview = normalizeTelegram(data.telegram);
   const tgValidNow = telegramNormalizedPreview
     ? isTelegramValid(telegramNormalizedPreview)
-    : false;
+    : true; // ✅ пусто = ок
 
   return (
     <AnimatePresence>
@@ -562,8 +555,9 @@ function LeadFormModal({
                     <div className="mt-2 text-black/70 text-sm sm:text-base leading-relaxed">
                       Сейчас откроется безопасная страница оплаты Stripe.
                       <br />
-                      <b>Важно:</b> в Telegram уже ушла заявка <i>«ожидает оплаты»</i>. После успешной
-                      оплаты придёт второе сообщение <i>«оплачено»</i> (из Stripe webhook).
+                      <b>Важно:</b> на сервере должна уйти заявка <i>«ожидает оплаты»</i>.
+                      После успешной оплаты придёт второе сообщение <i>«оплачено»</i> (через Stripe
+                      webhook).
                     </div>
 
                     <Button
@@ -582,9 +576,7 @@ function LeadFormModal({
                       </label>
                       <input
                         value={data.name}
-                        onChange={(e) =>
-                          setData((p) => ({ ...p, name: e.target.value }))
-                        }
+                        onChange={(e) => setData((p) => ({ ...p, name: e.target.value }))}
                         className="mt-2 w-full h-12 rounded-2xl px-4 bg-white/70 border border-black/10 outline-none focus:ring-2 focus:ring-black/20"
                         placeholder="Как к вам обращаться?"
                         autoComplete="name"
@@ -597,9 +589,7 @@ function LeadFormModal({
                       </label>
                       <input
                         value={data.phone}
-                        onChange={(e) =>
-                          setData((p) => ({ ...p, phone: e.target.value }))
-                        }
+                        onChange={(e) => setData((p) => ({ ...p, phone: e.target.value }))}
                         className="mt-2 w-full h-12 rounded-2xl px-4 bg-white/70 border border-black/10 outline-none focus:ring-2 focus:ring-black/20"
                         placeholder="+49…"
                         autoComplete="tel"
@@ -607,15 +597,14 @@ function LeadFormModal({
                       />
                     </div>
 
+                    {/* ✅ Telegram теперь НЕ обязателен */}
                     <div>
                       <label className="block text-xs uppercase tracking-[0.18em] font-semibold text-black/55">
-                        Telegram (обязательно)
+                        Telegram (необязательно)
                       </label>
                       <input
                         value={data.telegram}
-                        onChange={(e) =>
-                          setData((p) => ({ ...p, telegram: e.target.value }))
-                        }
+                        onChange={(e) => setData((p) => ({ ...p, telegram: e.target.value }))}
                         onBlur={() =>
                           setData((p) => ({
                             ...p,
@@ -624,7 +613,7 @@ function LeadFormModal({
                         }
                         className={[
                           "mt-2 w-full h-12 rounded-2xl px-4 bg-white/70 border outline-none focus:ring-2 focus:ring-black/20",
-                          telegramNormalizedPreview.length === 0
+                          data.telegram.trim().length === 0
                             ? "border-black/10"
                             : tgValidNow
                             ? "border-black/10"
@@ -633,14 +622,14 @@ function LeadFormModal({
                         placeholder="@username"
                         autoComplete="off"
                       />
-                      {telegramNormalizedPreview && !tgValidNow ? (
+
+                      {data.telegram.trim().length > 0 && !tgValidNow ? (
                         <div className="mt-2 text-xs text-red-700">
-                          Введите Telegram-ник в формате <b>@username</b>{" "}
-                          (латиница/цифры/underscore).
+                          Если указываете Telegram — формат <b>@username</b> (латиница/цифры/underscore).
                         </div>
                       ) : (
                         <div className="mt-2 text-xs text-black/45">
-                          Формат: <b>@username</b>. Мы сами уберём лишние «@», чтобы не было @@.
+                          Можно оставить пустым. Если введёте — мы нормализуем «@», чтобы не было @@.
                         </div>
                       )}
                     </div>
@@ -651,9 +640,7 @@ function LeadFormModal({
                       </label>
                       <textarea
                         value={data.comment}
-                        onChange={(e) =>
-                          setData((p) => ({ ...p, comment: e.target.value }))
-                        }
+                        onChange={(e) => setData((p) => ({ ...p, comment: e.target.value }))}
                         className="mt-2 w-full min-h-[92px] rounded-2xl p-4 bg-white/70 border border-black/10 outline-none focus:ring-2 focus:ring-black/20 resize-none"
                         placeholder="Удобное время / вопрос / город…"
                       />
@@ -666,7 +653,9 @@ function LeadFormModal({
                         submitting ||
                         data.name.trim().length < 2 ||
                         data.phone.trim().length < 5 ||
-                        !isTelegramValid(normalizeTelegram(data.telegram))
+                        // ✅ если telegram пустой — ок, если нет — должен быть валиден
+                        (normalizeTelegram(data.telegram) &&
+                          !isTelegramValid(normalizeTelegram(data.telegram)))
                       }
                       className={[
                         "w-full rounded-full h-12 font-semibold",
@@ -679,8 +668,7 @@ function LeadFormModal({
                     </Button>
 
                     <div className="text-[12px] text-black/55 leading-snug">
-                      Нажимая «Перейти к оплате», вы соглашаетесь на обработку данных для связи с
-                      вами.
+                      Нажимая «Перейти к оплате», вы соглашаетесь на обработку данных для связи с вами.
                     </div>
                   </form>
                 )}
@@ -694,9 +682,7 @@ function LeadFormModal({
 }
 
 function useCountdown(target: Date) {
-  const [msLeft, setMsLeft] = useState(() =>
-    Math.max(0, target.getTime() - Date.now())
-  );
+  const [msLeft, setMsLeft] = useState(() => Math.max(0, target.getTime() - Date.now()));
 
   useEffect(() => {
     const id = window.setInterval(() => {
@@ -712,13 +698,7 @@ function useCountdown(target: Date) {
   const secs = totalSec % 60;
 
   const pad2 = (n: number) => String(n).padStart(2, "0");
-  return {
-    msLeft,
-    days,
-    hours: pad2(hours),
-    mins: pad2(mins),
-    secs: pad2(secs),
-  };
+  return { msLeft, days, hours: pad2(hours), mins: pad2(mins), secs: pad2(secs) };
 }
 
 export default function Programs() {
@@ -810,7 +790,6 @@ export default function Programs() {
     [offers, activeOfferId]
   );
 
-  /** ✅ Открыть details + URL */
   const openMore = (id: string) => {
     setActiveOfferId(id);
     setBulletsModalOpen(true);
@@ -818,14 +797,12 @@ export default function Programs() {
     setModalUrl("details", id);
   };
 
-  /** ✅ Закрыть details + очистить URL */
   const closeMore = () => {
     setBulletsModalOpen(false);
     setActiveOfferId(null);
     clearModalUrl();
   };
 
-  /** ✅ Открыть lead + URL */
   const openLead = (id: string) => {
     setActiveOfferId(id);
     setLeadModalOpen(true);
@@ -833,14 +810,12 @@ export default function Programs() {
     setModalUrl("lead", id);
   };
 
-  /** ✅ Закрыть lead + очистить URL */
   const closeLead = () => {
     setLeadModalOpen(false);
     setActiveOfferId(null);
     clearModalUrl();
   };
 
-  /** ✅ “Вступить в клуб” из details → открываем lead */
   const joinClubFromMore = () => {
     if (!activeOfferId) return;
     setBulletsModalOpen(false);
@@ -848,7 +823,6 @@ export default function Programs() {
     setModalUrl("lead", activeOfferId);
   };
 
-  /** ✅ Синхронизация модалок по URL + back/forward */
   useEffect(() => {
     if (typeof window === "undefined") return;
 
@@ -912,8 +886,7 @@ export default function Programs() {
             variants={headerItem}
             className="mt-5 font-sans text-black/70 text-base sm:text-lg leading-relaxed"
           >
-            Начните с фундамента — или заходите в полный проект и стройте устойчивое состояние
-            системно.
+            Начните с фундамента — или заходите в полный проект и стройте устойчивое состояние системно.
           </motion.p>
         </motion.div>
 
@@ -922,7 +895,7 @@ export default function Programs() {
             const isYellow = o.variant === "yellow";
             const isLight = o.variant === "light";
             const hidePrimaryCta = o.id === "club";
-            const showArrowInCta = o.id !== "path"; // ✅ убрали стрелку только у "path"
+            const showArrowInCta = o.id !== "path"; // стрелка только не у path
 
             return (
               <motion.article
@@ -943,9 +916,7 @@ export default function Programs() {
                   "rounded-[32px] sm:rounded-[40px] overflow-hidden border",
                   "lg:min-h-[650px]",
                   "p-5 sm:p-10",
-                  isYellow
-                    ? "bg-yellow-400 border-black/15 shadow-xl"
-                    : "bg-white border-black/10 shadow-lg",
+                  isYellow ? "bg-yellow-400 border-black/15 shadow-xl" : "bg-white border-black/10 shadow-lg",
                 ].join(" ")}
               >
                 {isLight && (
@@ -1002,9 +973,7 @@ export default function Programs() {
                           className={[
                             "w-full rounded-full h-12",
                             "font-sans font-bold flex items-center justify-center gap-2 transition shadow-lg",
-                            isYellow
-                              ? "bg-[#E64B1E] text-white hover:opacity-95"
-                              : "bg-yellow-400 text-black hover:bg-yellow-300",
+                            isYellow ? "bg-[#E64B1E] text-white hover:opacity-95" : "bg-yellow-400 text-black hover:bg-yellow-300",
                           ].join(" ")}
                         >
                           <span className="text-[14px]">{o.cta}</span>
@@ -1062,12 +1031,7 @@ export default function Programs() {
                         ) : null}
                       </div>
 
-                      <div
-                        className={[
-                          "mt-6 border-t border-dashed",
-                          isYellow ? "border-black/25" : "border-black/15",
-                        ].join(" ")}
-                      />
+                      <div className={["mt-6 border-t border-dashed", isYellow ? "border-black/25" : "border-black/15"].join(" ")} />
                     </div>
 
                     <div className="mt-6">
@@ -1082,9 +1046,7 @@ export default function Programs() {
 
                       {o.id === "club" ? (
                         <div className="mt-8">
-                          <div className="font-sans font-semibold text-black/80 mb-3">
-                            Результат
-                          </div>
+                          <div className="font-sans font-semibold text-black/80 mb-3">Результат</div>
                           <ul className="space-y-2 font-sans text-black/70">
                             <li>— достигаются цели</li>
                             <li>— выстраиваются отношения</li>
@@ -1106,9 +1068,7 @@ export default function Programs() {
                           className={[
                             "w-full h-12 rounded-full",
                             "font-sans font-bold flex items-center justify-center gap-2 transition shadow-lg",
-                            isYellow
-                              ? "bg-[#E64B1E] text-white hover:opacity-95"
-                              : "bg-yellow-400 text-black hover:bg-yellow-300",
+                            isYellow ? "bg-[#E64B1E] text-white hover:opacity-95" : "bg-yellow-400 text-black hover:bg-yellow-300",
                           ].join(" ")}
                         >
                           {o.cta}
@@ -1134,13 +1094,7 @@ export default function Programs() {
         </div>
       </div>
 
-      <BulletsModal
-        open={bulletsModalOpen}
-        onClose={closeMore}
-        offer={activeOffer}
-        onJoinClub={joinClubFromMore}
-      />
-
+      <BulletsModal open={bulletsModalOpen} onClose={closeMore} offer={activeOffer} onJoinClub={joinClubFromMore} />
       <LeadFormModal open={leadModalOpen} onClose={closeLead} offer={activeOffer} />
     </section>
   );

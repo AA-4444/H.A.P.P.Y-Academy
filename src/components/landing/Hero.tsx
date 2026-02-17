@@ -347,6 +347,57 @@ function ScrollBadge() {
   );
 }
 
+/** ✅ ПК: аккуратные чипы в "стекле" (не огромные панели) */
+function DesktopPainChips({
+  title,
+  items,
+  align,
+}: {
+  title: string;
+  items: string[];
+  align: "left" | "right";
+}) {
+  const right = align === "right";
+
+  return (
+    <div
+      className={[
+        "w-[320px] lg:w-[360px]",
+        "rounded-[22px]",
+        "bg-black/18 backdrop-blur-md border border-white/14",
+        "shadow-[0_18px_45px_rgba(0,0,0,0.22)]",
+        "px-4 lg:px-5 py-4 lg:py-5",
+      ].join(" ")}
+      style={{ textAlign: right ? "right" : "left" }}
+    >
+      <div className="text-white/55 uppercase tracking-[0.22em] text-[11px] font-semibold">
+        {title}
+      </div>
+
+      <div className="mt-3 flex flex-col gap-2">
+        {items.map((t) => (
+          <div
+            key={t}
+            className={[
+              "rounded-full",
+              
+              "px-4 py-2.5",
+              "flex items-center gap-3",
+              right ? "justify-end" : "justify-start",
+            ].join(" ")}
+          >
+            {!right ? <span className="h-2 w-2 rounded-full bg-yellow-400" /> : null}
+            <span className="text-yellow-300 font-extrabold tracking-tight text-[16px] lg:text-[17px] leading-none">
+              {t}
+            </span>
+            {right ? <span className="h-2 w-2 rounded-full bg-yellow-400" /> : null}
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 function OrangeHeroBlock() {
   const goPrograms = () => {
     const el = document.getElementById("programs");
@@ -354,26 +405,49 @@ function OrangeHeroBlock() {
     else window.location.hash = "#programs";
   };
 
+  // ✅ Мобилка — НЕ МЕНЯЕМ (как было у тебя)
+  const painLeftMobile = ["Тревога", "Хаос в голове", "Выгорание"];
+  const painRightMobile = [
+    "Проблемы с деньгами",
+    "Сложные отношения",
+    "Стресс и здоровье",
+    "Нет ясности",
+  ];
+
+  // ✅ ПК — больше пунктов, чтобы не было пустоты
+  const painLeftDesktop = [
+    "Тревога",
+    "Хаос в голове",
+    "Выгорание",
+    "Прокрастинация",
+    "Внутренний критик",
+    "Постоянные сомнения",
+  ];
+  const painRightDesktop = [
+    "Проблемы с деньгами",
+    "Сложные отношения",
+    "Стресс и здоровье",
+    "Нет ясности",
+    "Нет энергии",
+    "Нет сил действовать",
+  ];
+
   return (
     <div className="relative z-10 h-full w-full">
-      
       <div
         className={[
           "h-full flex items-center justify-center",
-   
           "px-3 sm:px-6 lg:px-8 xl:px-10",
-         
           "pt-[calc(0.25rem+88px)] pb-6",
           "sm:pt-[calc(0.75rem+88px)] sm:pb-10",
           "lg:pt-[calc(0.75rem+88px)] lg:pb-10",
         ].join(" ")}
       >
         <div className="w-full">
-         
           <div className="mx-auto w-full max-w-[1280px]">
-            <div className="rounded-[26px] sm:rounded-[36px] lg:rounded-[44px] bg-white/10 backdrop-blur-md border border-white/20 overflow-hidden shadow-2xl">
-              
-              <div className="px-5 sm:px-8 lg:px-10 py-10 sm:py-16 lg:py-16">
+            <div className="relative rounded-[26px] sm:rounded-[36px] lg:rounded-[44px] bg-white/10 backdrop-blur-md border border-white/20 overflow-hidden shadow-2xl">
+              {/* ✅ ВАЖНО: на ПК добавили padding снизу под боковые блоки */}
+              <div className="px-5 sm:px-10 lg:px-12 py-10 sm:pt-14 sm:pb-24 lg:pt-14 lg:pb-28">
                 <div className="mx-auto max-w-6xl text-center">
                   <motion.h2
                     initial={{ opacity: 0, y: 18 }}
@@ -390,7 +464,8 @@ function OrangeHeroBlock() {
                     transition={{ duration: 0.6, delay: 0.08 }}
                     className="mt-4 sm:mt-8 text-white font-sans text-[14px] sm:text-lg md:text-xl leading-relaxed max-w-5xl mx-auto"
                   >
-                   Если ты устал жить в тревоге и внутреннем хаосе — вот система из 10 элементов, которая возвращает устойчивость и ясность.
+                    Если ты устал жить в тревоге и внутреннем хаосе — вот система из 10 элементов,
+                    которая возвращает устойчивость и ясность.
                   </motion.p>
 
                   <div className="mt-7 sm:mt-10 flex justify-center">
@@ -406,6 +481,39 @@ function OrangeHeroBlock() {
                   <div className="mt-7 sm:mt-12 flex justify-center">
                     <ScrollBadge />
                   </div>
+
+                  {/* ✅ МОБИЛКА — оставляем как у тебя (ничего не меняем) */}
+                  <div className="sm:hidden pointer-events-none mt-6">
+                    <div className="flex flex-wrap justify-center gap-x-6 gap-y-2">
+                      {[...painLeftMobile, ...painRightMobile].map((t) => (
+                        <div
+                          key={t}
+                          className="text-yellow-300/95 font-semibold text-[12px] leading-tight drop-shadow"
+                        >
+                          {t}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* ✅ ПК: два аккуратных блока снизу по бокам (внутри карточки) */}
+              <div className="hidden sm:block pointer-events-none">
+                <div className="absolute left-8 lg:left-10 bottom-8 lg:bottom-10">
+                  <DesktopPainChips
+                    title="что мешает жить"
+                    items={painLeftDesktop}
+                    align="left"
+                  />
+                </div>
+
+                <div className="absolute right-8 lg:right-10 bottom-8 lg:bottom-10">
+                  <DesktopPainChips
+                    title="что забирает силы"
+                    items={painRightDesktop}
+                    align="right"
+                  />
                 </div>
               </div>
             </div>

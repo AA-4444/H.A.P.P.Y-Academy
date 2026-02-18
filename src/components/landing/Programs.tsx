@@ -21,7 +21,7 @@ type Offer = {
 type LeadFormData = {
   name: string;
   phone: string;
-  telegram: string; // теперь НЕ обязательно
+  telegram: string; // необязательно
   comment: string;
 };
 
@@ -114,7 +114,7 @@ function BulletsModal({
   open: boolean;
   onClose: () => void;
   offer: Offer | null;
-  onJoinClub: () => void; // оставили сигнатуру, но внутри клуба у тебя только саппорт
+  onJoinClub: () => void; // оставили сигнатуру (не используем)
 }) {
   useLockBodyScroll(open);
 
@@ -370,7 +370,7 @@ function isTelegramValid(tg: string) {
   return /^@[a-zA-Z0-9_]{4,31}$/.test(tg);
 }
 
-/** ✅ стабильный leadId, чтобы связать "заявка создана" и "оплата успешна" */
+/** ✅ стабильный leadId */
 function createLeadId() {
   try {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -386,7 +386,6 @@ function buildContact(phone: string, telegram: string) {
   const tg = normalizeTelegram(telegram);
 
   if (p) parts.push(`Телефон: ${p}`);
-  // ✅ telegram optional — добавляем только если введён и валиден
   if (tg && isTelegramValid(tg)) parts.push(`Telegram: ${tg}`);
 
   return parts.join(" | ");
@@ -433,19 +432,17 @@ function LeadFormModal({
 
     const name = data.name.trim();
     const phone = data.phone.trim();
-    const telegram = data.telegram; // нормализуем ниже
+    const telegram = data.telegram;
 
     const nameOk = name.length >= 2;
     const phoneOk = phone.length >= 5;
 
-    // ✅ Telegram НЕ обязателен. Если ввели — проверим формат.
     const tgNormalized = normalizeTelegram(telegram);
     const tgOk = tgNormalized ? isTelegramValid(tgNormalized) : true;
 
     if (!nameOk || !phoneOk || !tgOk) return;
 
     setSubmitting(true);
-
     const leadId = createLeadId();
 
     try {
@@ -455,7 +452,7 @@ function LeadFormModal({
         offerId: offer.id,
         offerTitle: offer.title,
         name,
-        contact: buildContact(phone, telegram), // ✅ telegram optional
+        contact: buildContact(phone, telegram),
         comment: data.comment.trim(),
         pageUrl: typeof window !== "undefined" ? window.location.href : "",
       };
@@ -484,9 +481,7 @@ function LeadFormModal({
   };
 
   const telegramNormalizedPreview = normalizeTelegram(data.telegram);
-  const tgValidNow = telegramNormalizedPreview
-    ? isTelegramValid(telegramNormalizedPreview)
-    : true; // ✅ пусто = ок
+  const tgValidNow = telegramNormalizedPreview ? isTelegramValid(telegramNormalizedPreview) : true;
 
   return (
     <AnimatePresence>
@@ -515,9 +510,7 @@ function LeadFormModal({
                 "rounded-t-[28px] sm:rounded-[28px]",
                 "bg-[#F6F1E7] border border-black/10 shadow-2xl overflow-hidden",
               ].join(" ")}
-              style={{
-                paddingBottom: "max(16px, env(safe-area-inset-bottom))",
-              }}
+              style={{ paddingBottom: "max(16px, env(safe-area-inset-bottom))" }}
             >
               <div className="px-5 sm:px-6 pt-5 sm:pt-6">
                 <div className="flex items-start justify-between gap-3">
@@ -555,9 +548,8 @@ function LeadFormModal({
                     <div className="mt-2 text-black/70 text-sm sm:text-base leading-relaxed">
                       Сейчас откроется безопасная страница оплаты Stripe.
                       <br />
-                      <b>Важно:</b> на сервере должна уйти заявка <i>«ожидает оплаты»</i>.
-                      После успешной оплаты придёт второе сообщение <i>«оплачено»</i> (через Stripe
-                      webhook).
+                      <b>Важно:</b> на сервере должна уйти заявка <i>«ожидает оплаты»</i>. После успешной
+                      оплаты придёт второе сообщение <i>«оплачено»</i> (через Stripe webhook).
                     </div>
 
                     <Button
@@ -597,7 +589,6 @@ function LeadFormModal({
                       />
                     </div>
 
-                    {/* ✅ Telegram теперь НЕ обязателен */}
                     <div>
                       <label className="block text-xs uppercase tracking-[0.18em] font-semibold text-black/55">
                         Telegram (необязательно)
@@ -653,7 +644,6 @@ function LeadFormModal({
                         submitting ||
                         data.name.trim().length < 2 ||
                         data.phone.trim().length < 5 ||
-                        // ✅ если telegram пустой — ок, если нет — должен быть валиден
                         (normalizeTelegram(data.telegram) &&
                           !isTelegramValid(normalizeTelegram(data.telegram)))
                       }
@@ -701,6 +691,27 @@ function useCountdown(target: Date) {
   return { msLeft, days, hours: pad2(hours), mins: pad2(mins), secs: pad2(secs) };
 }
 
+/** ✅ "Результат" блок — как у 49€ карточки (аккуратный список) */
+function ResultBlock() {
+  const items = [
+    "понимаете, где именно теряете энергию",
+    "видите причину внутреннего дисбаланса",
+    "получаете систему координат для дальнейшего роста",
+    "начинаете чувствовать устойчивость и ясность",
+  ];
+
+  return (
+    <div className="mt-8">
+      <div className="font-sans font-semibold text-black/80 mb-3">Результат</div>
+      <ul className="space-y-2 font-sans text-black/70">
+        {items.map((t) => (
+          <li key={t}>— {t}</li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+
 export default function Programs() {
   const salesOpenDate = useMemo(() => new Date(2026, 1, 21, 0, 0, 0), []);
   const cd = useCountdown(salesOpenDate);
@@ -718,6 +729,7 @@ export default function Programs() {
         bullets: [
           "Практическое введение в систему «Архитектура Счастья».",
           "3 урока о базовых элементах счастья.",
+          "3 базовых элемента системы «Архитектура счастья».", // ✅ добавили
         ],
         cta: "Добавить в корзину",
         variant: "light",
@@ -744,6 +756,7 @@ export default function Programs() {
           "Еженедельные онлайн-встречи с Ицхаком",
           "Личный саппорт кураторов",
           "Сообщество людей, строящих осознанную жизнь",
+          "7 элементов системы «Архитектура счастья».", // ✅ добавили
         ],
         cta: "Войти в клуб",
         variant: "yellow",
@@ -886,7 +899,8 @@ export default function Programs() {
             variants={headerItem}
             className="mt-5 font-sans text-black/70 text-base sm:text-lg leading-relaxed"
           >
-            Начните с фундамента — или заходите в полный проект и стройте устойчивое состояние системно.
+            Начните с фундамента — или заходите в полный проект и стройте устойчивое состояние
+            системно.
           </motion.p>
         </motion.div>
 
@@ -895,7 +909,7 @@ export default function Programs() {
             const isYellow = o.variant === "yellow";
             const isLight = o.variant === "light";
             const hidePrimaryCta = o.id === "club";
-            const showArrowInCta = o.id !== "path"; // стрелка только не у path
+            const showArrowInCta = o.id !== "path";
 
             return (
               <motion.article
@@ -916,7 +930,9 @@ export default function Programs() {
                   "rounded-[32px] sm:rounded-[40px] overflow-hidden border",
                   "lg:min-h-[650px]",
                   "p-5 sm:p-10",
-                  isYellow ? "bg-yellow-400 border-black/15 shadow-xl" : "bg-white border-black/10 shadow-lg",
+                  isYellow
+                    ? "bg-yellow-400 border-black/15 shadow-xl"
+                    : "bg-white border-black/10 shadow-lg",
                 ].join(" ")}
               >
                 {isLight && (
@@ -973,7 +989,9 @@ export default function Programs() {
                           className={[
                             "w-full rounded-full h-12",
                             "font-sans font-bold flex items-center justify-center gap-2 transition shadow-lg",
-                            isYellow ? "bg-[#E64B1E] text-white hover:opacity-95" : "bg-yellow-400 text-black hover:bg-yellow-300",
+                            isYellow
+                              ? "bg-[#E64B1E] text-white hover:opacity-95"
+                              : "bg-yellow-400 text-black hover:bg-yellow-300",
                           ].join(" ")}
                         >
                           <span className="text-[14px]">{o.cta}</span>
@@ -1031,7 +1049,12 @@ export default function Programs() {
                         ) : null}
                       </div>
 
-                      <div className={["mt-6 border-t border-dashed", isYellow ? "border-black/25" : "border-black/15"].join(" ")} />
+                      <div
+                        className={[
+                          "mt-6 border-t border-dashed",
+                          isYellow ? "border-black/25" : "border-black/15",
+                        ].join(" ")}
+                      />
                     </div>
 
                     <div className="mt-6">
@@ -1044,6 +1067,7 @@ export default function Programs() {
                         ))}
                       </ul>
 
+                      {/* ✅ ВАЖНО: теперь "Результат" оформлен одинаково */}
                       {o.id === "club" ? (
                         <div className="mt-8">
                           <div className="font-sans font-semibold text-black/80 mb-3">Результат</div>
@@ -1054,9 +1078,7 @@ export default function Programs() {
                           </ul>
                         </div>
                       ) : (
-                        <p className="mt-8 font-sans text-black/70 text-base leading-relaxed">
-                          Вы начинаете чувствовать опору, ясность и баланс уже в процессе.
-                        </p>
+                        <ResultBlock />
                       )}
                     </div>
 
@@ -1068,7 +1090,9 @@ export default function Programs() {
                           className={[
                             "w-full h-12 rounded-full",
                             "font-sans font-bold flex items-center justify-center gap-2 transition shadow-lg",
-                            isYellow ? "bg-[#E64B1E] text-white hover:opacity-95" : "bg-yellow-400 text-black hover:bg-yellow-300",
+                            isYellow
+                              ? "bg-[#E64B1E] text-white hover:opacity-95"
+                              : "bg-yellow-400 text-black hover:bg-yellow-300",
                           ].join(" ")}
                         >
                           {o.cta}
@@ -1094,7 +1118,13 @@ export default function Programs() {
         </div>
       </div>
 
-      <BulletsModal open={bulletsModalOpen} onClose={closeMore} offer={activeOffer} onJoinClub={joinClubFromMore} />
+      <BulletsModal
+        open={bulletsModalOpen}
+        onClose={closeMore}
+        offer={activeOffer}
+        onJoinClub={() => {}}
+      />
+
       <LeadFormModal open={leadModalOpen} onClose={closeLead} offer={activeOffer} />
     </section>
   );

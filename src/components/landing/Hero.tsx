@@ -4,22 +4,72 @@ import { gsap } from "gsap";
 import { Button } from "@/components/ui/button";
 import { ArrowDown } from "lucide-react";
 
-import t1 from "@/assets/t1.jpg";
-import t2 from "@/assets/t2.png";
-import t3 from "@/assets/t3.jpg";
-import t4 from "@/assets/t4.png";
-import t5 from "@/assets/t5.jpg";
-import t6 from "@/assets/t6.png";
+/**
+ * ✅ ВАЖНО:
+ * Тут мы импортируем картинки через vite-imagetools:
+ * - AVIF srcset (несколько ширин)
+ * - WEBP srcset (несколько ширин)
+ * - fallback (один нормальный размер)
+ *
+ * Можно менять набор ширин: 320;640;960 — норм для карточек.
+ */
 
-import bg1 from "@/assets/bg1.png";
-import bg2 from "@/assets/bg2.png";
-import bg3 from "@/assets/bg4.png";
-import bg4 from "@/assets/bg5.png";
-import bg5 from "@/assets/bg6.png";
+// ---------- t1..t6 ----------
+import t1Avif from "@/assets/t1.jpg?w=320;640;960&format=avif&as=srcset";
+import t1Webp from "@/assets/t1.jpg?w=320;640;960&format=webp&as=srcset";
+import t1Fallback from "@/assets/t1.jpg?w=960&format=jpg&as=src";
+
+import t2Avif from "@/assets/t2.png?w=320;640;960&format=avif&as=srcset";
+import t2Webp from "@/assets/t2.png?w=320;640;960&format=webp&as=srcset";
+import t2Fallback from "@/assets/t2.png?w=960&format=png&as=src";
+
+import t3Avif from "@/assets/t3.jpg?w=320;640;960&format=avif&as=srcset";
+import t3Webp from "@/assets/t3.jpg?w=320;640;960&format=webp&as=srcset";
+import t3Fallback from "@/assets/t3.jpg?w=960&format=jpg&as=src";
+
+import t4Avif from "@/assets/t4.png?w=320;640;960&format=avif&as=srcset";
+import t4Webp from "@/assets/t4.png?w=320;640;960&format=webp&as=srcset";
+import t4Fallback from "@/assets/t4.png?w=960&format=png&as=src";
+
+import t5Avif from "@/assets/t5.jpg?w=320;640;960&format=avif&as=srcset";
+import t5Webp from "@/assets/t5.jpg?w=320;640;960&format=webp&as=srcset";
+import t5Fallback from "@/assets/t5.jpg?w=960&format=jpg&as=src";
+
+import t6Avif from "@/assets/t6.png?w=320;640;960&format=avif&as=srcset";
+import t6Webp from "@/assets/t6.png?w=320;640;960&format=webp&as=srcset";
+import t6Fallback from "@/assets/t6.png?w=960&format=png&as=src";
+
+// ---------- bg1..bg5 ----------
+import bg1Avif from "@/assets/bg1.png?w=320;640;960&format=avif&as=srcset";
+import bg1Webp from "@/assets/bg1.png?w=320;640;960&format=webp&as=srcset";
+import bg1Fallback from "@/assets/bg1.png?w=960&format=png&as=src";
+
+import bg2Avif from "@/assets/bg2.png?w=320;640;960&format=avif&as=srcset";
+import bg2Webp from "@/assets/bg2.png?w=320;640;960&format=webp&as=srcset";
+import bg2Fallback from "@/assets/bg2.png?w=960&format=png&as=src";
+
+import bg3Avif from "@/assets/bg4.png?w=320;640;960&format=avif&as=srcset";
+import bg3Webp from "@/assets/bg4.png?w=320;640;960&format=webp&as=srcset";
+import bg3Fallback from "@/assets/bg4.png?w=960&format=png&as=src";
+
+import bg4Avif from "@/assets/bg5.png?w=320;640;960&format=avif&as=srcset";
+import bg4Webp from "@/assets/bg5.png?w=320;640;960&format=webp&as=srcset";
+import bg4Fallback from "@/assets/bg5.png?w=960&format=png&as=src";
+
+import bg5Avif from "@/assets/bg6.png?w=320;640;960&format=avif&as=srcset";
+import bg5Webp from "@/assets/bg6.png?w=320;640;960&format=webp&as=srcset";
+import bg5Fallback from "@/assets/bg6.png?w=960&format=png&as=src";
 
 const TELEGRAM_BOT_URL = "https://t.me/happiness4people_bot";
 const HEADER_H = 88;
 const VIDEO_URL = "https://youtu.be/VZhCbEQUD-A?si=akJc1rkK_nx2LxL4";
+
+type ImgSet = {
+  key: string;      // уникальный ключ для алгоритма
+  avif: string;     // srcset avif
+  webp: string;     // srcset webp
+  fallback: string; // обычный src
+};
 
 function shuffle<T>(arr: T[]) {
   const a = [...arr];
@@ -30,52 +80,97 @@ function shuffle<T>(arr: T[]) {
   return a;
 }
 
-function buildGridMinRepeats(images: string[], rows: number, cols: number) {
+/**
+ * ✅ Сохраняем твою логику минимальных повторов,
+ * но работаем по keys, а потом возвращаем ImgSet.
+ */
+function buildGridMinRepeats(images: ImgSet[], rows: number, cols: number) {
   const total = rows * cols;
   if (!images.length) return [];
 
-  const unique = Array.from(new Set(images));
-  const uniqLen = unique.length;
+  const byKey = new Map<string, ImgSet>();
+  for (const im of images) byKey.set(im.key, im);
 
-  const out: string[] = new Array(total);
+  const uniqueKeys = Array.from(new Set(images.map((i) => i.key)));
+  const uniqLen = uniqueKeys.length;
+
+  const outKeys: string[] = new Array(total);
   const prevRow = new Array<string | null>(cols).fill(null);
 
   for (let r = 0; r < rows; r++) {
-    let pool = shuffle(unique);
+    let pool = shuffle(uniqueKeys);
     const usedInRow = new Set<string>();
 
     for (let c = 0; c < cols; c++) {
-      let pickImg: string | null = null;
+      let pickKey: string | null = null;
 
       for (let i = 0; i < pool.length; i++) {
-        const img = pool[i];
-        if (usedInRow.has(img)) continue;
-        if (prevRow[c] && img === prevRow[c]) continue;
-        pickImg = img;
+        const k = pool[i];
+        if (usedInRow.has(k)) continue;
+        if (prevRow[c] && k === prevRow[c]) continue;
+        pickKey = k;
         pool.splice(i, 1);
         break;
       }
 
-      if (!pickImg) {
+      if (!pickKey) {
         for (let i = 0; i < pool.length; i++) {
-          const img = pool[i];
-          if (usedInRow.has(img)) continue;
-          pickImg = img;
+          const k = pool[i];
+          if (usedInRow.has(k)) continue;
+          pickKey = k;
           pool.splice(i, 1);
           break;
         }
       }
 
-      if (!pickImg) pickImg = unique[(Math.random() * uniqLen) | 0];
+      if (!pickKey) pickKey = uniqueKeys[(Math.random() * uniqLen) | 0];
 
-      usedInRow.add(pickImg);
-      out[r * cols + c] = pickImg;
+      usedInRow.add(pickKey);
+      outKeys[r * cols + c] = pickKey;
     }
 
-    for (let c = 0; c < cols; c++) prevRow[c] = out[r * cols + c];
+    for (let c = 0; c < cols; c++) prevRow[c] = outKeys[r * cols + c];
   }
 
-  return out;
+  return outKeys.map((k) => byKey.get(k)!).filter(Boolean);
+}
+
+/** ✅ Вместо backgroundImage: url(...) используем picture+img cover */
+function CoverPicture({
+  sources,
+  alt = "",
+  eager = false,
+  className = "",
+  imgStyle,
+}: {
+  sources: ImgSet;
+  alt?: string;
+  eager?: boolean;
+  className?: string;
+  imgStyle?: React.CSSProperties;
+}) {
+  return (
+    <picture className={className}>
+      <source type="image/avif" srcSet={sources.avif} />
+      <source type="image/webp" srcSet={sources.webp} />
+      <img
+        src={sources.fallback}
+        alt={alt}
+        loading={eager ? "eager" : "lazy"}
+        decoding="async"
+        style={{
+          position: "absolute",
+          inset: 0,
+          width: "100%",
+          height: "100%",
+          objectFit: "cover",
+          objectPosition: "50% 50%",
+          transform: "translateZ(0)",
+          ...imgStyle,
+        }}
+      />
+    </picture>
+  );
 }
 
 /** SplitText — оставляю (не используется) */
@@ -144,7 +239,7 @@ function SplitText({
   );
 }
 
-function GridMotionBg({ images }: { images: string[] }) {
+function GridMotionBg({ images }: { images: ImgSet[] }) {
   const rowRefs = useRef<Array<HTMLDivElement | null>>([]);
   const mouseXRef = useRef<number>(
     typeof window !== "undefined" ? window.innerWidth / 2 : 0
@@ -261,6 +356,9 @@ function GridMotionBg({ images }: { images: string[] }) {
                 const idx = rowIndex * cols + itemIndex;
                 const img = items[idx];
 
+                // ✅ Первые несколько делаем eager (чтобы герой не был пустым)
+                const eager = idx < (isMobile ? 4 : 8);
+
                 return (
                   <div key={itemIndex} style={{ position: "relative" }}>
                     <div
@@ -275,16 +373,15 @@ function GridMotionBg({ images }: { images: string[] }) {
                         boxShadow: "0 10px 30px rgba(0,0,0,0.25)",
                       }}
                     >
-                      <div
-                        style={{
-                          position: "absolute",
-                          inset: 0,
-                          backgroundImage: `url(${img})`,
-                          backgroundSize: "cover",
-                          backgroundPosition: "50% 50%",
+                      <CoverPicture
+                        sources={img}
+                        eager={eager}
+                        className="absolute inset-0"
+                        imgStyle={{
                           filter: "saturate(1.05) contrast(1.05)",
                         }}
                       />
+
                       <div
                         style={{
                           position: "absolute",
@@ -380,7 +477,6 @@ function DesktopPainChips({
             key={t}
             className={[
               "rounded-full",
-              
               "px-4 py-2.5",
               "flex items-center gap-3",
               right ? "justify-end" : "justify-start",
@@ -405,7 +501,6 @@ function OrangeHeroBlock() {
     else window.location.hash = "#programs";
   };
 
-  // ✅ Мобилка — НЕ МЕНЯЕМ (как было у тебя)
   const painLeftMobile = ["Тревога", "Хаос в голове", "Выгорание"];
   const painRightMobile = [
     "Проблемы с деньгами",
@@ -414,7 +509,6 @@ function OrangeHeroBlock() {
     "Нет ясности",
   ];
 
-  // ✅ ПК — больше пунктов, чтобы не было пустоты
   const painLeftDesktop = [
     "Тревога",
     "Хаос в голове",
@@ -446,7 +540,6 @@ function OrangeHeroBlock() {
         <div className="w-full">
           <div className="mx-auto w-full max-w-[1280px]">
             <div className="relative rounded-[26px] sm:rounded-[36px] lg:rounded-[44px] bg-white/10 backdrop-blur-md border border-white/20 overflow-hidden shadow-2xl">
-              {/* ✅ ВАЖНО: на ПК добавили padding снизу под боковые блоки */}
               <div className="px-5 sm:px-10 lg:px-12 py-10 sm:pt-14 sm:pb-24 lg:pt-14 lg:pb-28">
                 <div className="mx-auto max-w-6xl text-center">
                   <motion.h2
@@ -482,7 +575,6 @@ function OrangeHeroBlock() {
                     <ScrollBadge />
                   </div>
 
-                  {/* ✅ МОБИЛКА — оставляем как у тебя (ничего не меняем) */}
                   <div className="sm:hidden pointer-events-none mt-6">
                     <div className="flex flex-wrap justify-center gap-x-6 gap-y-2">
                       {[...painLeftMobile, ...painRightMobile].map((t) => (
@@ -498,7 +590,6 @@ function OrangeHeroBlock() {
                 </div>
               </div>
 
-              {/* ✅ ПК: два аккуратных блока снизу по бокам (внутри карточки) */}
               <div className="hidden sm:block pointer-events-none">
                 <div className="absolute left-8 lg:left-10 bottom-8 lg:bottom-10">
                   <DesktopPainChips
@@ -526,8 +617,21 @@ function OrangeHeroBlock() {
 }
 
 const Hero = () => {
-  const bgImages = useMemo(
-    () => [t1, t2, t3, t4, t5, t6, bg1, bg2, bg3, bg4, bg5],
+  const bgImages = useMemo<ImgSet[]>(
+    () => [
+      { key: "t1", avif: t1Avif, webp: t1Webp, fallback: t1Fallback },
+      { key: "t2", avif: t2Avif, webp: t2Webp, fallback: t2Fallback },
+      { key: "t3", avif: t3Avif, webp: t3Webp, fallback: t3Fallback },
+      { key: "t4", avif: t4Avif, webp: t4Webp, fallback: t4Fallback },
+      { key: "t5", avif: t5Avif, webp: t5Webp, fallback: t5Fallback },
+      { key: "t6", avif: t6Avif, webp: t6Webp, fallback: t6Fallback },
+
+      { key: "bg1", avif: bg1Avif, webp: bg1Webp, fallback: bg1Fallback },
+      { key: "bg2", avif: bg2Avif, webp: bg2Webp, fallback: bg2Fallback },
+      { key: "bg3", avif: bg3Avif, webp: bg3Webp, fallback: bg3Fallback },
+      { key: "bg4", avif: bg4Avif, webp: bg4Webp, fallback: bg4Fallback },
+      { key: "bg5", avif: bg5Avif, webp: bg5Webp, fallback: bg5Fallback },
+    ],
     []
   );
 

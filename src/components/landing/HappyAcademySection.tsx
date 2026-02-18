@@ -5,14 +5,36 @@ import {
   useTransform,
 } from "framer-motion";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
-import slide1 from "@/assets/new1.png";
-import slide3 from "@/assets/new2.png";
-import slide4 from "@/assets/new3.png";
-import slide5 from "@/assets/new4.png";
-import slide6 from "@/assets/new5.png";
+
+// new1..new5
+import slide1Avif from "@/assets/new1.png?w=640;960;1280;1920&format=avif&as=srcset";
+import slide1Webp from "@/assets/new1.png?w=640;960;1280;1920&format=webp&as=srcset";
+import slide1Fallback from "@/assets/new1.png?w=1920&format=png&as=src";
+
+import slide2Avif from "@/assets/new2.png?w=640;960;1280;1920&format=avif&as=srcset";
+import slide2Webp from "@/assets/new2.png?w=640;960;1280;1920&format=webp&as=srcset";
+import slide2Fallback from "@/assets/new2.png?w=1920&format=png&as=src";
+
+import slide3Avif from "@/assets/new3.png?w=640;960;1280;1920&format=avif&as=srcset";
+import slide3Webp from "@/assets/new3.png?w=640;960;1280;1920&format=webp&as=srcset";
+import slide3Fallback from "@/assets/new3.png?w=1920&format=png&as=src";
+
+import slide4Avif from "@/assets/new4.png?w=640;960;1280;1920&format=avif&as=srcset";
+import slide4Webp from "@/assets/new4.png?w=640;960;1280;1920&format=webp&as=srcset";
+import slide4Fallback from "@/assets/new4.png?w=1920&format=png&as=src";
+
+import slide5Avif from "@/assets/new5.png?w=640;960;1280;1920&format=avif&as=srcset";
+import slide5Webp from "@/assets/new5.png?w=640;960;1280;1920&format=webp&as=srcset";
+import slide5Fallback from "@/assets/new5.png?w=1920&format=png&as=src";
+
+type ImgSet = {
+  key: string;
+  avif: string;     // srcset
+  webp: string;     // srcset
+  fallback: string; // src
+};
 
 /* =========================
    reduced motion
@@ -38,7 +60,16 @@ function usePrefersReducedMotion() {
 }
 
 const HappyAcademySection = () => {
-  const slides = useMemo(() => [slide1, slide3, slide4, slide5, slide6], []);
+  const slides = useMemo<ImgSet[]>(
+	() => [
+	  { key: "s1", avif: slide1Avif, webp: slide1Webp, fallback: slide1Fallback },
+	  { key: "s2", avif: slide2Avif, webp: slide2Webp, fallback: slide2Fallback },
+	  { key: "s3", avif: slide3Avif, webp: slide3Webp, fallback: slide3Fallback },
+	  { key: "s4", avif: slide4Avif, webp: slide4Webp, fallback: slide4Fallback },
+	  { key: "s5", avif: slide5Avif, webp: slide5Webp, fallback: slide5Fallback },
+	],
+	[]
+  );
 
   const rootRef = useRef<HTMLDivElement | null>(null);
   const prefersReducedMotion = usePrefersReducedMotion();
@@ -217,28 +248,42 @@ function MotionPoint({ children }: { children: React.ReactNode }) {
   );
 }
 
-function FullScreenSlider({ slides }: { slides: string[] }) {
+/**
+ * ✅ Слайдер теперь принимает ImgSet[]
+ * И рендерит картинку через <picture> (avif/webp/srcset)
+ */
+function FullScreenSlider({ slides }: { slides: ImgSet[] }) {
   const [index, setIndex] = useState(0);
 
   useEffect(() => {
-	const t = setInterval(
-	  () => setIndex((i) => (i + 1) % slides.length),
-	  6000
-	);
+	const t = setInterval(() => setIndex((i) => (i + 1) % slides.length), 6000);
 	return () => clearInterval(t);
   }, [slides.length]);
 
+  const current = slides[index];
+
   return (
 	<section className="relative w-full h-[100vh] overflow-hidden">
-	  <motion.img
-		key={slides[index]}
-		src={slides[index]}
-		alt=""
-		className="absolute inset-0 h-full w-full object-cover"
+	  {/* motion-обертка, чтобы сохранить анимацию как у motion.img */}
+	  <motion.div
+		key={current.key}
+		className="absolute inset-0"
 		initial={{ opacity: 0, scale: 1.02 }}
 		animate={{ opacity: 1, scale: 1 }}
 		transition={{ duration: 0.55, ease: "easeOut" }}
-	  />
+	  >
+		<picture className="block h-full w-full">
+		  <source type="image/avif" srcSet={current.avif} />
+		  <source type="image/webp" srcSet={current.webp} />
+		  <img
+			src={current.fallback}
+			alt=""
+			loading="eager"
+			decoding="async"
+			className="h-full w-full object-cover"
+		  />
+		</picture>
+	  </motion.div>
 	</section>
   );
 }

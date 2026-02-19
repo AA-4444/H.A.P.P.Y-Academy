@@ -731,7 +731,7 @@ function useCountdown(target: Date) {
   return { msLeft, days, hours: pad2(hours), mins: pad2(mins), secs: pad2(secs) };
 }
 
-/** ✅ "Результат" блок — как у 49€ карточки (аккуратный список) */
+
 function ResultBlock() {
   const items = [
     "понимаете, где именно теряете энергию",
@@ -753,7 +753,7 @@ function ResultBlock() {
 }
 
 export default function Programs() {
-  useAppHeightVar(); // ✅ важно для iOS модалок
+  useAppHeightVar(); 
 
   const salesOpenDate = useMemo(() => new Date(2026, 1, 24, 0, 0, 0), []);
   const cd = useCountdown(salesOpenDate);

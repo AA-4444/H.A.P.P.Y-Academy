@@ -182,8 +182,8 @@ export default function Testimonials() {
           style={
             fixedHeight
               ? isMobile
-                ? { height: fixedHeight } // ✅ МОБИЛКА: жёстко фиксируем
-                : { minHeight: fixedHeight } // ✅ ПК: можно minHeight
+                ? { height: fixedHeight } 
+                : { minHeight: fixedHeight } 
               : undefined
           }
         >
@@ -210,7 +210,7 @@ export default function Testimonials() {
           </AnimatePresence>
         </div>
 
-        {/* аватарки */}
+        
         <div
           className="mt-12"
           onMouseEnter={() => setIsHovering(true)}

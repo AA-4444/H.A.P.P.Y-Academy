@@ -21,13 +21,13 @@ type Offer = {
 type LeadFormData = {
   name: string;
   phone: string;
-  telegram: string; // необязательно
+  telegram: string; 
   comment: string;
 };
 
 const SUPPORT_HREF = "https://t.me/TataZakzheva/";
 
-/** ✅ iOS: фиксируем реальную высоту экрана (убирает "просвет" при скрытии нижнего бара) */
+
 function useAppHeightVar() {
   useEffect(() => {
     const doc = document.documentElement;
@@ -83,7 +83,7 @@ function CheckItem({ text }: { text: string }) {
   );
 }
 
-/** ✅ iOS-safe body lock (без дерганий) */
+
 function useLockBodyScroll(locked: boolean) {
   useEffect(() => {
     if (!locked) return;
@@ -112,7 +112,7 @@ function useLockBodyScroll(locked: boolean) {
   }, [locked]);
 }
 
-/** ✅ URL helpers */
+
 function setModalUrl(kind: "lead" | "details", offerId: string) {
   if (typeof window === "undefined") return;
   const url = new URL(window.location.href);
@@ -143,7 +143,7 @@ function BulletsModal({
   open: boolean;
   onClose: () => void;
   offer: Offer | null;
-  onJoinClub: () => void; // оставили сигнатуру (не используем)
+  onJoinClub: () => void; 
 }) {
   useLockBodyScroll(open);
 
@@ -160,7 +160,7 @@ function BulletsModal({
     <AnimatePresence>
       {open && offer ? (
         <>
-          {/* ✅ overlay на реальную высоту */}
+        
           <motion.button
             type="button"
             aria-label="Закрыть"
@@ -172,7 +172,7 @@ function BulletsModal({
             exit={{ opacity: 0 }}
           />
 
-          {/* ✅ MOBILE: фиксируем контейнер по --app-height чтобы не было "просвета" */}
+      
           <motion.div
             className="fixed left-0 top-0 z-[90] sm:hidden w-screen flex items-end"
             style={{ height: "var(--app-height)" }}
@@ -398,7 +398,7 @@ function isTelegramValid(tg: string) {
   return /^@[a-zA-Z0-9_]{4,31}$/.test(tg);
 }
 
-/** ✅ стабильный leadId */
+
 function createLeadId() {
   try {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -515,7 +515,7 @@ function LeadFormModal({
     <AnimatePresence>
       {open && offer ? (
         <>
-          {/* ✅ overlay на реальную высоту */}
+         
           <motion.button
             type="button"
             aria-label="Закрыть"
@@ -527,7 +527,7 @@ function LeadFormModal({
             exit={{ opacity: 0 }}
           />
 
-          {/* ✅ wrapper на --app-height чтобы не было "просвета" */}
+         
           <motion.div
             className="fixed left-0 top-0 z-[90] w-screen flex items-end sm:items-center justify-center p-0 sm:p-6"
             style={{ height: "var(--app-height)" }}
@@ -755,14 +755,14 @@ function ResultBlock() {
 export default function Programs() {
   useAppHeightVar(); // ✅ важно для iOS модалок
 
-  const salesOpenDate = useMemo(() => new Date(2026, 1, 21, 0, 0, 0), []);
+  const salesOpenDate = useMemo(() => new Date(2026, 1, 24, 0, 0, 0), []);
   const cd = useCountdown(salesOpenDate);
 
   const offers = useMemo<Offer[]>(
     () => [
       {
         id: "path",
-        title: "3 первых шага к мастерству.\nТри элемента счастья",
+        title: "Мое Счастье",
         description:
           "Практическое введение в систему «Архитектура Счастья».\n3 урока о базовых элементах счастья.",
         mobileDescription:

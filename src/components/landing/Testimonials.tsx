@@ -13,6 +13,24 @@ type Testimonial = {
   text: string;
 };
 
+function useIsMobile(breakpoint = 768) {
+  const [isMobile, setIsMobile] = useState(() => {
+    if (typeof window === "undefined") return false;
+    return window.matchMedia(`(max-width: ${breakpoint}px)`).matches;
+  });
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const mq = window.matchMedia(`(max-width: ${breakpoint}px)`);
+    const onChange = () => setIsMobile(mq.matches);
+    onChange();
+    mq.addEventListener?.("change", onChange);
+    return () => mq.removeEventListener?.("change", onChange);
+  }, [breakpoint]);
+
+  return isMobile;
+}
+
 export default function Testimonials() {
   const testimonials = useMemo<Testimonial[]>(
     () => [
@@ -51,6 +69,8 @@ export default function Testimonials() {
   const [isHovering, setIsHovering] = useState(false);
   const [pausedUntil, setPausedUntil] = useState<number>(0);
 
+  const isMobile = useIsMobile(768);
+
   const [fixedHeight, setFixedHeight] = useState<number | null>(null);
   const measureRefs = useRef<(HTMLDivElement | null)[]>([]);
 
@@ -74,25 +94,55 @@ export default function Testimonials() {
   }, [isHovering, pausedUntil, testimonials.length]);
 
   useLayoutEffect(() => {
+    let ro: ResizeObserver | null = null;
+
     const calc = () => {
       let max = 0;
       for (const el of measureRefs.current) {
         if (!el) continue;
-        max = Math.max(max, el.getBoundingClientRect().height);
+        // scrollHeight стабильнее, чем getBoundingClientRect на мобилках
+        max = Math.max(max, el.scrollHeight);
       }
       setFixedHeight(max > 0 ? Math.ceil(max) : null);
     };
 
-    calc();
+    // 1) сразу после mount
+    const raf1 = requestAnimationFrame(() => {
+      const raf2 = requestAnimationFrame(calc);
+      return raf2;
+    });
+
+    // 2) после загрузки шрифтов (iOS часто меняет метрики)
+    const fontsAny = (document as any).fonts as FontFaceSet | undefined;
+    if (fontsAny?.ready) {
+      fontsAny.ready.then(() => {
+        requestAnimationFrame(() => requestAnimationFrame(calc));
+      });
+    }
+
+    // 3) при изменении размеров/переносов — ResizeObserver
+    if (typeof ResizeObserver !== "undefined") {
+      ro = new ResizeObserver(() => calc());
+      measureRefs.current.forEach((el) => el && ro?.observe(el));
+    }
+
+    // 4) ресайз/ориентация
     window.addEventListener("resize", calc);
-    return () => window.removeEventListener("resize", calc);
+    window.addEventListener("orientationchange", calc);
+
+    return () => {
+      cancelAnimationFrame(raf1);
+      window.removeEventListener("resize", calc);
+      window.removeEventListener("orientationchange", calc);
+      ro?.disconnect();
+    };
   }, [testimonials]);
 
   const t = testimonials[active];
 
   return (
     <section id="reviews" className="bg-[#F6F1E7]">
-      <div className="mx-auto max-w-7xl px-6 sm:px-8 lg:px-12 py-16 sm:py-20">
+      <div className="mx-auto max-w-7xl px-6 sm:px-8 lg:px-12 py-16 sm:py-20 relative">
         <div className="flex justify-center">
           <div className="flex items-center gap-2 text-[10px] sm:text-[12px] tracking-[0.2em] font-semibold text-black/45 uppercase">
             <span className="h-1.5 w-1.5 rounded-full bg-accent" />
@@ -100,42 +150,42 @@ export default function Testimonials() {
           </div>
         </div>
 
-        {/* измеритель */}
-        <div className="pointer-events-none absolute opacity-0 -z-10">
-          {testimonials.map((x, i) => (
-            <div
-              key={x.id}
-              ref={(el) => {
-                measureRefs.current[i] = el;
-              }}
-              className="text-center max-w-5xl"
-            >
-              <h3 className="font-sans font-extrabold tracking-tight text-4xl md:text-6xl leading-[1.05]">
-                {x.name}
-              </h3>
-              <p className="mt-4 font-sans text-lg md:text-2xl">
-                {x.subtitle}
-              </p>
-             <p
-               className="
-                 mt-8
-                 font-serif italic
-                 text-black/90
-                 text-lg sm:text-xl lg:text-2xl
-                 leading-relaxed sm:leading-[1.55] lg:leading-[1.6]
-                 whitespace-pre-line
-               "
-             >
-               {t.text}
-             </p>
-            </div>
-          ))}
+        {/* ✅ ИЗМЕРИТЕЛЬ: та же ширина/типографика, но скрыт корректно */}
+        <div className="absolute inset-0 pointer-events-none -z-10">
+          <div className="mt-12 text-center mx-auto max-w-5xl" style={{ visibility: "hidden" }}>
+            {testimonials.map((x, i) => (
+              <div
+                key={x.id}
+                ref={(el) => {
+                  measureRefs.current[i] = el;
+                }}
+              >
+                <h3 className="font-sans font-extrabold tracking-tight text-4xl sm:text-5xl lg:text-6xl text-black leading-[1.05]">
+                  {x.name}
+                </h3>
+
+                <p className="mt-4 font-sans text-black/70 text-lg sm:text-xl lg:text-2xl">
+                  {x.subtitle}
+                </p>
+
+                <p className="mt-8 font-sans text-black/80 text-lg sm:text-xl lg:text-2xl leading-relaxed whitespace-pre-line">
+                  {x.text}
+                </p>
+              </div>
+            ))}
+          </div>
         </div>
 
-        {/* основной контент */}
+        {/* ✅ ОСНОВНОЙ КОНТЕНТ */}
         <div
           className="mt-12 text-center mx-auto max-w-5xl"
-          style={fixedHeight ? { minHeight: fixedHeight } : undefined}
+          style={
+            fixedHeight
+              ? isMobile
+                ? { height: fixedHeight } // ✅ МОБИЛКА: жёстко фиксируем
+                : { minHeight: fixedHeight } // ✅ ПК: можно minHeight
+              : undefined
+          }
         >
           <AnimatePresence mode="wait">
             <motion.div
@@ -186,9 +236,7 @@ export default function Testimonials() {
                         "ring-[3px] lg:ring-[4px]",
                         "ring-offset-4 lg:ring-offset-6",
                         "ring-offset-[#F7F3EE]",
-                        isActive
-                          ? "ring-accent"
-                          : "ring-black/10 group-hover:ring-black/25",
+                        isActive ? "ring-accent" : "ring-black/10 group-hover:ring-black/25",
                       ].join(" ")}
                     >
                       <div className="rounded-full overflow-hidden h-20 w-20 sm:h-24 sm:w-24 lg:h-32 lg:w-32">
@@ -205,9 +253,7 @@ export default function Testimonials() {
                       className={[
                         "text-center font-sans font-semibold leading-tight transition",
                         "text-sm sm:text-base lg:text-lg",
-                        isActive
-                          ? "text-black"
-                          : "text-black/55 group-hover:text-black/75",
+                        isActive ? "text-black" : "text-black/55 group-hover:text-black/75",
                       ].join(" ")}
                     >
                       {p.name}

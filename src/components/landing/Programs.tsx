@@ -27,6 +27,32 @@ type LeadFormData = {
 
 const SUPPORT_HREF = "https://t.me/TataZakzheva/";
 
+/** ✅ iOS: фиксируем реальную высоту экрана (убирает "просвет" при скрытии нижнего бара) */
+function useAppHeightVar() {
+  useEffect(() => {
+    const doc = document.documentElement;
+
+    const setH = () => {
+      doc.style.setProperty("--app-height", `${window.innerHeight}px`);
+      if (window.visualViewport) {
+        doc.style.setProperty("--vv-height", `${window.visualViewport.height}px`);
+      }
+    };
+
+    setH();
+
+    window.addEventListener("resize", setH);
+    window.visualViewport?.addEventListener("resize", setH);
+    window.visualViewport?.addEventListener("scroll", setH);
+
+    return () => {
+      window.removeEventListener("resize", setH);
+      window.visualViewport?.removeEventListener("resize", setH);
+      window.visualViewport?.removeEventListener("scroll", setH);
+    };
+  }, []);
+}
+
 function TitleWithBreaks({ text }: { text: string }) {
   const lines = String(text ?? "").split("\n");
   return (
@@ -57,7 +83,7 @@ function CheckItem({ text }: { text: string }) {
   );
 }
 
-/** ✅ Лочим скролл без прыжков */
+/** ✅ iOS-safe body lock (без дерганий) */
 function useLockBodyScroll(locked: boolean) {
   useEffect(() => {
     if (!locked) return;
@@ -65,20 +91,23 @@ function useLockBodyScroll(locked: boolean) {
     const body = document.body;
     const html = document.documentElement;
 
-    const prevBodyOverflow = body.style.overflow;
-    const prevBodyPaddingRight = body.style.paddingRight;
-    const prevHtmlOverflow = html.style.overflow;
+    const scrollY = window.scrollY || window.pageYOffset;
 
-    const scrollbarWidth = window.innerWidth - html.clientWidth;
-    if (scrollbarWidth > 0) body.style.paddingRight = `${scrollbarWidth}px`;
+    const prevBodyStyle = body.getAttribute("style") || "";
+    const prevHtmlStyle = html.getAttribute("style") || "";
 
-    body.style.overflow = "hidden";
+    body.style.position = "fixed";
+    body.style.top = `-${scrollY}px`;
+    body.style.left = "0";
+    body.style.right = "0";
+    body.style.width = "100%";
+
     html.style.overflow = "hidden";
 
     return () => {
-      body.style.overflow = prevBodyOverflow;
-      body.style.paddingRight = prevBodyPaddingRight;
-      html.style.overflow = prevHtmlOverflow;
+      body.setAttribute("style", prevBodyStyle);
+      html.setAttribute("style", prevHtmlStyle);
+      window.scrollTo(0, scrollY);
     };
   }, [locked]);
 }
@@ -127,26 +156,26 @@ function BulletsModal({
     return () => window.removeEventListener("keydown", onKey);
   }, [open, onClose]);
 
-  const mobileSheetMaxH = "calc(100dvh - env(safe-area-inset-top) - 12px)";
-  const mobileSheetTopGap = "calc(env(safe-area-inset-top) + 10px)";
-
   return (
     <AnimatePresence>
       {open && offer ? (
         <>
+          {/* ✅ overlay на реальную высоту */}
           <motion.button
             type="button"
             aria-label="Закрыть"
             onClick={onClose}
-            className="fixed inset-0 z-[80] bg-black/55"
+            className="fixed left-0 top-0 w-screen z-[80] bg-black/55"
+            style={{ height: "var(--app-height)" }}
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
           />
 
-          {/* MOBILE bottom sheet */}
+          {/* ✅ MOBILE: фиксируем контейнер по --app-height чтобы не было "просвета" */}
           <motion.div
-            className="fixed inset-x-0 bottom-0 z-[90] sm:hidden"
+            className="fixed left-0 top-0 z-[90] sm:hidden w-screen flex items-end"
+            style={{ height: "var(--app-height)" }}
             initial={{ y: 40, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             exit={{ y: 40, opacity: 0 }}
@@ -156,8 +185,7 @@ function BulletsModal({
               className="mx-auto w-full max-w-[520px] rounded-t-[28px] bg-[#F6F1E7] shadow-2xl border border-black/10 overflow-hidden flex flex-col"
               style={{
                 paddingBottom: "max(16px, env(safe-area-inset-bottom))",
-                maxHeight: mobileSheetMaxH,
-                marginTop: mobileSheetTopGap,
+                maxHeight: "calc(var(--app-height) - env(safe-area-inset-top) - 12px)",
               }}
             >
               <div className="px-4 pt-4 shrink-0">
@@ -487,18 +515,22 @@ function LeadFormModal({
     <AnimatePresence>
       {open && offer ? (
         <>
+          {/* ✅ overlay на реальную высоту */}
           <motion.button
             type="button"
             aria-label="Закрыть"
             onClick={resetAndClose}
-            className="fixed inset-0 z-[80] bg-black/55"
+            className="fixed left-0 top-0 w-screen z-[80] bg-black/55"
+            style={{ height: "var(--app-height)" }}
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
           />
 
+          {/* ✅ wrapper на --app-height чтобы не было "просвета" */}
           <motion.div
-            className="fixed inset-0 z-[90] flex items-end sm:items-center justify-center p-0 sm:p-6"
+            className="fixed left-0 top-0 z-[90] w-screen flex items-end sm:items-center justify-center p-0 sm:p-6"
+            style={{ height: "var(--app-height)" }}
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 10 }}
@@ -510,7 +542,10 @@ function LeadFormModal({
                 "rounded-t-[28px] sm:rounded-[28px]",
                 "bg-[#F6F1E7] border border-black/10 shadow-2xl overflow-hidden",
               ].join(" ")}
-              style={{ paddingBottom: "max(16px, env(safe-area-inset-bottom))" }}
+              style={{
+                paddingBottom: "max(16px, env(safe-area-inset-bottom))",
+                maxHeight: "calc(var(--app-height) - env(safe-area-inset-top) - 12px)",
+              }}
             >
               <div className="px-5 sm:px-6 pt-5 sm:pt-6">
                 <div className="flex items-start justify-between gap-3">
@@ -539,7 +574,7 @@ function LeadFormModal({
                 <div className="mt-4 h-px bg-black/10" />
               </div>
 
-              <div className="px-5 sm:px-6 py-5 sm:py-6">
+              <div className="px-5 sm:px-6 py-5 sm:py-6 overflow-auto min-h-0">
                 {sent ? (
                   <div className="rounded-2xl bg-white/70 border border-black/10 p-4 sm:p-5">
                     <div className="font-sans font-extrabold text-black text-[18px] sm:text-[20px]">
@@ -671,6 +706,11 @@ function LeadFormModal({
   );
 }
 
+function isTelegramValidSafe(raw: string) {
+  const tg = normalizeTelegram(raw);
+  return !tg || isTelegramValid(tg);
+}
+
 function useCountdown(target: Date) {
   const [msLeft, setMsLeft] = useState(() => Math.max(0, target.getTime() - Date.now()));
 
@@ -713,6 +753,8 @@ function ResultBlock() {
 }
 
 export default function Programs() {
+  useAppHeightVar(); // ✅ важно для iOS модалок
+
   const salesOpenDate = useMemo(() => new Date(2026, 1, 21, 0, 0, 0), []);
   const cd = useCountdown(salesOpenDate);
 
@@ -729,7 +771,7 @@ export default function Programs() {
         bullets: [
           "Практическое введение в систему «Архитектура Счастья».",
           "3 урока о базовых элементах счастья.",
-          "3 базовых элемента системы «Архитектура счастья».", // ✅ добавили
+          "3 базовых элемента системы «Архитектура счастья».",
         ],
         cta: "Добавить в корзину",
         variant: "light",
@@ -756,7 +798,7 @@ export default function Programs() {
           "Еженедельные онлайн-встречи с Ицхаком",
           "Личный саппорт кураторов",
           "Сообщество людей, строящих осознанную жизнь",
-          "7 элементов системы «Архитектура счастья».", // ✅ добавили
+          "7 элементов системы «Архитектура счастья».",
         ],
         cta: "Войти в клуб",
         variant: "yellow",
@@ -830,10 +872,7 @@ export default function Programs() {
   };
 
   const joinClubFromMore = () => {
-    if (!activeOfferId) return;
-    setBulletsModalOpen(false);
-    setLeadModalOpen(true);
-    setModalUrl("lead", activeOfferId);
+    // оставили совместимость, но не используем
   };
 
   useEffect(() => {
@@ -1067,7 +1106,6 @@ export default function Programs() {
                         ))}
                       </ul>
 
-                      {/* ✅ ВАЖНО: теперь "Результат" оформлен одинаково */}
                       {o.id === "club" ? (
                         <div className="mt-8">
                           <div className="font-sans font-semibold text-black/80 mb-3">Результат</div>
@@ -1118,14 +1156,17 @@ export default function Programs() {
         </div>
       </div>
 
-      <BulletsModal
-        open={bulletsModalOpen}
-        onClose={closeMore}
-        offer={activeOffer}
-        onJoinClub={() => {}}
-      />
+      <BulletsModal open={bulletsModalOpen} onClose={() => {
+        setBulletsModalOpen(false);
+        setActiveOfferId(null);
+        clearModalUrl();
+      }} offer={activeOffer} onJoinClub={joinClubFromMore} />
 
-      <LeadFormModal open={leadModalOpen} onClose={closeLead} offer={activeOffer} />
+      <LeadFormModal open={leadModalOpen} onClose={() => {
+        setLeadModalOpen(false);
+        setActiveOfferId(null);
+        clearModalUrl();
+      }} offer={activeOffer} />
     </section>
   );
 }

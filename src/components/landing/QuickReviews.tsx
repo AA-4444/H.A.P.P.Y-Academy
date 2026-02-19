@@ -1,5 +1,5 @@
 import { motion, useScroll, useTransform } from "framer-motion";
-import { useRef } from "react";
+import { useMemo, useRef } from "react";
 import { Star } from "lucide-react";
 
 const reviews = [
@@ -56,25 +56,32 @@ const reviews = [
 function Card({ review }: { review: (typeof reviews)[number] }) {
   return (
 	<div
-	  className="
-		flex-shrink-0 flex flex-col rounded-3xl bg-white border border-black/10
-		w-[320px] p-6
-		sm:w-[400px] sm:p-8
-		sm:shadow-[0_20px_60px_rgba(0,0,0,0.08)]
-	  "
+	  className={[
+		"flex-shrink-0 flex flex-col rounded-3xl bg-white border border-black/10",
+		"w-[280px] p-5",
+		"h-[360px]",
+		"sm:w-[360px] sm:p-6 sm:h-[400px]",
+		"sm:shadow-[0_20px_60px_rgba(0,0,0,0.08)]",
+	  ].join(" ")}
 	>
-	  <div className="flex gap-1 mb-4">
+	  <div className="flex gap-1 mb-3">
 		{Array.from({ length: review.rating }).map((_, i) => (
 		  <Star key={i} className="w-4 h-4 fill-yellow-400 text-yellow-400" />
 		))}
 	  </div>
 
-	  <p className="text-base sm:text-lg text-black/90 leading-relaxed min-h-[120px] sm:min-h-[140px] mb-6">
+	  <p
+		className={[
+		  "text-[15px] sm:text-base text-black/90 leading-relaxed mb-4",
+		  "overflow-hidden",
+		  "line-clamp-4 sm:line-clamp-5",
+		].join(" ")}
+	  >
 		“{review.text}”
 	  </p>
 
-	  <div className="mt-auto flex items-center gap-4">
-		<div className="w-10 h-10 rounded-full overflow-hidden ring-1 ring-black/10 bg-white">
+	  <div className="mt-auto flex items-center gap-3">
+		<div className="w-9 h-9 rounded-full overflow-hidden ring-1 ring-black/10 bg-white">
 		  <img
 			src={review.avatar}
 			alt={review.name}
@@ -85,9 +92,13 @@ function Card({ review }: { review: (typeof reviews)[number] }) {
 		  />
 		</div>
 
-		<div>
-		  <p className="font-semibold text-black">{review.name}</p>
-		  <p className="text-sm text-black/60">{review.role}</p>
+		<div className="min-w-0">
+		  <p className="font-semibold text-black text-sm truncate">
+			{review.name}
+		  </p>
+		  <p className="text-xs text-black/60 truncate">
+			{review.role}
+		  </p>
 		</div>
 	  </div>
 	</div>
@@ -97,9 +108,10 @@ function Card({ review }: { review: (typeof reviews)[number] }) {
 export default function QuickReviews() {
   const containerRef = useRef<HTMLDivElement>(null);
 
-  const isMobile =
-	typeof window !== "undefined" &&
-	window.matchMedia("(max-width: 768px)").matches;
+  const isMobile = useMemo(() => {
+	if (typeof window === "undefined") return false;
+	return window.matchMedia("(max-width: 768px)").matches;
+  }, []);
 
   const { scrollYProgress } = useScroll({
 	target: containerRef,
@@ -121,7 +133,7 @@ export default function QuickReviews() {
 		</h2>
 	  </div>
 
-	  {isMobile && (
+	  {isMobile ? (
 		<div className="flex gap-4 px-6 overflow-x-auto snap-x snap-mandatory scrollbar-hide">
 		  {reviews.map((r, i) => (
 			<div key={i} className="snap-start">
@@ -129,23 +141,15 @@ export default function QuickReviews() {
 			</div>
 		  ))}
 		</div>
-	  )}
-
-	  {!isMobile && (
+	  ) : (
 		<>
-		  <motion.div
-			style={{ x: x1 }}
-			className="flex gap-6 mb-6 px-6 sm:px-8 lg:px-12"
-		  >
+		  <motion.div style={{ x: x1 }} className="flex gap-6 mb-6 px-6 sm:px-8 lg:px-12">
 			{[...reviews.slice(0, 3), ...reviews.slice(0, 3)].map((r, i) => (
 			  <Card key={`r1-${i}`} review={r} />
 			))}
 		  </motion.div>
 
-		  <motion.div
-			style={{ x: x2 }}
-			className="flex gap-6 px-6 sm:px-8 lg:px-12 -ml-48"
-		  >
+		  <motion.div style={{ x: x2 }} className="flex gap-6 px-6 sm:px-8 lg:px-12 -ml-48">
 			{[...reviews.slice(3, 6), ...reviews.slice(3, 6)].map((r, i) => (
 			  <Card key={`r2-${i}`} review={r} />
 			))}

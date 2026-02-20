@@ -125,7 +125,7 @@ export default function PaymentSuccess() {
 				  </Button>
 				</Link>
 
-				{/* ✅ КНОПКИ ТОЛЬКО ДЛЯ path */}
+				{/* КНОПКИ ТОЛЬКО ДЛЯ path */}
 				{showCourseButtons ? (
 				  <>
 					<a
@@ -141,7 +141,7 @@ export default function PaymentSuccess() {
 						Перейти к курсу <ArrowRight className="ml-2 h-5 w-5" />
 					  </Button>
 					</a>
-
+					{/*
 					<a
 					  href={courseGroupHref}
 					  target="_blank"
@@ -154,7 +154,7 @@ export default function PaymentSuccess() {
 					  >
 						Группа счастья <ArrowRight className="ml-2 h-5 w-5" />
 					  </Button>
-					</a>
+					</a> */}
 				  </>
 				) : null}
 

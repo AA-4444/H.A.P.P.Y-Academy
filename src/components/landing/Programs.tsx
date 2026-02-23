@@ -755,7 +755,7 @@ function ResultBlock() {
 export default function Programs() {
   useAppHeightVar(); 
 
-  const salesOpenDate = useMemo(() => new Date(2026, 1, 24, 0, 0, 0), []);
+  const salesOpenDate = useMemo(() => new Date(2026, 1, 26, 0, 0, 0), []);
   const cd = useCountdown(salesOpenDate);
 
   const offers = useMemo<Offer[]>(

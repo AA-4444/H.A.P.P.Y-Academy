@@ -349,7 +349,7 @@ function LeadFormModal({
 
       // ✅ system: lead only (no payment)
       if (offer.id === "system") {
-        const r = await fetch("/api/leads", {
+        const r = await fetch("/api/lead", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
@@ -362,7 +362,7 @@ function LeadFormModal({
           }),
         });
 
-        if (!r.ok) throw new Error(`Leads error: ${r.status}`);
+        if (!r.ok) throw new Error(`Lead error: ${r.status}`);
 
         setSent(true);
         setSubmitting(false);

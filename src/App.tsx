@@ -17,6 +17,7 @@ import NotFound from "./pages/NotFound";
 
 import PaymentSuccess from "./pages/payment/success";
 import PaymentCancel from "./pages/payment/cancel";
+import AmbassadorSuccess from "./pages/payment/AmbassadorSuccess";
 
 const queryClient = new QueryClient();
 
@@ -37,7 +38,7 @@ const App = () => (
             <Route path="/privacy" element={<PrivacyPage />} />
             <Route path="/terms" element={<TermsPage />} />
             <Route path="/refund" element={<RefundPage />} />
-
+<Route path="/payment/ambassador-success" element={<AmbassadorSuccess />} />
          
           <Route path="*" element={<NotFound />} />
         </Routes>

@@ -12,10 +12,11 @@ type Body = {
   contact?: string;
   comment?: string;
   pageUrl?: string;
-
-  // опционально, если ты пришлёшь с фронта
   leadId?: string;
   stage?: "pre_payment" | "paid";
+
+  // 🔥 для ambassador
+  amount?: string;
 };
 
 const PRICE_BY_OFFER: Record<string, string | undefined> = {
@@ -23,7 +24,6 @@ const PRICE_BY_OFFER: Record<string, string | undefined> = {
   club: process.env.STRIPE_PRICE_CLUB,
 };
 
-// ✅ club = подписка, path = разовая оплата
 const MODE_BY_OFFER: Record<string, Stripe.Checkout.SessionCreateParams.Mode> = {
   path: "payment",
   club: "subscription",
@@ -35,32 +35,35 @@ const TG_CHAT_ID = process.env.TG_CHAT_ID;
 
 async function sendTelegram(text: string) {
   if (!TG_BOT_TOKEN || !TG_CHAT_ID) {
-	// Не падаем, но явно показываем причину (чтобы ты не гадал)
 	throw new Error("Missing TG_BOT_TOKEN or TG_CHAT_ID env");
   }
 
-  const url = `https://api.telegram.org/bot${TG_BOT_TOKEN}/sendMessage`;
-
-  const resp = await fetch(url, {
-	method: "POST",
-	headers: { "Content-Type": "application/json" },
-	body: JSON.stringify({
-	  chat_id: TG_CHAT_ID,
-	  text,
-	  parse_mode: "HTML",
-	  disable_web_page_preview: true,
-	}),
-  });
+  const resp = await fetch(
+	`https://api.telegram.org/bot${TG_BOT_TOKEN}/sendMessage`,
+	{
+	  method: "POST",
+	  headers: { "Content-Type": "application/json" },
+	  body: JSON.stringify({
+		chat_id: TG_CHAT_ID,
+		text,
+		parse_mode: "HTML",
+		disable_web_page_preview: true,
+	  }),
+	}
+  );
 
   const data = await resp.json().catch(() => ({}));
   if (!resp.ok) {
-	throw new Error(`Telegram sendMessage failed ${resp.status}: ${JSON.stringify(data)}`);
+	throw new Error(
+	  `Telegram sendMessage failed ${resp.status}: ${JSON.stringify(data)}`
+	);
   }
 }
 
 function makeLeadId() {
-  // простой уникальный id без зависимостей
-  return `lead_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 10)}`;
+  return `lead_${Date.now().toString(36)}_${Math.random()
+	.toString(36)
+	.slice(2, 10)}`;
 }
 
 function esc(s: string) {
@@ -70,7 +73,10 @@ function esc(s: string) {
 	.replace(/>/g, "&gt;");
 }
 
-export default async function handler(req: NextApiRequest, res: NextApiResponse) {
+export default async function handler(
+  req: NextApiRequest,
+  res: NextApiResponse
+) {
   try {
 	if (req.method !== "POST") {
 	  res.setHeader("Allow", "POST");
@@ -78,11 +84,13 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 	}
 
 	if (!process.env.STRIPE_SECRET_KEY) {
-	  return res.status(500).json({ ok: false, error: "Missing STRIPE_SECRET_KEY" });
+	  return res
+		.status(500)
+		.json({ ok: false, error: "Missing STRIPE_SECRET_KEY" });
 	}
 
 	const body: Body =
-	  typeof req.body === "string" ? JSON.parse(req.body) : (req.body ?? {});
+	  typeof req.body === "string" ? JSON.parse(req.body) : req.body ?? {};
 
 	const offerId = (body.offerId ?? "").trim();
 	const offerTitle = (body.offerTitle ?? "").trim();
@@ -90,28 +98,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 	const contact = (body.contact ?? "").trim();
 	const comment = (body.comment ?? "").trim();
 	const pageUrl = (body.pageUrl ?? "").trim();
-
-	// по умолчанию считаем, что это "pre_payment"
 	const stage = body.stage ?? "pre_payment";
-
-	// leadId либо приходит с фронта, либо генерим
 	const leadId = (body.leadId ?? "").trim() || makeLeadId();
 
 	if (!offerId || name.length < 2 || contact.length < 5) {
 	  return res.status(400).json({ ok: false, error: "Validation failed" });
-	}
-
-	const priceId = PRICE_BY_OFFER[offerId];
-	if (!priceId) {
-	  return res.status(400).json({
-		ok: false,
-		error: `Missing price for offerId=${offerId}. Set STRIPE_PRICE_* env.`,
-	  });
-	}
-
-	const mode = MODE_BY_OFFER[offerId];
-	if (!mode) {
-	  return res.status(400).json({ ok: false, error: `Unknown offerId=${offerId}` });
 	}
 
 	const origin =
@@ -119,7 +110,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 	  process.env.NEXT_PUBLIC_SITE_URL ||
 	  "http://localhost:3000";
 
-	// ✅ 1) Сначала отправляем лид в Telegram (до оплаты)
+	// ✅ 1) TELEGRAM — pre_payment
 	if (stage === "pre_payment") {
 	  const msg =
 		`🟡 <b>Новая заявка (ожидает оплату)</b>\n` +
@@ -133,15 +124,85 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 	  await sendTelegram(msg);
 	}
 
-	// ✅ 2) Создаём Stripe session
+	// =====================================================
+	// 🔥 2) AMBASSADOR — DYNAMIC DONATION
+	// =====================================================
+	if (offerId === "ambassador") {
+	  const rawAmount = (body.amount ?? "").toString().trim();
+	  const donation = Number(rawAmount.replace(",", "."));
+
+	  if (isNaN(donation) || donation < 5 || donation > 50000) {
+		return res.status(400).json({
+		  ok: false,
+		  error: "Invalid donation amount",
+		});
+	  }
+
+	  const session = await stripe.checkout.sessions.create({
+		mode: "payment",
+
+		line_items: [
+		  {
+			price_data: {
+			  currency: "eur",
+			  product_data: {
+				name: "Амбассадор счастья — Донат",
+			  },
+			  unit_amount: Math.round(donation * 100),
+			},
+			quantity: 1,
+		  },
+		],
+
+		metadata: {
+		  leadId,
+		  stage,
+		  offerId,
+		  offerTitle,
+		  name,
+		  contact,
+		  comment,
+		  pageUrl,
+		  donationAmount: donation.toString(),
+		},
+
+		success_url: `${origin}/payment/ambassador-success?session_id={CHECKOUT_SESSION_ID}&leadId=${encodeURIComponent(
+		  leadId
+		)}`,
+		cancel_url: `${origin}/payment/cancel?offerId=${encodeURIComponent(
+		  offerId
+		)}&leadId=${encodeURIComponent(leadId)}`,
+	  });
+
+	  return res.status(200).json({ ok: true, url: session.url, leadId });
+	}
+
+	// =====================================================
+	// ✅ 3) ОСТАЛЬНЫЕ (path, club) — как было
+	// =====================================================
+
+	const priceId = PRICE_BY_OFFER[offerId];
+	if (!priceId) {
+	  return res.status(400).json({
+		ok: false,
+		error: `Missing price for offerId=${offerId}`,
+	  });
+	}
+
+	const mode = MODE_BY_OFFER[offerId];
+	if (!mode) {
+	  return res
+		.status(400)
+		.json({ ok: false, error: `Unknown offerId=${offerId}` });
+	}
+
 	const session = await stripe.checkout.sessions.create({
 	  mode,
 	  line_items: [{ price: priceId, quantity: 1 }],
 
-	  // ✅ важно: metadata должно содержать leadId, чтобы webhook мог найти “кого оплатили”
 	  metadata: {
 		leadId,
-		stage, // pre_payment
+		stage,
 		offerId,
 		offerTitle,
 		name,
@@ -153,14 +214,15 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 	  success_url: `${origin}/payment/success?session_id={CHECKOUT_SESSION_ID}&offerId=${encodeURIComponent(
 		offerId
 	  )}&leadId=${encodeURIComponent(leadId)}`,
-	  cancel_url: `${origin}/payment/cancel?offerId=${encodeURIComponent(offerId)}&leadId=${encodeURIComponent(
-		leadId
-	  )}`,
+	  cancel_url: `${origin}/payment/cancel?offerId=${encodeURIComponent(
+		offerId
+	  )}&leadId=${encodeURIComponent(leadId)}`,
 	});
 
 	return res.status(200).json({ ok: true, url: session.url, leadId });
   } catch (e: any) {
-	// важно: показываем ошибку явно (так ты увидишь, если Telegram упал)
-	return res.status(500).json({ ok: false, error: e?.message ?? String(e) });
+	return res
+	  .status(500)
+	  .json({ ok: false, error: e?.message ?? String(e) });
   }
 }

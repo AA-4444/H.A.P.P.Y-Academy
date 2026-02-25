@@ -337,7 +337,7 @@ function LeadFormModal({
     setSubmitting(true);
 
     try {
-      // ✅ ambassador: validate donation amount
+      //  ambassador: validate donation amount
       if (offer.id === "ambassador") {
         const donation = Number(String(data.amount).replace(",", "."));
         if (!Number.isFinite(donation) || donation < 5 || donation > 50000) {
@@ -347,8 +347,9 @@ function LeadFormModal({
         }
       }
 
-      // ✅ system: lead only (no payment)
-      if (offer.id === "system") {
+
+      // system + gift: lead only (no payment)
+      if (offer.id === "system" || offer.id === "gift") {
         const r = await fetch("/api/lead", {
           method: "POST",
           headers: { "Content-Type": "application/json" },

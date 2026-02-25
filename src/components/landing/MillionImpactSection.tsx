@@ -325,7 +325,7 @@ export default function MillionImpactSection() {
 	  </div>
 
 	  {/* CTA sticky внутри секции */}
-	  <div className="sticky bottom-0 z-20">
+	  <div className="sticky bottom-0 z-20 will-change-transform">
 		<button
 		  type="button"
 		  onClick={goPrograms}
@@ -381,14 +381,22 @@ function WorldMapCoverBackground({
   const [shownCount, setShownCount] = useState(0);
 
   useEffect(() => {
+	let prev = -1;
+  
 	const unsub = reveal.on("change", (v: number) => {
 	  const t = Math.max(0, Math.min(1, v));
-	  setShownCount(Math.round(points.length * t));
+	  const next = Math.round(points.length * t);
+  
+	  if (next !== prev) {
+		prev = next;
+		setShownCount(next);
+	  }
 	});
+  
 	return () => unsub();
   }, [reveal, points.length]);
 
-  const visible = points.slice(0, shownCount);
+  const visible = points.slice(0, Math.min(shownCount, 40));
 
   const geoFill = isMobile ? "rgba(0,0,0,0.07)" : "rgba(0,0,0,0.10)";
   const geoStroke = isMobile ? "rgba(0,0,0,0.14)" : "rgba(0,0,0,0.18)";
@@ -463,6 +471,7 @@ function PulsingDot({ accent, delay = 0 }: { accent: string; delay?: number }) {
 		opacity={0.16}
 		initial={{ scale: 0.6, opacity: 0 }}
 		animate={{ scale: [0.8, 1.7, 0.8], opacity: [0.0, 0.18, 0.0] }}
+		style={{ willChange: "transform, opacity" }}
 		transition={{ duration: 2.2, repeat: Infinity, ease: "easeInOut", delay }}
 	  />
 	  <motion.circle

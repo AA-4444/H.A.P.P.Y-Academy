@@ -1,6 +1,7 @@
 import { motion, useScroll, useTransform } from "framer-motion";
 import { useMemo, useRef } from "react";
 import { Star } from "lucide-react";
+import { useSpring } from "framer-motion";
 
 const reviews = [
   {
@@ -118,8 +119,11 @@ export default function QuickReviews() {
 	offset: ["start end", "end start"],
   });
 
-  const x1 = useTransform(scrollYProgress, [0, 1], [0, -200]);
-  const x2 = useTransform(scrollYProgress, [0, 1], [0, 200]);
+ const rawX1 = useTransform(scrollYProgress, [0, 1], [0, -200]);
+ const rawX2 = useTransform(scrollYProgress, [0, 1], [0, 200]);
+ 
+ const x1 = useSpring(rawX1, { stiffness: 60, damping: 20 });
+ const x2 = useSpring(rawX2, { stiffness: 60, damping: 20 });
 
   return (
 	<section

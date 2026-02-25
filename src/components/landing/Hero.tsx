@@ -250,65 +250,43 @@ function GridMotionBg({ images }: { images: ImgSet[] }) {
     cols,
   ]);
 
-  useEffect(() => {
-    gsap.ticker.lagSmoothing(0);
-
-    const handleMouseMove = (e: MouseEvent) => {
-      mouseXRef.current = e.clientX;
-    };
-
-    const handleTouchMoveDesktop = (e: TouchEvent) => {
-      const t = e.touches?.[0];
-      if (!t) return;
-      mouseXRef.current = t.clientX;
-    };
-
-    const updateMotion = () => {
-      const w = window.innerWidth || 1;
-
-      const maxMoveAmount = isMobile ? 220 : 300;
-      const baseDuration = isMobile ? 0.9 : 0.8;
-      const inertia = [0.6, 0.4, 0.3, 0.2];
-
-      let xForCalc = mouseXRef.current;
-
-      if (isMobile) {
-        const tt = performance.now() / 1000;
-        const wave = 0.5 + 0.5 * Math.sin(tt * 0.55);
-        xForCalc = wave * w;
-      }
-
-      rowRefs.current.forEach((row, index) => {
-        if (!row) return;
-        const direction = index % 2 === 0 ? 1 : -1;
-        const moveAmount =
-          ((xForCalc / w) * maxMoveAmount - maxMoveAmount / 2) * direction;
-
-        gsap.to(row, {
-          x: moveAmount,
-          duration: baseDuration + inertia[index % inertia.length],
-          ease: "power3.out",
-          overwrite: "auto",
-        });
-      });
-    };
-
-    gsap.ticker.fps(30);
-    gsap.ticker.add(updateMotion);
-
-    if (!isMobile) {
-      window.addEventListener("mousemove", handleMouseMove, { passive: true });
-      window.addEventListener("touchmove", handleTouchMoveDesktop, { passive: true });
-    }
-
-    return () => {
-      if (!isMobile) {
-        window.removeEventListener("mousemove", handleMouseMove);
-        window.removeEventListener("touchmove", handleTouchMoveDesktop);
-      }
-      gsap.ticker.remove(updateMotion);
-    };
-  }, [isMobile]);
+ useEffect(() => {
+   // ❗ На мобильных полностью отключаем анимацию
+   if (isMobile) return;
+ 
+   const handleMouseMove = (e: MouseEvent) => {
+     mouseXRef.current = e.clientX;
+   };
+ 
+   const updateMotion = () => {
+     const w = window.innerWidth || 1;
+     const maxMoveAmount = 300;
+ 
+     rowRefs.current.forEach((row, index) => {
+       if (!row) return;
+ 
+       const direction = index % 2 === 0 ? 1 : -1;
+       const moveAmount =
+         ((mouseXRef.current / w) * maxMoveAmount - maxMoveAmount / 2) *
+         direction;
+ 
+       gsap.to(row, {
+         x: moveAmount,
+         duration: 0.8,
+         ease: "power3.out",
+         overwrite: "auto",
+       });
+     });
+   };
+ 
+   gsap.ticker.add(updateMotion);
+   window.addEventListener("mousemove", handleMouseMove, { passive: true });
+ 
+   return () => {
+     window.removeEventListener("mousemove", handleMouseMove);
+     gsap.ticker.remove(updateMotion);
+   };
+ }, [isMobile]);
 
   const gap = isMobile ? "0.75rem" : "1rem";
   const gridW = isMobile ? "210vw" : "150vw";

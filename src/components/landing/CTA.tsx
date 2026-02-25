@@ -58,7 +58,7 @@ export default function CTA() {
                 ref={ref}
                 className="relative"
                 style={{
-                  height: `calc(100vh - ${HEADER_H}px - 24px)`,
+                  height: `calc(100svh - ${HEADER_H}px - 24px)`,
                   minHeight: 520,
                 }}
               >

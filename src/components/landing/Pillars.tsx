@@ -40,13 +40,20 @@ const Pillars = () => {
   const [activeIndex, setActiveIndex] = useState(0);
 
   useEffect(() => {
+    let prev = -1;
+  
     const unsub = progress.on("change", (v) => {
       const idx = Math.max(
         0,
         Math.min(items.length - 1, Math.floor(v * items.length))
       );
-      setActiveIndex(idx);
+  
+      if (idx !== prev) {
+        prev = idx;
+        setActiveIndex(idx);
+      }
     });
+  
     return () => unsub();
   }, [progress, items.length]);
 
@@ -65,12 +72,12 @@ const Pillars = () => {
       ref={sectionRef}
       className="bg-[#F6F1E7]"
       style={{
-        minHeight: `calc(100vh + ${items.length * 200}px)`,
+        minHeight: `calc(100svh + ${items.length * 200}px)`,
       }}
     >
       <div
         ref={stickyRef}
-        className="sticky top-0 h-screen flex items-center justify-center"
+        className="sticky top-0 min-h-screen flex items-center justify-center"
       >
         <div className="container mx-auto px-4 sm:px-6 flex justify-center">
           <div className="max-w-fit w-full flex flex-col items-start">
@@ -165,10 +172,10 @@ function PillarRow({
 
   const y = useTransform(progress, [start, end], [20, 0]);
   const opacity = useTransform(progress, [start, end], [0, 1]);
-  const blur = useTransform(progress, [start, end], [8, 0]);
+  
 
   return (
-    <motion.div style={{ opacity, y, filter: blur as unknown as string }}>
+   <motion.div style={{ opacity, y }}>
       <div className="flex items-baseline gap-3 sm:gap-6">
         <span
           className={[

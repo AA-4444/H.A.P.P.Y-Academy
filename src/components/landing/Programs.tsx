@@ -733,7 +733,7 @@ function OfferCard({
      variants={cardVariants}
      initial="hidden"
      whileInView="visible"
-     viewport={{ once: true, amount: 0.25 }}
+     viewport={{ once: true, margin: "-100px" }}
      style={{ willChange: "transform, opacity" }}
      className={[
        "group relative flex flex-col overflow-hidden h-full",

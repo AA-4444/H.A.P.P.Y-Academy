@@ -143,7 +143,7 @@ export default function QuickReviews() {
 		</div>
 	  ) : (
 		<>
-		  <motion.div style={{ x: x1 }} className="flex gap-6 mb-6 px-6 sm:px-8 lg:px-12">
+		  <motion.div style={{ x: x1, willChange: "transform" }} className="flex gap-6 mb-6 px-6 sm:px-8 lg:px-12">
 			{[...reviews.slice(0, 3), ...reviews.slice(0, 3)].map((r, i) => (
 			  <Card key={`r1-${i}`} review={r} />
 			))}

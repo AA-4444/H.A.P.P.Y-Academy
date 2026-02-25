@@ -4,15 +4,7 @@ import { gsap } from "gsap";
 import { Button } from "@/components/ui/button";
 import { ArrowDown } from "lucide-react";
 
-/**
- * ✅ ВАЖНО:
- * Тут мы импортируем картинки через vite-imagetools:
- * - AVIF srcset (несколько ширин)
- * - WEBP srcset (несколько ширин)
- * - fallback (один нормальный размер)
- *
- * Можно менять набор ширин: 320;640;960 — норм для карточек.
- */
+
 
 // ---------- t1..t6 ----------
 import t1Avif from "@/assets/t1.jpg?w=320;640;960&format=avif&as=srcset";
@@ -301,6 +293,7 @@ function GridMotionBg({ images }: { images: ImgSet[] }) {
       });
     };
 
+    gsap.ticker.fps(30);
     gsap.ticker.add(updateMotion);
 
     if (!isMobile) {
@@ -635,35 +628,10 @@ const Hero = () => {
     []
   );
 
-  useEffect(() => {
-    const isMobile =
-      typeof window !== "undefined" &&
-      window.matchMedia("(max-width: 768px)").matches;
-    if (!isMobile) return;
-
-    let startY = 0;
-
-    const onTouchStart = (e: TouchEvent) => {
-      startY = e.touches?.[0]?.clientY ?? 0;
-    };
-
-    const onTouchMove = (e: TouchEvent) => {
-      const y = e.touches?.[0]?.clientY ?? 0;
-      const dy = y - startY;
-      if (window.scrollY <= 0 && dy > 0) e.preventDefault();
-    };
-
-    window.addEventListener("touchstart", onTouchStart, { passive: true });
-    window.addEventListener("touchmove", onTouchMove, { passive: false });
-
-    return () => {
-      window.removeEventListener("touchstart", onTouchStart);
-      window.removeEventListener("touchmove", onTouchMove);
-    };
-  }, []);
+ 
 
   return (
-    <section className="relative w-screen h-[100svh] overflow-hidden">
+    <section className="relative w-screen h-screen overflow-hidden">
       <GridMotionBg images={bgImages} />
 
       <div className="absolute inset-0 pointer-events-none">

@@ -159,6 +159,5 @@ body {
   @apply bg-background text-foreground antialiased;
 }
 html, body {
-  overflow-anchor: none;
-  overscroll-behavior: none;
+  overflow-x: clip;
 }

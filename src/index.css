@@ -161,3 +161,10 @@ body {
 html, body {
   overflow-x: clip;
 }
+html {
+  height: 100dvh;
+}
+
+body {
+  min-height: 100dvh;
+}

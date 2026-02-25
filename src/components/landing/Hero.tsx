@@ -251,14 +251,9 @@ function GridMotionBg({ images }: { images: ImgSet[] }) {
   ]);
 
  useEffect(() => {
-   // ❗ На мобильных полностью отключаем анимацию
-   if (isMobile) return;
+   let raf: number;
  
-   const handleMouseMove = (e: MouseEvent) => {
-     mouseXRef.current = e.clientX;
-   };
- 
-   const updateMotion = () => {
+   const animateDesktop = () => {
      const w = window.innerWidth || 1;
      const maxMoveAmount = 300;
  
@@ -270,21 +265,49 @@ function GridMotionBg({ images }: { images: ImgSet[] }) {
          ((mouseXRef.current / w) * maxMoveAmount - maxMoveAmount / 2) *
          direction;
  
-       gsap.to(row, {
-         x: moveAmount,
-         duration: 0.8,
-         ease: "power3.out",
-         overwrite: "auto",
-       });
+       row.style.transform = `translateX(${moveAmount}px)`;
      });
+ 
+     raf = requestAnimationFrame(animateDesktop);
    };
  
-   gsap.ticker.add(updateMotion);
-   window.addEventListener("mousemove", handleMouseMove, { passive: true });
+   const animateMobile = () => {
+     const w = window.innerWidth || 1;
+     const t = performance.now() / 1000;
+ 
+     const wave = 0.5 + 0.5 * Math.sin(t * 0.5);
+     const xForCalc = wave * w;
+ 
+     const maxMoveAmount = 180;
+ 
+     rowRefs.current.forEach((row, index) => {
+       if (!row) return;
+ 
+       const direction = index % 2 === 0 ? 1 : -1;
+       const moveAmount =
+         ((xForCalc / w) * maxMoveAmount - maxMoveAmount / 2) *
+         direction;
+ 
+       row.style.transform = `translateX(${moveAmount}px)`;
+     });
+ 
+     raf = requestAnimationFrame(animateMobile);
+   };
+ 
+   const handleMouseMove = (e: MouseEvent) => {
+     mouseXRef.current = e.clientX;
+   };
+ 
+   if (isMobile) {
+     raf = requestAnimationFrame(animateMobile);
+   } else {
+     window.addEventListener("mousemove", handleMouseMove, { passive: true });
+     raf = requestAnimationFrame(animateDesktop);
+   }
  
    return () => {
+     cancelAnimationFrame(raf);
      window.removeEventListener("mousemove", handleMouseMove);
-     gsap.ticker.remove(updateMotion);
    };
  }, [isMobile]);
 

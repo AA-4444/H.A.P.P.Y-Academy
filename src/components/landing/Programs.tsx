@@ -289,8 +289,10 @@ function LeadFormModal({
   const [sent, setSent] = useState(false);
   const [submitting, setSubmitting] = useState(false);
 
-  const isSystem = offer?.id === "system";
-  const isAmbassador = offer?.id === "ambassador";
+ const isLeadOnly =
+   offer?.id === "system" || offer?.id === "gift";
+ 
+ const isAmbassador = offer?.id === "ambassador";
 
   const title =
     isAmbassador
@@ -301,13 +303,11 @@ function LeadFormModal({
       ? "Заявка на программу"
       : "Заявка";
 
-  const subtitle = isSystem
-    ? "Оставьте контакты — мы свяжемся с вами."
-    : isAmbassador
-    ? "Оставьте контакты и сумму — вы перейдёте к оплате доната."
-    : offer?.id === "club"
-    ? "Оставьте контакты — вы перейдёте к оплате. После успешной оплаты мы пришлём детали."
-    : "Оставьте контакты — вы перейдёте к оплате. После успешной оплаты мы пришлём доступ.";
+  const subtitle = isLeadOnly
+  ? "Оставьте контакты — мы свяжемся с вами."
+  : isAmbassador
+  ? "Оставьте контакты и сумму — вы перейдёте к оплате доната."
+  : "Оставьте контакты — вы перейдёте к оплате.";
 
   const submitLabel = isSystem
     ? "Оставить заявку"
@@ -454,24 +454,36 @@ function LeadFormModal({
                 </button>
               </div>
 
-              {sent ? (
-                <div className="text-center py-8">
-                  <p className="text-lg font-bold text-foreground">
-                    {isSystem ? "Заявка отправлена ✅" : "Перенаправляем на оплату…"}
-                  </p>
-                  <p className="mt-2 text-sm text-muted-foreground">
-                    {isSystem
-                      ? "Мы скоро свяжемся с вами."
-                      : "Сейчас откроется безопасная страница оплаты Stripe."}
-                  </p>
-                  <button
-                    onClick={resetAndClose}
-                    className="mt-6 rounded-full px-6 h-10 bg-muted text-foreground font-semibold"
-                  >
-                    Закрыть
-                  </button>
-                </div>
-              ) : (
+              
+                {sent ? (
+                  <div className="flex flex-col items-center justify-center text-center py-12 px-4 space-y-6">
+                
+                    <div className="w-16 h-16 rounded-full bg-[#FACC15] flex items-center justify-center shadow-md">
+                      <Check className="w-8 h-8 text-[#1a1a1a]" strokeWidth={3} />
+                    </div>
+                
+                    <h3 className="text-xl font-bold text-foreground">
+                      {isLeadOnly
+                        ? "Заявка отправлена"
+                        : "Перенаправляем на оплату"}
+                    </h3>
+                
+                    <p className="text-sm text-muted-foreground max-w-sm leading-relaxed">
+                      {isLeadOnly
+                        ? "Мы внимательно рассмотрим вашу заявку и свяжемся с вами в ближайшее время."
+                        : "Сейчас откроется защищённая страница оплаты."}
+                    </p>
+                
+                    {isLeadOnly && (
+                      <button
+                        onClick={resetAndClose}
+                        className="mt-4 rounded-full px-6 h-11 bg-[#FACC15] text-[#1a1a1a] font-semibold hover:bg-[#e5b800] transition shadow-md"
+                      >
+                        Закрыть
+                      </button>
+                    )}
+                  </div>
+                ) : (
                 <form onSubmit={submit} className="space-y-4">
                   <div>
                     <label className="text-sm font-semibold text-foreground">Имя</label>
@@ -703,12 +715,14 @@ function OfferCard({
   isWide,
   onOpenMore,
   onOpenLead,
+  cd,
 }: {
   offer: Offer;
   index: number;
   isWide: boolean;
   onOpenMore: (id: string) => void;
   onOpenLead: (id: string) => void;
+  cd?: ReturnType<typeof useCountdown>;
 }) {
   const isGift = offer.id === "gift";
   const hidePrimaryCta = offer.id === "club";
@@ -797,14 +811,15 @@ function OfferCard({
           {offer.mobileDescription}
         </p>
 
-        {/* Countdown */}
-        {offer.ctaNote && (
+        {offer.ctaNote === "countdown" && cd && (
           <div className="mt-4 inline-flex items-center gap-2">
             <span className="text-[10px] uppercase tracking-[0.15em] font-semibold text-black/40">
               Открытие продаж через
             </span>
             <span className="font-black text-[#E64B1E] text-sm tabular-nums bg-[#E64B1E]/10 px-2.5 py-1 rounded-lg">
-              {offer.ctaNote}
+              {cd.msLeft > 0
+                ? `${cd.days}д ${cd.hours}:${cd.mins}:${cd.secs}`
+                : "Продажи открыты"}
             </span>
           </div>
         )}
@@ -906,7 +921,7 @@ export default function Programs() {
         "Вы начинаете управлять своим состоянием, целями и энергией.\nСчастье перестаёт быть случайностью — становится архитектурой.",
       oldPrice: "499 €",
       price: "49 €",
-      ctaNote: cd.msLeft > 0 ? `${cd.days}д ${cd.hours}:${cd.mins}:${cd.secs}` : "Предложение активно",
+      ctaNote: "countdown", // ← ВАЖНО
       bullets: [
         "10 элементов системы счастья",
         "Ежедневные практики (10–15 минут)",
@@ -920,7 +935,8 @@ export default function Programs() {
       ],
       cta: "Оставить заявку",
       variant: "light",
-      longDescription: "Разовый платёж. После оплаты вы получите доступ к материалам на 1 год.",
+      longDescription:
+        "Разовый платёж. После оплаты вы получите доступ к материалам на 1 год.",
       badge: "Скидка 90%",
     },
     {
@@ -928,10 +944,11 @@ export default function Programs() {
       payType: "subscription",
       title: "Клуб\n«Архитектура счастья»",
       description: "Полный проект вашего внутреннего дома.",
-      mobileDescription: "Полная система из 10 ключевых элементов.\nПолный проект вашего внутреннего дома.",
+      mobileDescription:
+        "Полная система из 10 ключевых элементов.\nПолный проект вашего внутреннего дома.",
       price: "49 €",
       priceNote: "/ мес",
-      ctaNote: cd.msLeft > 0 ? `${cd.days}д ${cd.hours}:${cd.mins}:${cd.secs}` : "Продажи открыты",
+      ctaNote: "countdown", // ← ВАЖНО
       bullets: [
         "Видео-уроки и тренинги",
         "Полная система 10 элементов",
@@ -959,7 +976,8 @@ export default function Programs() {
         "Люди в серьёзном психологическом кризисе",
         "Другие социально уязвимые категории",
       ],
-      longDescription: "Как это работает:\n\n1. Заполните форму заявки\n2. Кратко опишите ситуацию\n3. Приложите подтверждающий документ\n\nПосле рассмотрения заявки вы получите ответ на указанные контакты.",
+      longDescription:
+        "Как это работает:\n\n1. Заполните форму заявки\n2. Кратко опишите ситуацию\n3. Приложите подтверждающий документ\n\nПосле рассмотрения заявки вы получите ответ на указанные контакты.",
       cta: "Подать заявку",
       variant: "light",
       badge: "Бесплатно",
@@ -978,12 +996,13 @@ export default function Programs() {
         "Поддержка людей в кризисе",
         "Углубление собственного ощущения смысла и влияния",
       ],
-      longDescription: "Это уровень выше обычного участия. Это позиция.\n\nЛюди, которые поддерживают других, усиливают собственное ощущение смысла, влияния и внутреннего достоинства.\nСчастье углубляется, когда им делятся.",
+      longDescription:
+        "Это уровень выше обычного участия. Это позиция.\n\nЛюди, которые поддерживают других, усиливают собственное ощущение смысла, влияния и внутреннего достоинства.\nСчастье углубляется, когда им делятся.",
       cta: "Стать Амбассадором",
       variant: "yellow",
       badge: "Благотворительность",
     },
-  ], [cd.days, cd.hours, cd.mins, cd.secs, cd.msLeft]);
+  ], []); // ← ЗАВИСИМОСТИ ПУСТЫЕ
 
   const topRow = offers.slice(0, 3);
   const bottomCard = offers[3];
@@ -1047,6 +1066,7 @@ export default function Programs() {
             isWide={false}
             onOpenMore={openMore}
             onOpenLead={openLead}
+            cd={cd}
           />
         ))}
       </div>

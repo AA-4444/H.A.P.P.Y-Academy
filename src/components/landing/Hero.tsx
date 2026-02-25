@@ -250,66 +250,55 @@ function GridMotionBg({ images }: { images: ImgSet[] }) {
     cols,
   ]);
 
- useEffect(() => {
-   let raf: number;
- 
-   const animateDesktop = () => {
-     const w = window.innerWidth || 1;
-     const maxMoveAmount = 300;
- 
-     rowRefs.current.forEach((row, index) => {
-       if (!row) return;
- 
-       const direction = index % 2 === 0 ? 1 : -1;
-       const moveAmount =
-         ((mouseXRef.current / w) * maxMoveAmount - maxMoveAmount / 2) *
-         direction;
- 
-       row.style.transform = `translateX(${moveAmount}px)`;
-     });
- 
-     raf = requestAnimationFrame(animateDesktop);
-   };
- 
-   const animateMobile = () => {
-     const w = window.innerWidth || 1;
-     const t = performance.now() / 1000;
- 
-     const wave = 0.5 + 0.5 * Math.sin(t * 0.5);
-     const xForCalc = wave * w;
- 
-     const maxMoveAmount = 180;
- 
-     rowRefs.current.forEach((row, index) => {
-       if (!row) return;
- 
-       const direction = index % 2 === 0 ? 1 : -1;
-       const moveAmount =
-         ((xForCalc / w) * maxMoveAmount - maxMoveAmount / 2) *
-         direction;
- 
-       row.style.transform = `translateX(${moveAmount}px)`;
-     });
- 
-     raf = requestAnimationFrame(animateMobile);
-   };
- 
-   const handleMouseMove = (e: MouseEvent) => {
-     mouseXRef.current = e.clientX;
-   };
- 
-   if (isMobile) {
-     raf = requestAnimationFrame(animateMobile);
-   } else {
-     window.addEventListener("mousemove", handleMouseMove, { passive: true });
-     raf = requestAnimationFrame(animateDesktop);
-   }
- 
-   return () => {
-     cancelAnimationFrame(raf);
-     window.removeEventListener("mousemove", handleMouseMove);
-   };
- }, [isMobile]);
+useEffect(() => {
+    let raf: number;
+    let scrolling = false;
+    let scrollTimeout: any;
+  
+    const animateMobile = () => {
+      if (scrolling) {
+        raf = requestAnimationFrame(animateMobile);
+        return;
+      }
+  
+      const w = window.innerWidth || 1;
+      const t = performance.now() / 1000;
+      const wave = 0.5 + 0.5 * Math.sin(t * 0.5);
+      const xForCalc = wave * w;
+      const maxMoveAmount = 180;
+  
+      rowRefs.current.forEach((row, index) => {
+        if (!row) return;
+        const direction = index % 2 === 0 ? 1 : -1;
+        const moveAmount =
+          ((xForCalc / w) * maxMoveAmount - maxMoveAmount / 2) *
+          direction;
+  
+        row.style.transform = `translateX(${moveAmount}px)`;
+      });
+  
+      raf = requestAnimationFrame(animateMobile);
+    };
+  
+    const handleScroll = () => {
+      scrolling = true;
+      clearTimeout(scrollTimeout);
+  
+      scrollTimeout = setTimeout(() => {
+        scrolling = false;
+      }, 120); // 120ms после остановки скролла
+    };
+  
+    if (isMobile) {
+      window.addEventListener("scroll", handleScroll, { passive: true });
+      raf = requestAnimationFrame(animateMobile);
+    }
+  
+    return () => {
+      cancelAnimationFrame(raf);
+      window.removeEventListener("scroll", handleScroll);
+    };
+  }, [isMobile]);
 
   const gap = isMobile ? "0.75rem" : "1rem";
   const gridW = isMobile ? "210vw" : "150vw";

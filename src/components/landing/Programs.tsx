@@ -38,17 +38,13 @@ function useAppHeightVar() {
     const doc = document.documentElement;
     const setH = () => {
       doc.style.setProperty("--app-height", `${window.innerHeight}px`);
-      if (window.visualViewport)
-        doc.style.setProperty("--vv-height", `${window.visualViewport.height}px`);
     };
+
     setH();
     window.addEventListener("resize", setH);
-    window.visualViewport?.addEventListener("resize", setH);
-    window.visualViewport?.addEventListener("scroll", setH);
+
     return () => {
       window.removeEventListener("resize", setH);
-      window.visualViewport?.removeEventListener("resize", setH);
-      window.visualViewport?.removeEventListener("scroll", setH);
     };
   }, []);
 }
@@ -725,11 +721,15 @@ function OfferCard({
   const t = CARD_THEMES[offer.id] ?? DEFAULT_THEME;
 
   return (
-   <motion.article
-     variants={cardVariants}
-     initial="hidden"
-     whileInView="visible"
-     viewport={{ once: true, amount: 0.3 }}
+<motion.article
+  variants={{
+    hidden: { opacity: 0, y: 20 },
+    visible: {
+      opacity: 1,
+      y: 0,
+      transition: { duration: 0.5, ease: "easeOut" },
+    },
+  }}
      className={[
        "group relative flex flex-col overflow-hidden h-full",
        "rounded-[28px] sm:rounded-[36px]",
@@ -862,7 +862,7 @@ function OfferCard({
               type="button"
               onClick={() => onOpenLead(offer.id)}
              className={[
-              "rounded-full font-sans font-bold flex items-center justify-center transition-all",
+              "rounded-full font-sans font-bold flex items-center justify-center",
                "text-[13px] sm:text-sm",
                "leading-tight text-center",
                "px-4 py-3",
@@ -882,7 +882,7 @@ function OfferCard({
             type="button"
             onClick={() => onOpenMore(offer.id)}
            className={[
-            "rounded-full font-sans font-semibold transition-all",
+            "rounded-full font-sans font-semibold",
              "text-[13px] sm:text-sm",
              "leading-tight text-center",
              "px-4 py-3",
@@ -1052,7 +1052,20 @@ export default function Programs() {
         </motion.div>
 
         {/* 3 cards top row */}
-      <div className="grid gap-5 lg:gap-6 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
+      <motion.div
+        initial="hidden"
+        animate="visible"
+        viewport={{ once: true, amount: 0.2 }}
+        variants={{
+          hidden: {},
+          visible: {
+            transition: {
+              staggerChildren: 0.12,
+            },
+          },
+        }}
+        className="grid gap-5 lg:gap-6 grid-cols-1 md:grid-cols-2 lg:grid-cols-3"
+      >
         {topRow.map((o, i) => (
           <OfferCard
             key={o.id}
@@ -1064,20 +1077,33 @@ export default function Programs() {
             cd={cd}
           />
         ))}
-      </div>
+      </motion.div>
          
 
         {/* 4th card full width — prominent */}
         {bottomCard && (
-        <div className="mt-5 lg:mt-6">
-          <OfferCard
-            offer={bottomCard}
-            index={3}
-            isWide
-            onOpenMore={openMore}
-            onOpenLead={openLead}
-          />
-        </div>
+          <motion.div
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, amount: 0.2 }}
+            variants={{
+              hidden: {},
+              visible: {
+                transition: {
+                  staggerChildren: 0.12,
+                },
+              },
+            }}
+            className="mt-5 lg:mt-6"
+          >
+            <OfferCard
+              offer={bottomCard}
+              index={3}
+              isWide
+              onOpenMore={openMore}
+              onOpenLead={openLead}
+            />
+          </motion.div>
         )}
       </div>
 

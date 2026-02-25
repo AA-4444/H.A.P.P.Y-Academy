@@ -32,22 +32,7 @@ type LeadFormData = {
 
 const SUPPORT_HREF = "https://t.me/TataZakzheva/";
 
-/* ─── hooks ─── */
-function useAppHeightVar() {
-  useEffect(() => {
-    const doc = document.documentElement;
-    const setH = () => {
-      doc.style.setProperty("--app-height", `${window.innerHeight}px`);
-    };
 
-    setH();
-    window.addEventListener("resize", setH);
-
-    return () => {
-      window.removeEventListener("resize", setH);
-    };
-  }, []);
-}
 
 function useLockBodyScroll(locked: boolean) {
   useEffect(() => {
@@ -751,7 +736,7 @@ function OfferCard({
 
 /* ─── Main ─── */
 export default function Programs() {
-  useAppHeightVar();
+ 
 
   const offers = useMemo<Offer[]>(() => [
     {

@@ -695,16 +695,12 @@ const containerVariants = {
 };
 
 const cardVariants = {
-  hidden: {
-    opacity: 0,
-    y: 60,
-  },
+  hidden: { opacity: 0 },
   visible: {
     opacity: 1,
-    y: 0,
     transition: {
-      duration: 0.8,
-      ease: [0.22, 1, 0.36, 1],
+      duration: 0.6,
+      ease: "easeOut",
     },
   },
 };
@@ -733,8 +729,7 @@ function OfferCard({
      variants={cardVariants}
      initial="hidden"
      whileInView="visible"
-     viewport={{ once: true, margin: "-100px" }}
-     style={{ willChange: "transform, opacity" }}
+     viewport={{ once: true, amount: 0.3 }}
      className={[
        "group relative flex flex-col overflow-hidden h-full",
        "rounded-[28px] sm:rounded-[36px]",
@@ -1039,9 +1034,9 @@ export default function Programs() {
         {/* Header */}
         <motion.div
           className="max-w-4xl mb-12 sm:mb-16"
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, amount: 0.6 }}
+         initial={{ opacity: 0 }}
+         whileInView={{ opacity: 1 }}
+         viewport={{ once: true }}
           transition={{ duration: 0.6 }}
         >
           <span className="inline-flex items-center gap-2 text-[10px] sm:text-[12px] font-semibold tracking-[0.2em] text-black/45 uppercase mb-6 sm:mb-7">

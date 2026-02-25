@@ -313,7 +313,7 @@ function GridMotionBg({ images }: { images: ImgSet[] }) {
 
   const gap = isMobile ? "0.75rem" : "1rem";
   const gridW = isMobile ? "210vw" : "150vw";
-  const gridH = isMobile ? "210vh" : "150vh";
+  const gridH = isMobile ? "210svh" : "150vh";
 
   return (
     <div className="absolute inset-0 overflow-hidden">
@@ -632,7 +632,10 @@ const Hero = () => {
  
 
   return (
-    <section className="relative w-screen h-screen overflow-hidden">
+    <section
+      className="relative w-screen overflow-hidden"
+      style={{ height: "100svh" }}
+    >
       <GridMotionBg images={bgImages} />
 
       <div className="absolute inset-0 pointer-events-none">

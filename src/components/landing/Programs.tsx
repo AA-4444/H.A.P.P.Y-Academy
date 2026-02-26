@@ -994,21 +994,6 @@ useStableAppHeight(setIsGSA);
     </section>
   );
 
- if (isGSA) {
-    return (
-      <div
-        className="gsa-scroll"
-        style={{
-          height: "var(--app-height, 100vh)",
-          overflowY: "auto",
-          WebkitOverflowScrolling: "touch",
-          overscrollBehaviorY: "contain",
-        }}
-      >
-        {sectionContent}
-      </div>
-    );
-  }
 
   return sectionContent;
 }

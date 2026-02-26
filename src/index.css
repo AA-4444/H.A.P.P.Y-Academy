@@ -167,12 +167,5 @@ html {
 }
 
 
-.gsa-scroll {
-  height: var(--app-height, 100vh);
-  overflow-y: auto;
-  -webkit-overflow-scrolling: touch;
-  overscroll-behavior-y: contain;
-  overflow-anchor: none;
-}
 
 html { overflow-anchor: none; }

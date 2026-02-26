@@ -34,7 +34,30 @@ type LeadFormData = {
 
 const SUPPORT_HREF = "https://t.me/TataZakzheva/";
 
+/* ─── hooks ─── */
 
+function useStableAppHeight() {
+  useEffect(() => {
+    const setHeight = () => {
+      const h = window.visualViewport?.height ?? window.innerHeight;
+      document.documentElement.style.setProperty("--app-height", `${h}px`);
+    };
+
+    const handleOrientation = () => {
+      setTimeout(setHeight, 150);
+    };
+
+    setHeight();
+
+    window.addEventListener("orientationchange", handleOrientation);
+    window.addEventListener("pageshow", setHeight);
+
+    return () => {
+      window.removeEventListener("orientationchange", handleOrientation);
+      window.removeEventListener("pageshow", setHeight);
+    };
+  }, []);
+}
 
 function useLockBodyScroll(locked: boolean) {
   useEffect(() => {
@@ -180,7 +203,7 @@ function BulletsModal({
         <>
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-[100] bg-black/60 backdrop-blur-sm" onClick={onClose} />
           <motion.div initial={{ opacity: 0, y: 40 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 40 }} transition={{ duration: 0.35, ease: [0.4, 0, 0.2, 1] }} className="fixed inset-0 z-[101] flex items-end sm:items-center justify-center p-0 sm:p-6">
-            <div className="relative w-full max-w-lg max-h-[92vh] sm:max-h-[85vh] overflow-y-auto rounded-t-[28px] sm:rounded-[28px] bg-background shadow-2xl">
+            <div className="relative w-full max-w-lg overflow-y-auto rounded-t-[28px] sm:rounded-[28px] bg-background shadow-2xl" style={{ maxHeight: "calc(var(--app-height, 100dvh) - 32px)" }}>
               <div className="sticky top-0 z-10 flex items-start justify-between p-6 pb-3 bg-background rounded-t-[28px]">
                 <div>
                   <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground mb-1">
@@ -397,7 +420,7 @@ function LeadFormModal({
         <>
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-[100] bg-black/60 backdrop-blur-sm" onClick={resetAndClose} />
           <motion.div initial={{ opacity: 0, y: 40 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 40 }} transition={{ duration: 0.35, ease: [0.4, 0, 0.2, 1] }} className="fixed inset-0 z-[101] flex items-end sm:items-center justify-center p-0 sm:p-6">
-            <div className="relative w-full max-w-lg max-h-[92vh] sm:max-h-[85vh] overflow-y-auto rounded-t-[28px] sm:rounded-[28px] bg-background shadow-2xl">
+            <div className="relative w-full max-w-lg overflow-y-auto rounded-t-[28px] sm:rounded-[28px] bg-background shadow-2xl" style={{ maxHeight: "calc(var(--app-height, 100dvh) - 32px)" }}>
               <div className="sticky top-0 z-10 flex items-start justify-between p-6 pb-3 bg-background rounded-t-[28px]">
                 <div>
                   <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground mb-1">
@@ -634,8 +657,13 @@ function OfferCard({
 
         <div className="mt-5 flex items-center gap-3 flex-wrap">
           {offer.oldPrice && (
-            <span className="text-[#1a1a1a] font-extrabold text-2xl sm:text-3xl line-through decoration-[#E64B1E] decoration-[3px]">
+            <span className="relative inline-block text-[#1a1a1a] font-extrabold text-2xl sm:text-3xl">
               {offer.oldPrice}
+              {/* диагональная линия */}
+              <span
+                aria-hidden
+                className="pointer-events-none absolute left-[-6%] top-1/2 h-[3px] w-[112%] bg-[#E64B1E] rotate-[-12deg] rounded-full"
+              />
             </span>
           )}
           <span className={[
@@ -654,15 +682,12 @@ function OfferCard({
         {offer.id === "system" ? (
           <div className="mt-5">
             <div className="relative pl-4">
-              
               {/* Зеленая вертикальная полоска */}
               <div className="absolute left-0 top-1 bottom-1 w-[3px] bg-emerald-500 rounded-full" />
-              
               <div className="space-y-1">
                 <p className="text-[14px] font-semibold text-emerald-600">
                   {offer.longSubtitle}
                 </p>
-        
                 <p className="text-[14px] font-medium text-emerald-700">
                   {offer.highlightText}
                 </p>
@@ -760,7 +785,7 @@ function OfferCard({
 
 /* ─── Main ─── */
 export default function Programs() {
- 
+  useStableAppHeight();
 
   const offers = useMemo<Offer[]>(() => [
     {
@@ -880,7 +905,7 @@ export default function Programs() {
   }, []);
 
   return (
-    <section id="programs" className="bg-[#F6F1E7]">
+    <section id="programs" className="bg-[#F6F1E7]" style={{ minHeight: "var(--app-height)" }}>
       <div className="mx-auto max-w-[1400px] px-5 sm:px-8 lg:px-12 py-14 sm:py-20">
         <motion.div
           className="max-w-4xl mb-12 sm:mb-16"
@@ -937,4 +962,3 @@ export default function Programs() {
     </section>
   );
 }
-

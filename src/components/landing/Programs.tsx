@@ -34,27 +34,46 @@ type LeadFormData = {
 
 const SUPPORT_HREF = "https://t.me/TataZakzheva/";
 
+
+
 /* ─── hooks ─── */
 
-function useStableAppHeight() {
+function useStableAppHeight(setIsGSA: (v: boolean) => void) {
   useEffect(() => {
-    const setHeight = () => {
-      const h = window.visualViewport?.height ?? window.innerHeight;
-      document.documentElement.style.setProperty("--app-height", `${h}px`);
-    };
+    const gsa = typeof navigator !== "undefined" && /GSA\//.test(navigator.userAgent);
+    setIsGSA(gsa);
+    
+    if (gsa && "scrollRestoration" in history) {
+      history.scrollRestoration = "manual";
+    }
 
-    const handleOrientation = () => {
-      setTimeout(setHeight, 150);
+    const setHeight = () => {
+      // In GSA: ONLY use innerHeight (visualViewport changes with toolbar and causes jank)
+      const h = gsa
+        ? window.innerHeight
+        : (window.visualViewport?.height ?? window.innerHeight);
+      document.documentElement.style.setProperty("--app-height", `${h}px`);
     };
 
     setHeight();
 
-    window.addEventListener("orientationchange", handleOrientation);
+    // In GSA: lock body scroll so the WebView toolbar changes don't cause layout shifts
+    if (gsa) {
+      document.documentElement.classList.add("gsa-lock");
+      document.body.classList.add("gsa-lock");
+    }
+
+    const onOrientationChange = () => { setTimeout(setHeight, 150); };
+    window.addEventListener("orientationchange", onOrientationChange);
     window.addEventListener("pageshow", setHeight);
 
     return () => {
-      window.removeEventListener("orientationchange", handleOrientation);
+      window.removeEventListener("orientationchange", onOrientationChange);
       window.removeEventListener("pageshow", setHeight);
+      if (gsa) {
+        document.documentElement.classList.remove("gsa-lock");
+        document.body.classList.remove("gsa-lock");
+      }
     };
   }, []);
 }
@@ -62,8 +81,19 @@ function useStableAppHeight() {
 function useLockBodyScroll(locked: boolean) {
   useEffect(() => {
     if (!locked) return;
-    const body = document.body;
     const html = document.documentElement;
+
+    // In GSA mode body is already locked via gsa-lock class — just hide overflow on html
+    if (document.body.classList.contains("gsa-lock")) {
+      const prevOverflow = html.style.overflow;
+      html.style.overflow = "hidden";
+      return () => {
+        html.style.overflow = prevOverflow;
+      };
+    }
+
+    // Normal browsers: standard position:fixed approach
+    const body = document.body;
     const scrollY = window.scrollY || window.pageYOffset;
     const prevBodyStyle = body.getAttribute("style") || "";
     const prevHtmlStyle = html.getAttribute("style") || "";
@@ -203,7 +233,7 @@ function BulletsModal({
         <>
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-[100] bg-black/60 backdrop-blur-sm" onClick={onClose} />
           <motion.div initial={{ opacity: 0, y: 40 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 40 }} transition={{ duration: 0.35, ease: [0.4, 0, 0.2, 1] }} className="fixed inset-0 z-[101] flex items-end sm:items-center justify-center p-0 sm:p-6">
-            <div className="relative w-full max-w-lg overflow-y-auto rounded-t-[28px] sm:rounded-[28px] bg-background shadow-2xl" style={{ maxHeight: "calc(var(--app-height, 100dvh) - 32px)" }}>
+            <div className="relative w-full max-w-lg overflow-y-auto rounded-t-[28px] sm:rounded-[28px] bg-background shadow-2xl" style={{ maxHeight: "calc(var(--app-height, 100vh) - 32px)" }}>
               <div className="sticky top-0 z-10 flex items-start justify-between p-6 pb-3 bg-background rounded-t-[28px]">
                 <div>
                   <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground mb-1">
@@ -420,7 +450,7 @@ function LeadFormModal({
         <>
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-[100] bg-black/60 backdrop-blur-sm" onClick={resetAndClose} />
           <motion.div initial={{ opacity: 0, y: 40 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 40 }} transition={{ duration: 0.35, ease: [0.4, 0, 0.2, 1] }} className="fixed inset-0 z-[101] flex items-end sm:items-center justify-center p-0 sm:p-6">
-            <div className="relative w-full max-w-lg overflow-y-auto rounded-t-[28px] sm:rounded-[28px] bg-background shadow-2xl" style={{ maxHeight: "calc(var(--app-height, 100dvh) - 32px)" }}>
+            <div className="relative w-full max-w-lg overflow-y-auto rounded-t-[28px] sm:rounded-[28px] bg-background shadow-2xl" style={{ maxHeight: "calc(var(--app-height, 100vh) - 32px)" }}>
               <div className="sticky top-0 z-10 flex items-start justify-between p-6 pb-3 bg-background rounded-t-[28px]">
                 <div>
                   <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground mb-1">
@@ -785,7 +815,9 @@ function OfferCard({
 
 /* ─── Main ─── */
 export default function Programs() {
-  useStableAppHeight();
+const [isGSA, setIsGSA] = useState(false);
+
+useStableAppHeight(setIsGSA);
 
   const offers = useMemo<Offer[]>(() => [
     {
@@ -904,8 +936,8 @@ export default function Programs() {
     return () => window.removeEventListener("popstate", applyFromUrl);
   }, []);
 
-  return (
-    <section id="programs" className="bg-[#F6F1E7]" style={{ minHeight: "var(--app-height)" }}>
+  const sectionContent = (
+    <section id="programs" className="bg-[#F6F1E7]">
       <div className="mx-auto max-w-[1400px] px-5 sm:px-8 lg:px-12 py-14 sm:py-20">
         <motion.div
           className="max-w-4xl mb-12 sm:mb-16"
@@ -961,4 +993,22 @@ export default function Programs() {
       <LeadFormModal open={leadModalOpen} onClose={() => { setLeadModalOpen(false); clearModalUrl(); }} offer={activeOffer} />
     </section>
   );
+
+ if (isGSA) {
+    return (
+      <div
+        className="gsa-scroll"
+        style={{
+          height: "var(--app-height, 100vh)",
+          overflowY: "auto",
+          WebkitOverflowScrolling: "touch",
+          overscrollBehaviorY: "contain",
+        }}
+      >
+        {sectionContent}
+      </div>
+    );
+  }
+
+  return sectionContent;
 }

@@ -161,20 +161,11 @@ body {
 html, body {
   overflow-x: clip;
 }
-html {
-  height: 100dvh;
-}
 
-body {
-  min-height: 100dvh;
-}
 html {
   overflow-anchor: none;
 }
-html.gsa-lock, body.gsa-lock {
-  height: 100%;
-  overflow: hidden;
-}
+
 
 .gsa-scroll {
   height: var(--app-height, 100vh);

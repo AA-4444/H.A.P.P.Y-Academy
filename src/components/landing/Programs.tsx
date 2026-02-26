@@ -20,6 +20,8 @@ type Offer = {
   longDescription?: string;
   payType?: "one_time" | "subscription" | "free" | "donation";
   badge?: string;
+  longSubtitle?: string;
+  highlightText?: string;
 };
 
 type LeadFormData = {
@@ -135,7 +137,7 @@ function buildContact(phone: string, telegram: string) {
 }
 
 /* ─── CountdownBlock — isolated re-renders every second ─── */
-const COUNTDOWN_TARGET = new Date(2026, 1, 27, 0, 0, 0);
+const COUNTDOWN_TARGET = new Date(2026, 1, 28, 0, 0, 0);
 
 function CountdownBlock({ target }: { target: Date }) {
   const cd = useCountdown(target);
@@ -626,7 +628,7 @@ function OfferCard({
             t.titleColor,
             isWide ? "text-2xl sm:text-3xl lg:text-4xl" : "text-xl sm:text-2xl",
           ].join(" ")}>
-            <TitleWithBreaks text={offer.title} />
+           <TitleWithBreaks text={offer.title} />
           </span>
         </div>
 
@@ -649,13 +651,35 @@ function OfferCard({
           </span>
         </div>
 
-        <p className={[
-          "mt-4 text-[14px] leading-relaxed whitespace-pre-line",
-          t.descColor,
-          isWide ? "max-w-md" : "",
-        ].join(" ")}>
-          {offer.mobileDescription}
-        </p>
+        {offer.id === "system" ? (
+          <div className="mt-5">
+            <div className="relative pl-4">
+              
+              {/* Зеленая вертикальная полоска */}
+              <div className="absolute left-0 top-1 bottom-1 w-[3px] bg-emerald-500 rounded-full" />
+              
+              <div className="space-y-1">
+                <p className="text-[14px] font-semibold text-emerald-600">
+                  {offer.longSubtitle}
+                </p>
+        
+                <p className="text-[14px] font-medium text-emerald-700">
+                  {offer.highlightText}
+                </p>
+              </div>
+            </div>
+          </div>
+        ) : (
+          <p
+            className={[
+              "mt-4 text-[14px] leading-relaxed whitespace-pre-line",
+              t.descColor,
+              isWide ? "max-w-md" : "",
+            ].join(" ")}
+          >
+            {offer.mobileDescription}
+          </p>
+        )}
 
         {offer.ctaNote === "countdown" && (
           <CountdownBlock target={COUNTDOWN_TARGET} />
@@ -743,6 +767,8 @@ export default function Programs() {
       id: "system",
       payType: "one_time",
       title: "Система\n«Архитектура счастья»",
+      longSubtitle: "Фундаментальный Курс от Ицхака Пинтосевича.",
+      highlightText: "Плод 20-ти летних изучений природы счастья.",
       description:
         "Вы начинаете управлять своим состоянием, целями и энергией.\nСчастье перестаёт быть случайностью — становится архитектурой.",
       mobileDescription:

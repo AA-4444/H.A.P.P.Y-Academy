@@ -540,7 +540,7 @@ function OrangeHeroBlock() {
                     transition={{ duration: 0.6, delay: 0.08 }}
                     className="mt-4 sm:mt-8 text-white font-sans text-[14px] sm:text-lg md:text-xl leading-relaxed max-w-5xl mx-auto"
                   >
-                    Если ты устал жить в тревоге и внутреннем хаосе — вот система из 10 элементов,
+                    Если ты устал жить в тревоге и внутреннем хаосе - вот система из 10 элементов,
                     которая возвращает устойчивость и ясность.
                   </motion.p>
 

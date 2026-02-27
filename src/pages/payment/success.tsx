@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useMemo, useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Check, ArrowRight } from "lucide-react";
@@ -27,6 +27,51 @@ export default function PaymentSuccess() {
   const badgeText = useMemo(() => {
 	return "Оплачено (подтверждение на сервере)";
   }, []);
+
+  /* ===============================
+	 META PIXEL PURCHASE EVENT
+	 =============================== */
+
+  const pixelFired = useRef(false);
+  const [orderValue, setOrderValue] = useState<number | null>(null);
+
+  useEffect(() => {
+	if (!sessionId) return;
+	if (pixelFired.current) return;
+
+	const loadSession = async () => {
+	  try {
+		const res = await fetch(
+		  `/api/stripe/session?session_id=${sessionId}`
+		);
+
+		if (!res.ok) return;
+
+		const data = await res.json();
+
+		if (data.payment_status !== "paid") return;
+
+		const value = data.amount ? data.amount / 100 : 0;
+
+		setOrderValue(value);
+
+		if (typeof window !== "undefined" && (window as any).fbq) {
+		  (window as any).fbq("track", "Purchase", {
+			value: value,
+			currency: (data.currency || "EUR").toUpperCase(),
+		  });
+
+		  pixelFired.current = true;
+		}
+	  } catch (err) {
+		console.error("Meta pixel error:", err);
+	  }
+	};
+
+	loadSession();
+  }, [sessionId]);
+
+  /* =============================== */
 
   return (
 	<section
@@ -95,6 +140,17 @@ export default function PaymentSuccess() {
 				  </div>
 				</div>
 
+				{orderValue !== null && (
+				  <div className="rounded-2xl bg-[#F6F1E7] border border-black/10 p-4">
+					<div className="text-[10px] uppercase tracking-[0.18em] text-black/45 font-semibold">
+					  Order Value
+					</div>
+					<div className="mt-2 text-[13px] text-black/75">
+					  {orderValue} €
+					</div>
+				  </div>
+				)}
+
 				<div className="rounded-2xl bg-[#F6F1E7] border border-black/10 p-4">
 				  <div className="flex items-center justify-between">
 					<div className="text-[10px] uppercase tracking-[0.18em] text-black/45 font-semibold">
@@ -108,7 +164,6 @@ export default function PaymentSuccess() {
 			  </div>
 
 			  <div className="mt-8 grid gap-3">
-
 				{isSystem && (
 				  <a
 					href={systemBotHref}

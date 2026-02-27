@@ -193,8 +193,7 @@ export default async function handler(
 		.json({ ok: false, error: `Unknown offerId=${offerId}` });
 	}
 
-	const successPath =
-	  offerId === "system" ? "system-success" : "success";
+	const successPath = "success";
 
 	const session = await stripe.checkout.sessions.create({
 	  mode,

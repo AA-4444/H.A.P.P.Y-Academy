@@ -856,7 +856,6 @@ useStableAppHeight(setIsGSA);
       mobileDescription: "Полная система из 10 ключевых элементов.\nПолный проект вашего внутреннего дома.",
       price: "49 €",
       priceNote: "/ мес",
-      ctaNote: "countdown",
       bullets: [
         "Видео-уроки и тренинги",
         "Полная система 10 элементов",

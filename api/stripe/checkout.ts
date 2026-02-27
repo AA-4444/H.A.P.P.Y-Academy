@@ -10,6 +10,7 @@ type Body = {
   offerTitle?: string;
   name?: string;
   contact?: string;
+  country?: string;
   comment?: string;
   pageUrl?: string;
   leadId?: string;
@@ -95,6 +96,7 @@ export default async function handler(
 	const name = (body.name ?? "").trim();
 	const contact = (body.contact ?? "").trim();
 	const comment = (body.comment ?? "").trim();
+	const country = (body.country ?? "").trim();
 	const pageUrl = (body.pageUrl ?? "").trim();
 	const stage = body.stage ?? "pre_payment";
 	const leadId = (body.leadId ?? "").trim() || makeLeadId();
@@ -117,6 +119,7 @@ export default async function handler(
 		`\n<b>Offer:</b> ${esc(offerTitle || offerId)} (${esc(offerId)})` +
 		`\n<b>Name:</b> ${esc(name)}` +
 		`\n<b>Contact:</b> ${esc(contact)}` +
+		(country ? `\n<b>Country:</b> ${esc(country)}` : "") +
 		(comment ? `\n<b>Comment:</b> ${esc(comment)}` : "") +
 		(pageUrl ? `\n<b>Page:</b> ${esc(pageUrl)}` : "") +
 		`\n<b>LeadId:</b> ${esc(leadId)}`;
@@ -157,6 +160,7 @@ export default async function handler(
 		  stage,
 		  offerId,
 		  offerTitle,
+		  country,
 		  name,
 		  contact,
 		  comment,
@@ -203,6 +207,7 @@ export default async function handler(
 		stage,
 		offerId,
 		offerTitle,
+		country,
 		name,
 		contact,
 		comment,

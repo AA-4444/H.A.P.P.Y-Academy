@@ -1,6 +1,14 @@
 import { motion, AnimatePresence } from "framer-motion";
 import { useEffect, useState, useMemo } from "react";
 import { X, Check, Heart } from "lucide-react";
+import countries from "i18n-iso-countries";
+import ru from "i18n-iso-countries/langs/ru.json";
+
+countries.registerLocale(ru);
+
+const COUNTRY_LIST = Object.values(
+  countries.getNames("ru", { select: "official" })
+).sort((a, b) => a.localeCompare(b, "ru"));
 
 
 /* ─── types ─── */
@@ -30,6 +38,7 @@ type LeadFormData = {
   telegram: string;
   comment: string;
   amount: string;
+  country: string;
 };
 
 const SUPPORT_HREF = "https://t.me/TataZakzheva/";
@@ -322,6 +331,7 @@ export function LeadFormModal({
     name: "",
     phone: "",
     telegram: "",
+    country: "",
     comment: "",
     amount: "",
   });
@@ -354,7 +364,7 @@ export function LeadFormModal({
     : "Перейти к оплате";
 
   const resetAndClose = () => {
-    setData({ name: "", phone: "", telegram: "", comment: "", amount: "" });
+    setData({ name: "", phone: "", telegram: "",  country: "", comment: "", amount: "" });
     setSent(false);
     setSubmitting(false);
     onClose();
@@ -394,6 +404,7 @@ export function LeadFormModal({
             name,
             contact: buildContact(phone, data.telegram),
             comment,
+            country: data.country,
             pageUrl: window.location.href,
           }),
         });
@@ -413,6 +424,7 @@ export function LeadFormModal({
           offerTitle: offer.title,
           name,
           contact: buildContact(phone, data.telegram),
+          country: data.country,
           comment,
           pageUrl: window.location.href,
           ...(offer.id === "ambassador" ? { amount: data.amount } : {}),
@@ -440,6 +452,7 @@ export function LeadFormModal({
     submitting ||
     data.name.trim().length < 2 ||
     data.phone.trim().length < 5 ||
+    data.country.trim().length === 0 ||
     (!!normalizeTelegram(data.telegram) &&
       !isTelegramValid(normalizeTelegram(data.telegram))) ||
     (isAmbassador && String(data.amount).trim().length === 0);
@@ -503,6 +516,64 @@ export function LeadFormModal({
                         {data.telegram.trim().length > 0 && !tgValid ? "Формат: @username (латиница/цифры/underscore)" : "Можно оставить пустым"}
                       </p>
                     </div>
+                    
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium text-foreground">
+                      Страна
+                    </label>
+                  
+                    <div className="relative">
+                      <select
+                        value={data.country}
+                        onChange={(e) =>
+                          setData((p) => ({ ...p, country: e.target.value }))
+                        }
+                        required
+                        className="
+                          w-full
+                          h-12
+                          rounded-2xl
+                          px-4
+                          pr-10
+                          bg-card/70
+                          border border-border
+                          text-foreground
+                          outline-none
+                          appearance-none
+                        "
+                      >
+                        <option value="">Выберите страну</option>
+                      
+                        {COUNTRY_LIST.map((country) => (
+                          <option key={country} value={country}>
+                            {country}
+                          </option>
+                        ))}
+                      </select>
+                  
+                      <svg
+                        className="
+                          pointer-events-none
+                          absolute
+                          right-4
+                          top-1/2
+                          -translate-y-1/2
+                          w-4
+                          h-4
+                          text-black/50
+                          block
+                        "
+                        viewBox="0 0 20 20"
+                        fill="currentColor"
+                      >
+                        <path
+                          fillRule="evenodd"
+                          d="M5.23 7.21a.75.75 0 011.06.02L10 10.94l3.71-3.71a.75.75 0 111.06 1.06l-4.24 4.24a.75.75 0 01-1.06 0L5.21 8.29a.75.75 0 01.02-1.08z"
+                          clipRule="evenodd"
+                        />
+                      </svg>
+                    </div>
+                  </div>
 
                     {isAmbassador && (
                       <div>

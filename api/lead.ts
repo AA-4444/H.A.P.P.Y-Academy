@@ -3,6 +3,7 @@ type Body = {
   offerTitle?: string;
   name?: string;
   contact?: string;
+  country?: string
   comment?: string;
   pageUrl?: string;
 };
@@ -62,6 +63,7 @@ export default async function handler(req: any, res: any) {
 
 	const name = (body.name ?? "").trim();
 	const contact = (body.contact ?? "").trim();
+	const country = (body.country ?? "").trim();
 	const comment = (body.comment ?? "").trim();
 	const offerId = (body.offerId ?? "").trim();
 	const offerTitle = (body.offerTitle ?? "").trim();
@@ -77,6 +79,7 @@ export default async function handler(req: any, res: any) {
 	  lines.push(`📦 <b>Продукт:</b> ${escapeHtml(offerTitle || offerId)}`);
 	lines.push(`👤 <b>Имя:</b> ${escapeHtml(name)}`);
 	lines.push(`📞 <b>Контакт:</b> ${escapeHtml(contact)}`);
+	if (country) lines.push(`🌍 <b>Страна:</b> ${escapeHtml(country)}`);
 	if (comment) lines.push(`💬 <b>Комментарий:</b> ${escapeHtml(comment)}`);
 	if (pageUrl) lines.push(`🔗 <b>Страница:</b> ${escapeHtml(pageUrl)}`);
 	lines.push(`🕒 <b>Время:</b> ${escapeHtml(new Date().toLocaleString("ru-RU"))}`);

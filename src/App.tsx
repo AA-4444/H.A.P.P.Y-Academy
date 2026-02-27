@@ -9,6 +9,7 @@ import ReviewPage from "./pages/ReviewPage";
 import PrivacyPage from "./pages/PrivacyPage";
 import TermsPage from "./pages/TermsPage";
 import RefundPage from "./pages/RefundPage";
+import AmbassadorPage from "./pages/AmbassadorPage";
 
 
 import Index from "./pages/Index";
@@ -39,6 +40,7 @@ const App = () => (
             <Route path="/terms" element={<TermsPage />} />
             <Route path="/refund" element={<RefundPage />} />
 <Route path="/payment/ambassador-success" element={<AmbassadorSuccess />} />
+  <Route path="/ambassador" element={<AmbassadorPage />} />
          
           <Route path="*" element={<NotFound />} />
         </Routes>

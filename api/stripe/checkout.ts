@@ -14,18 +14,16 @@ type Body = {
   pageUrl?: string;
   leadId?: string;
   stage?: "pre_payment" | "paid";
-
-  // 🔥 для ambassador
-  amount?: string;
+  amount?: string; // ambassador
 };
 
 const PRICE_BY_OFFER: Record<string, string | undefined> = {
-  path: process.env.STRIPE_PRICE_PATH,
+  system: process.env.STRIPE_PRICE_SYSTEM,
   club: process.env.STRIPE_PRICE_CLUB,
 };
 
 const MODE_BY_OFFER: Record<string, Stripe.Checkout.SessionCreateParams.Mode> = {
-  path: "payment",
+  system: "payment",
   club: "subscription",
 };
 
@@ -110,7 +108,9 @@ export default async function handler(
 	  process.env.NEXT_PUBLIC_SITE_URL ||
 	  "http://localhost:3000";
 
-	// ✅ 1) TELEGRAM — pre_payment
+	// =====================================================
+	// 🟡 1) TELEGRAM — pre_payment
+	// =====================================================
 	if (stage === "pre_payment") {
 	  const msg =
 		`🟡 <b>Новая заявка (ожидает оплату)</b>\n` +
@@ -140,7 +140,6 @@ export default async function handler(
 
 	  const session = await stripe.checkout.sessions.create({
 		mode: "payment",
-
 		line_items: [
 		  {
 			price_data: {
@@ -153,7 +152,6 @@ export default async function handler(
 			quantity: 1,
 		  },
 		],
-
 		metadata: {
 		  leadId,
 		  stage,
@@ -165,7 +163,6 @@ export default async function handler(
 		  pageUrl,
 		  donationAmount: donation.toString(),
 		},
-
 		success_url: `${origin}/payment/ambassador-success?session_id={CHECKOUT_SESSION_ID}&leadId=${encodeURIComponent(
 		  leadId
 		)}`,
@@ -178,7 +175,7 @@ export default async function handler(
 	}
 
 	// =====================================================
-	// ✅ 3) ОСТАЛЬНЫЕ (path, club) — как было
+	// ✅ 3) SYSTEM + CLUB
 	// =====================================================
 
 	const priceId = PRICE_BY_OFFER[offerId];
@@ -196,10 +193,12 @@ export default async function handler(
 		.json({ ok: false, error: `Unknown offerId=${offerId}` });
 	}
 
+	const successPath =
+	  offerId === "system" ? "system-success" : "success";
+
 	const session = await stripe.checkout.sessions.create({
 	  mode,
 	  line_items: [{ price: priceId, quantity: 1 }],
-
 	  metadata: {
 		leadId,
 		stage,
@@ -210,8 +209,7 @@ export default async function handler(
 		comment,
 		pageUrl,
 	  },
-
-	  success_url: `${origin}/payment/success?session_id={CHECKOUT_SESSION_ID}&offerId=${encodeURIComponent(
+	  success_url: `${origin}/payment/${successPath}?session_id={CHECKOUT_SESSION_ID}&offerId=${encodeURIComponent(
 		offerId
 	  )}&leadId=${encodeURIComponent(leadId)}`,
 	  cancel_url: `${origin}/payment/cancel?offerId=${encodeURIComponent(

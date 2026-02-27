@@ -209,7 +209,7 @@ function CountdownBlock({ target }: { target: Date }) {
 }
 
 /* ─── BulletsModal ─── */
-function BulletsModal({
+export function BulletsModal({
   open,
   onClose,
   offer,
@@ -307,7 +307,7 @@ function BulletsModal({
 }
 
 /* ─── LeadFormModal ─── */
-function LeadFormModal({
+export function LeadFormModal({
   open,
   onClose,
   offer,
@@ -329,7 +329,7 @@ function LeadFormModal({
   const [sent, setSent] = useState(false);
   const [submitting, setSubmitting] = useState(false);
 
-  const isLeadOnly = offer?.id === "system" || offer?.id === "gift";
+  const isLeadOnly = offer?.id === "gift";
   const isAmbassador = offer?.id === "ambassador";
 
   const title =
@@ -384,7 +384,7 @@ function LeadFormModal({
         }
       }
 
-      if (offer.id === "system" || offer.id === "gift") {
+      if (offer.id === "gift") {
         const r = await fetch("/api/lead", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -619,7 +619,7 @@ const CARD_THEMES: Record<string, {
 
 const DEFAULT_THEME = CARD_THEMES.system;
 
-function OfferCard({
+export function OfferCard({
   offer,
   index,
   isWide,

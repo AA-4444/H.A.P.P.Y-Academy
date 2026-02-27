@@ -1,4 +1,3 @@
-// PaymentSuccess.tsx
 import { useMemo } from "react";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
@@ -7,9 +6,7 @@ import { Button } from "@/components/ui/button";
 
 export default function PaymentSuccess() {
   const supportHref = "https://t.me/TataZakzheva/";
-
-  const courseBotHref = "https://t.me/happi10_bot";
-  const courseGroupHref = "https://t.me/+tKh9MjOHcAxmOWI0";
+  const systemBotHref = "https://t.me/happi_10_bot";
 
   const search =
 	typeof window !== "undefined"
@@ -21,13 +18,13 @@ export default function PaymentSuccess() {
   const leadId = search ? search.get("leadId") : null;
 
   const nowText =
-	typeof window !== "undefined" ? new Date().toLocaleString("ru-RU") : "";
+	typeof window !== "undefined"
+	  ? new Date().toLocaleString("ru-RU")
+	  : "";
 
-  const showCourseButtons = offerId === "path"; // для курса (пример)
+  const isSystem = offerId === "system";
 
   const badgeText = useMemo(() => {
-	// UI-текст: успех страница не подтверждает оплату "с клиента",
-	// подтверждение делается webhook'ом на сервере.
 	return "Оплачено (подтверждение на сервере)";
   }, []);
 
@@ -56,17 +53,24 @@ export default function PaymentSuccess() {
 			  </h1>
 
 			  <p className="mt-2 text-center text-black/65 text-[13px] sm:text-[14px] leading-relaxed">
-				Скоро с вами свяжется менеджер.
-				<br className="hidden sm:block" />
-				Если остались вопросы — напишите нам.
+				{isSystem
+				  ? "Вы успешно оплатили курс «Архитектура счастья»."
+				  : "Спасибо за оплату."}
 			  </p>
+
+			  {isSystem && (
+				<p className="mt-2 text-center text-black/60 text-[13px] leading-relaxed">
+				  Чтобы получить доступ к материалам,
+				  перейдите в Telegram-бота курса.
+				</p>
+			  )}
 
 			  <div className="mt-6 h-px bg-black/10" />
 
 			  <div className="mt-5 grid gap-3">
 				<div className="rounded-2xl bg-[#F6F1E7] border border-black/10 p-4">
 				  <div className="text-[10px] uppercase tracking-[0.18em] text-black/45 font-semibold">
-					Transaction (Stripe session)
+					Stripe session
 				  </div>
 				  <div className="mt-2 font-mono text-[12px] text-black/75 break-all">
 					{sessionId || "—"}
@@ -86,11 +90,13 @@ export default function PaymentSuccess() {
 				  <div className="text-[10px] uppercase tracking-[0.18em] text-black/45 font-semibold">
 					Date & time
 				  </div>
-				  <div className="mt-2 text-[13px] text-black/75">{nowText || "—"}</div>
+				  <div className="mt-2 text-[13px] text-black/75">
+					{nowText || "—"}
+				  </div>
 				</div>
 
 				<div className="rounded-2xl bg-[#F6F1E7] border border-black/10 p-4">
-				  <div className="flex items-center justify-between gap-3">
+				  <div className="flex items-center justify-between">
 					<div className="text-[10px] uppercase tracking-[0.18em] text-black/45 font-semibold">
 					  Status
 					</div>
@@ -101,21 +107,25 @@ export default function PaymentSuccess() {
 				</div>
 			  </div>
 
-			  <div className="mt-6">
-				<div className="text-[12px] font-semibold text-black/60">Summary</div>
-				<div className="mt-3 space-y-2">
-				  <div className="flex items-center justify-between text-[13px] text-black/70">
-					<span>Связь с менеджером</span>
-					<span className="text-black/50">в ближайшее время</span>
-				  </div>
-				  <div className="flex items-center justify-between text-[13px] text-black/70">
-					<span>Доступ / детали</span>
-					<span className="text-black/50">после подтверждения</span>
-				  </div>
-				</div>
-			  </div>
-
 			  <div className="mt-8 grid gap-3">
+
+				{isSystem && (
+				  <a
+					href={systemBotHref}
+					target="_blank"
+					rel="noreferrer"
+					className="w-full"
+				  >
+					<Button
+					  size="lg"
+					  className="w-full rounded-full h-12 font-semibold bg-yellow-400 text-black hover:bg-yellow-300"
+					>
+					  Перейти в бот курса
+					  <ArrowRight className="ml-2 h-5 w-5" />
+					</Button>
+				  </a>
+				)}
+
 				<Link to="/#programs" className="w-full">
 				  <Button
 					size="lg"
@@ -125,53 +135,24 @@ export default function PaymentSuccess() {
 				  </Button>
 				</Link>
 
-				{/* КНОПКИ ТОЛЬКО ДЛЯ path */}
-				{showCourseButtons ? (
-				  <>
-					<a
-					  href={courseBotHref}
-					  target="_blank"
-					  rel="noreferrer"
-					  className="w-full"
-					>
-					  <Button
-						size="lg"
-						className="w-full rounded-full h-12 font-semibold bg-yellow-400 text-black hover:bg-yellow-300"
-					  >
-						Перейти к курсу <ArrowRight className="ml-2 h-5 w-5" />
-					  </Button>
-					</a>
-					{/*
-					<a
-					  href={courseGroupHref}
-					  target="_blank"
-					  rel="noreferrer"
-					  className="w-full"
-					>
-					  <Button
-						size="lg"
-						className="w-full rounded-full h-12 font-semibold bg-yellow-400 text-black hover:bg-yellow-300"
-					  >
-						Группа счастья <ArrowRight className="ml-2 h-5 w-5" />
-					  </Button>
-					</a> */}
-				  </>
-				) : null}
-
-				<a href={supportHref} target="_blank" rel="noreferrer" className="w-full">
+				<a
+				  href={supportHref}
+				  target="_blank"
+				  rel="noreferrer"
+				  className="w-full"
+				>
 				  <Button
 					size="lg"
 					className="w-full rounded-full h-12 font-semibold bg-[#E64B1E] text-white hover:opacity-95"
 				  >
-					Написать <ArrowRight className="ml-2 h-5 w-5" />
+					Написать
+					<ArrowRight className="ml-2 h-5 w-5" />
 				  </Button>
 				</a>
 			  </div>
 
 			  <div className="mt-6 text-center text-[12px] text-black/50 leading-snug">
-				Если окно оплаты закрылось — мы получили ваш платёж.
-				<br />
-				Финальное подтверждение + уведомление в Telegram должно приходить с сервера через Stripe webhook.
+				Подтверждение оплаты происходит на сервере через Stripe webhook.
 			  </div>
 			</div>
 		  </div>

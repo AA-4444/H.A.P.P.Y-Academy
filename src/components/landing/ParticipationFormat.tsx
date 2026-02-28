@@ -49,7 +49,7 @@ export default function ParticipationFormat() {
 			  transition={{ duration: 0.55, delay: 0.18, ease: "easeOut" }}
 			  className="mt-6 font-sans text-black/70 text-sm sm:text-base leading-relaxed max-w-xl"
 			>
-			  Цель — сделать 1&nbsp;000&nbsp;000 людей на планете счастливыми!
+			  Цель - сделать 1&nbsp;000&nbsp;000 людей на планете счастливыми!
 			</motion.p>
 
 			{/* КНОПКА */}

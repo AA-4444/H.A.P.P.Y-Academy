@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Check, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import logo from "@/assets/newlogo.svg";
 
 declare global {
   interface Window {
@@ -23,26 +24,26 @@ export default function PaymentSuccess() {
   const offerId = search ? search.get("offerId") : null;
   const leadId = search ? search.get("leadId") : null;
 
-  // preview params (для клиента)
-  const preview = search ? search.get("preview") : null; // "1"
+  const preview = search ? search.get("preview") : null;
   const token = search ? search.get("token") : null;
-  const previewValue = search ? search.get("value") : null; // "49"
-  const previewCurrency = search ? search.get("currency") : null; // "EUR"
+  const previewValue = search ? search.get("value") : null;
+  const previewCurrency = search ? search.get("currency") : null;
 
-  // Vite env in Vercel: VITE_SUCCESS_PREVIEW_TOKEN
   const PREVIEW_TOKEN = import.meta.env.VITE_SUCCESS_PREVIEW_TOKEN || "";
 
-  const isPreviewAllowed = preview === "1" && !!token && token === PREVIEW_TOKEN;
+  const isPreviewAllowed =
+	preview === "1" && !!token && token === PREVIEW_TOKEN;
 
-  // IMPORTANT: in preview we do NOT allow offerId-driven product UI
   const effectiveOfferId = isPreviewAllowed ? "preview" : offerId;
   const isSystem = effectiveOfferId === "system";
 
   const nowText =
-	typeof window !== "undefined" ? new Date().toLocaleString("ru-RU") : "";
+	typeof window !== "undefined"
+	  ? new Date().toLocaleString("ru-RU")
+	  : "";
 
   const badgeText = useMemo(() => {
-	return "Оплачено (подтверждение на сервере)";
+	return "Оплата успешна";
   }, []);
 
   const pixelFired = useRef(false);
@@ -50,7 +51,6 @@ export default function PaymentSuccess() {
   const [currency, setCurrency] = useState<string>("EUR");
   const [paidOk, setPaidOk] = useState<boolean>(false);
 
-  // Persist "sent once" across refresh for this session
   const firedKey = sessionId
 	? `fbq_purchase_fired_${sessionId}`
 	: isPreviewAllowed
@@ -58,7 +58,7 @@ export default function PaymentSuccess() {
 	: null;
 
   // ===============================
-  // 1) REAL MODE (по session_id) — строго после оплаты
+  // REAL MODE
   // ===============================
   useEffect(() => {
 	if (!sessionId) return;
@@ -66,7 +66,6 @@ export default function PaymentSuccess() {
 
 	const loadSession = async () => {
 	  try {
-		// if already fired for this sessionId — do nothing (even after refresh)
 		if (firedKey && sessionStorage.getItem(firedKey) === "1") {
 		  pixelFired.current = true;
 		}
@@ -77,7 +76,6 @@ export default function PaymentSuccess() {
 		if (!res.ok) return;
 
 		const data = await res.json();
-
 		if (cancelled) return;
 		if (data.payment_status !== "paid") return;
 
@@ -88,8 +86,7 @@ export default function PaymentSuccess() {
 		setCurrency(cur);
 		setPaidOk(true);
 
-		// fire fbq only once
-		if (!pixelFired.current && typeof window !== "undefined" && window.fbq) {
+		if (!pixelFired.current && window.fbq) {
 		  window.fbq("track", "Purchase", {
 			value,
 			currency: cur,
@@ -98,7 +95,7 @@ export default function PaymentSuccess() {
 		  if (firedKey) sessionStorage.setItem(firedKey, "1");
 		}
 	  } catch (err) {
-		console.error("Meta pixel / session load error:", err);
+		console.error("Meta pixel error:", err);
 	  }
 	};
 
@@ -106,18 +103,16 @@ export default function PaymentSuccess() {
 	return () => {
 	  cancelled = true;
 	};
-	// eslint-disable-next-line react-hooks/exhaustive-deps
   }, [sessionId]);
 
   // ===============================
-  // 2) PREVIEW MODE (для клиента) — без session_id, но только по секретному token
+  // PREVIEW MODE
   // ===============================
   useEffect(() => {
-	if (sessionId) return; // если есть sessionId — preview не нужен
+	if (sessionId) return;
 	if (!isPreviewAllowed) return;
 
 	try {
-	  // if already fired in this preview — do nothing (even after refresh)
 	  if (firedKey && sessionStorage.getItem(firedKey) === "1") {
 		pixelFired.current = true;
 	  }
@@ -129,9 +124,9 @@ export default function PaymentSuccess() {
 
 	  setOrderValue(safeValue);
 	  setCurrency(cur);
-	  setPaidOk(true); // в preview считаем “ok”, чтобы страница отображалась
+	  setPaidOk(true);
 
-	  if (typeof window !== "undefined" && window.fbq) {
+	  if (window.fbq) {
 		window.fbq("track", "Purchase", {
 		  value: safeValue,
 		  currency: cur,
@@ -140,158 +135,118 @@ export default function PaymentSuccess() {
 		if (firedKey) sessionStorage.setItem(firedKey, "1");
 	  }
 	} catch (e) {
-	  console.error("Meta pixel preview error:", e);
+	  console.error("Preview pixel error:", e);
 	}
-	// eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [sessionId, isPreviewAllowed, previewValue, previewCurrency, token]);
+  }, [sessionId, isPreviewAllowed]);
 
-  // ===============================
-  // Защита: если не paid и не preview — показываем “проверяем оплату”
-  // ===============================
   const canShow = paidOk || isPreviewAllowed;
 
   return (
-	<section
-	  className="min-h-screen bg-[#F6F1E7]"
-	  style={{ paddingBottom: "max(16px, env(safe-area-inset-bottom))" }}
-	>
+	<section className="min-h-screen bg-[#F6F1E7]">
 	  <div className="min-h-screen flex items-center justify-center px-4 py-10">
 		<motion.div
 		  initial={{ opacity: 0, y: 18, filter: "blur(10px)" }}
 		  animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
 		  transition={{ duration: 0.5, ease: "easeOut" }}
-		  className="w-full max-w-[520px]"
+		  className="w-full max-w-[560px]"
 		>
 		  <div className="rounded-[32px] border border-black/10 bg-white shadow-2xl overflow-hidden">
-			<div className="p-6 sm:p-8">
+			<div className="p-8">
+
+			  {/* LOGO */}
 			  <div className="flex justify-center">
+				<img
+				  src={logo}
+				  alt="HAPPI10"
+				  className="h-14 w-auto object-contain"
+				/>
+			  </div>
+
+			  {/* SUCCESS ICON */}
+			  <div className="mt-6 flex justify-center">
 				<div className="h-16 w-16 rounded-full bg-[#EAF7EF] border border-black/10 grid place-items-center">
 				  <Check className="h-8 w-8 text-[#16A34A]" strokeWidth={3} />
 				</div>
 			  </div>
 
-			  <h1 className="mt-5 text-center font-sans font-extrabold tracking-tight text-black text-[22px] sm:text-[26px] leading-[1.15]">
+			  <h1 className="mt-6 text-center font-extrabold text-black text-2xl leading-tight">
 				Оплата прошла успешно
 			  </h1>
 
 			  {!canShow ? (
-				<p className="mt-3 text-center text-black/65 text-[13px] sm:text-[14px] leading-relaxed">
-				  Проверяем оплату… Если вы открыли страницу вручную — она доступна
-				  только после оплаты.
+				<p className="mt-4 text-center text-black/65 text-sm">
+				  Проверяем оплату…
 				</p>
 			  ) : (
 				<>
-				  <p className="mt-2 text-center text-black/65 text-[13px] sm:text-[14px] leading-relaxed">
+				  <p className="mt-4 text-center text-black/70 text-sm leading-relaxed">
 					{isSystem
 					  ? "Вы успешно оплатили курс «Архитектура счастья»."
 					  : "Спасибо за оплату."}
 				  </p>
 
-				  {isSystem && (
-					<p className="mt-2 text-center text-black/60 text-[13px] leading-relaxed">
-					  Чтобы получить доступ к материалам, перейдите в Telegram-бота
-					  курса.
+				  {/* 🔥 Пожелание */}
+				  <div className="mt-6 rounded-2xl bg-[#F6F1E7] border border-black/10 p-5 text-sm text-black/80 leading-relaxed space-y-3">
+					<p>Желаю успешного прохождения курса!</p>
+					<p>
+					  И напоминаю, что важный элемент твоего состояния счастья -
+					  это <strong>Благодарность</strong>.
 					</p>
-				  )}
+					<p>Я тебе Благодарен за доверие!</p>
+					<p>
+					  Если у тебя есть желание и возможность - ты уже можешь
+					  стать <strong>Амбассадором счастья</strong> и
+					  проспонсировать участие в курсе на любую сумму доната
+					  для того, кто в этом нуждается.
+					</p>
+				  </div>
 
 				  <div className="mt-6 h-px bg-black/10" />
 
+				  {/* 🔎 Stripe / Lead / Value */}
 				  <div className="mt-5 grid gap-3">
-					<div className="rounded-2xl bg-[#F6F1E7] border border-black/10 p-4">
-					  <div className="text-[10px] uppercase tracking-[0.18em] text-black/45 font-semibold">
-						Stripe session
-					  </div>
-					  <div className="mt-2 font-mono text-[12px] text-black/75 break-all">
-						{sessionId || (isPreviewAllowed ? "PREVIEW" : "—")}
-					  </div>
-					</div>
-
-					<div className="rounded-2xl bg-[#F6F1E7] border border-black/10 p-4">
-					  <div className="text-[10px] uppercase tracking-[0.18em] text-black/45 font-semibold">
-						Lead ID
-					  </div>
-					  <div className="mt-2 font-mono text-[12px] text-black/75 break-all">
-						{leadId || "—"}
-					  </div>
-					</div>
-
-					<div className="rounded-2xl bg-[#F6F1E7] border border-black/10 p-4">
-					  <div className="text-[10px] uppercase tracking-[0.18em] text-black/45 font-semibold">
-						Date &amp; time
-					  </div>
-					  <div className="mt-2 text-[13px] text-black/75">
-						{nowText || "—"}
-					  </div>
-					</div>
-
+					<InfoBlock title="Stripe session" value={sessionId || (isPreviewAllowed ? "PREVIEW" : "—")} />
+					
+					<InfoBlock title="Date & time" value={nowText || "—"} />
 					{orderValue !== null && (
-					  <div className="rounded-2xl bg-[#F6F1E7] border border-black/10 p-4">
-						<div className="text-[10px] uppercase tracking-[0.18em] text-black/45 font-semibold">
-						  Order Value
-						</div>
-						<div className="mt-2 text-[13px] text-black/75">
-						  {orderValue} {currency}
-						</div>
-					  </div>
+					  <InfoBlock title="Order Value" value={`${orderValue} ${currency}`} />
 					)}
-
-					<div className="rounded-2xl bg-[#F6F1E7] border border-black/10 p-4">
-					  <div className="flex items-center justify-between">
-						<div className="text-[10px] uppercase tracking-[0.18em] text-black/45 font-semibold">
-						  Status
-						</div>
-						<div className="font-sans font-extrabold text-black text-[14px]">
-						  {badgeText}
-						</div>
-					  </div>
-					</div>
+					<InfoBlock title="Status" value={badgeText} bold />
 				  </div>
 
+				  {/* BUTTONS */}
 				  <div className="mt-8 grid gap-3">
-					{/* ВАЖНО: в preview скрываем кнопку бота (и вообще продукт логику) */}
+
 					{isSystem && !isPreviewAllowed && (
-					  <a
-						href={systemBotHref}
-						target="_blank"
-						rel="noreferrer"
-						className="w-full"
-					  >
-						<Button
-						  size="lg"
-						  className="w-full rounded-full h-12 font-semibold bg-yellow-400 text-black hover:bg-yellow-300"
-						>
+					  <a href={systemBotHref} target="_blank" rel="noreferrer">
+						<Button className="w-full h-12 rounded-full bg-yellow-400 text-black hover:bg-yellow-300 font-semibold">
 						  Перейти в бот курса
 						  <ArrowRight className="ml-2 h-5 w-5" />
 						</Button>
 					  </a>
 					)}
 
-					<Link to="/#programs" className="w-full">
-					  <Button
-						size="lg"
-						className="w-full rounded-full h-12 font-semibold bg-yellow-400 text-black hover:bg-yellow-300"
-					  >
+					<Link to="/ambassador">
+					  <Button className="w-full h-12 rounded-full bg-[#E64B1E] text-white hover:opacity-95 font-semibold">
+						Стать Амбассадором счастья
+						
+					  </Button>
+					</Link>
+
+					<Link to="/#programs">
+					  <Button className="w-full h-12 rounded-full bg-yellow-400 text-black hover:bg-yellow-300 font-semibold">
 						Вернуться на сайт
 					  </Button>
 					</Link>
 
-					<a
-					  href={supportHref}
-					  target="_blank"
-					  rel="noreferrer"
-					  className="w-full"
-					>
-					  <Button
-						size="lg"
-						className="w-full rounded-full h-12 font-semibold bg-[#E64B1E] text-white hover:opacity-95"
-					  >
-						Написать
-						<ArrowRight className="ml-2 h-5 w-5" />
+					<a href={supportHref} target="_blank" rel="noreferrer">
+					  <Button className="w-full h-12 rounded-full bg-black text-white hover:opacity-90 font-semibold">
+						Написать в поддержку
 					  </Button>
 					</a>
 				  </div>
 
-				  <div className="mt-6 text-center text-[12px] text-black/50 leading-snug">
+				  <div className="mt-6 text-center text-xs text-black/50">
 					Подтверждение оплаты происходит на сервере через Stripe webhook.
 				  </div>
 				</>
@@ -301,5 +256,33 @@ export default function PaymentSuccess() {
 		</motion.div>
 	  </div>
 	</section>
+  );
+}
+
+/* Helper block */
+function InfoBlock({
+  title,
+  value,
+  bold = false,
+}: {
+  title: string;
+  value: string;
+  bold?: boolean;
+}) {
+  return (
+	<div className="rounded-2xl bg-[#F6F1E7] border border-black/10 p-4">
+	  <div className="text-[10px] uppercase tracking-[0.18em] text-black/45 font-semibold">
+		{title}
+	  </div>
+	  <div
+		className={`mt-2 break-all ${
+		  bold
+			? "font-extrabold text-black text-[14px]"
+			: "font-mono text-[12px] text-black/75"
+		}`}
+	  >
+		{value}
+	  </div>
+	</div>
   );
 }

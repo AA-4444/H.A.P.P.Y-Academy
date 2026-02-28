@@ -248,10 +248,6 @@ function MotionPoint({ children }: { children: React.ReactNode }) {
   );
 }
 
-/**
- * ✅ Слайдер теперь принимает ImgSet[]
- * И рендерит картинку через <picture> (avif/webp/srcset)
- */
 function FullScreenSlider({ slides }: { slides: ImgSet[] }) {
   const [index, setIndex] = useState(0);
 
@@ -264,7 +260,7 @@ function FullScreenSlider({ slides }: { slides: ImgSet[] }) {
 
   return (
 	<section className="relative w-full h-[100vh] overflow-hidden">
-	  {/* motion-обертка, чтобы сохранить анимацию как у motion.img */}
+	  {/* Slide */}
 	  <motion.div
 		key={current.key}
 		className="absolute inset-0"
@@ -280,10 +276,31 @@ function FullScreenSlider({ slides }: { slides: ImgSet[] }) {
 			alt=""
 			loading="eager"
 			decoding="async"
-			className="h-full w-full object-cover"
+			className="h-full w-full object-cover blur-[2px] scale-[1.02]"
 		  />
 		</picture>
 	  </motion.div>
+
+	  {/* затемнение для читаемости */}
+	  <div className="absolute inset-0 bg-black/45" />
+
+	  {/* текст */}
+	  <div className="absolute inset-0 flex items-center justify-center px-6">
+		<div className="max-w-4xl text-center">
+		  <motion.h3
+			initial={{ opacity: 0, y: 20 }}
+			animate={{ opacity: 1, y: 0 }}
+			transition={{ duration: 0.8 }}
+			className="text-white font-extrabold text-3xl sm:text-4xl md:text-5xl lg:text-6xl leading-[1.15]"
+		  >
+			Если ты устал жить в тревоге и внутреннем хаосе -
+			<br className="hidden sm:block" />
+			вот система из 10 элементов,
+			<br className="hidden sm:block" />
+			которая возвращает устойчивость и ясность.
+		  </motion.h3>
+		</div>
+	  </div>
 	</section>
   );
 }

@@ -13,10 +13,10 @@ import { Button } from "@/components/ui/button";
 const TELEGRAM_BOT_URL = "https://t.me/happiness4people_bot";
 
 const itemsBase = [
-  { label: "10 элементов счастья — структурная система" },
+  { label: "10 элементов счастья - структурная система" },
   { label: "Поддержка кураторов и сопровождение" },
   { label: "Видео-уроки и практические занятия" },
-  { label: "Сессии вопрос–ответ с Ицхаком Пинтосевичем" },
+  { label: "Сессии вопрос-ответ с Ицхаком Пинтосевичем" },
 ];
 
 const Pillars = () => {
@@ -124,7 +124,7 @@ const Pillars = () => {
                   transition={{ duration: 0.6, delay: 0.12, ease: "easeOut" }}
                   className="mt-8 sm:mt-10 font-sans text-black/65 text-base sm:text-lg leading-relaxed max-w-[60ch]"
                 >
-                  Ты выстраиваешь внутреннюю опору и баланс — через систему, а не
+                  Ты выстраиваешь внутреннюю опору и баланс - через систему, а не
                   через вдохновение.
                 </motion.p>
 

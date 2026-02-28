@@ -57,7 +57,6 @@ function useStableAppHeight(setIsGSA: (v: boolean) => void) {
     }
 
     const setHeight = () => {
-      // In GSA: ONLY use innerHeight (visualViewport changes with toolbar and causes jank)
       const h = gsa
         ? window.innerHeight
         : (window.visualViewport?.height ?? window.innerHeight);
@@ -66,7 +65,6 @@ function useStableAppHeight(setIsGSA: (v: boolean) => void) {
 
     setHeight();
 
-    // In GSA: lock body scroll so the WebView toolbar changes don't cause layout shifts
     if (gsa) {
       document.documentElement.classList.add("gsa-lock");
       document.body.classList.add("gsa-lock");
@@ -92,7 +90,6 @@ function useLockBodyScroll(locked: boolean) {
     if (!locked) return;
     const html = document.documentElement;
 
-    // In GSA mode body is already locked via gsa-lock class — just hide overflow on html
     if (document.body.classList.contains("gsa-lock")) {
       const prevOverflow = html.style.overflow;
       html.style.overflow = "hidden";
@@ -101,7 +98,6 @@ function useLockBodyScroll(locked: boolean) {
       };
     }
 
-    // Normal browsers: standard position:fixed approach
     const body = document.body;
     const scrollY = window.scrollY || window.pageYOffset;
     const prevBodyStyle = body.getAttribute("style") || "";
@@ -204,11 +200,11 @@ const COUNTDOWN_TARGET = new Date(2026, 1, 28, 0, 0, 0);
 function CountdownBlock({ target }: { target: Date }) {
   const cd = useCountdown(target);
   return (
-    <div className="mt-4 inline-flex items-center gap-2">
-      <span className="text-[10px] uppercase tracking-[0.15em] font-semibold text-black/40">
+    <div className="mt-4 flex flex-col items-start">
+      <span className="text-[10px] uppercase tracking-widest text-black/40 font-semibold">
         Открытие продаж через
       </span>
-      <span className="font-black text-[#E64B1E] text-sm tabular-nums bg-[#E64B1E]/10 px-2.5 py-1 rounded-lg">
+      <span className="text-lg font-black text-[#E64B1E] tabular-nums mt-0.5">
         {cd.msLeft > 0
           ? `${cd.days}д ${cd.hours}:${cd.mins}:${cd.secs}`
           : "Продажи открыты"}
@@ -248,61 +244,61 @@ export function BulletsModal({
                   <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground mb-1">
                     {offer.id === "gift" ? "Кому подходит" : "Что внутри"}
                   </p>
-                  <h3 className="text-lg font-bold text-foreground leading-tight whitespace-pre-line">{offer.title}</h3>
+                  <h3 className="text-xl font-black text-foreground leading-tight whitespace-pre-line">{offer.title}</h3>
                 </div>
-                <button onClick={onClose} aria-label="Закрыть" className="ml-4 flex items-center justify-center h-8 w-8 aspect-square rounded-full bg-muted hover:bg-muted/80 transition shrink-0">
-                  <X className="h-4 w-4 text-foreground" />
+                <button onClick={onClose} className="ml-4 mt-1 rounded-full p-2 hover:bg-muted transition" aria-label="Закрыть">
+                  <X className="h-5 w-5 text-muted-foreground" />
                 </button>
               </div>
-              <div className="px-6 pb-2 text-sm text-muted-foreground leading-relaxed whitespace-pre-line">
-                {offer.description}
+              <div className="px-6 pb-2">
+                <p className="text-sm text-muted-foreground leading-relaxed whitespace-pre-line">{offer.description}</p>
               </div>
               {offer.id === "gift" ? (
-                <div className="px-6 py-3 space-y-2">
+                <ul className="px-6 pb-4 space-y-2">
                   {offer.bullets.map((b, i) => (
-                    <p key={i} className="text-sm text-foreground">— {b}</p>
+                    <li key={i} className="text-sm text-foreground leading-relaxed">— {b}</li>
                   ))}
-                </div>
+                </ul>
               ) : (
-                <ul className="px-6 py-3 space-y-2.5">
+                <ul className="px-6 pb-4 space-y-2.5">
                   {offer.bullets.map((b, i) => (
-                    <li key={i} className="flex items-start gap-3 text-sm text-foreground">
+                    <li key={i} className="flex items-start gap-3">
                       <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground">
                         <Check className="h-3 w-3" strokeWidth={3} />
                       </span>
-                      {b}
+                      <span className="text-sm text-foreground leading-relaxed">{b}</span>
                     </li>
                   ))}
                 </ul>
               )}
               {offer.longDescription && (
-                <div className="px-6 pt-2 pb-4">
-                  <h4 className="text-sm font-semibold text-foreground mb-1">Подробнее</h4>
+                <div className="px-6 pb-4">
+                  <h4 className="text-sm font-bold text-foreground mb-1">Подробнее</h4>
                   <p className="text-sm text-muted-foreground whitespace-pre-line leading-relaxed">{offer.longDescription}</p>
                 </div>
               )}
-              <div className="sticky bottom-0 bg-background px-6 py-5 border-t border-border flex flex-col gap-3">
-                <div className="flex items-baseline justify-between">
+              <div className="sticky bottom-0 bg-background px-6 py-4 border-t border-border">
+                <div className="flex items-center justify-between mb-3">
                   <span className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">Цена</span>
                   <div className="flex items-baseline gap-2">
                     {offer.oldPrice && (
-                      <span className="text-base text-muted-foreground line-through">
+                      <span className="text-sm line-through text-muted-foreground">
                         {offer.oldPrice}
                         {offer.oldPriceNote && <span className="text-xs ml-0.5">{offer.oldPriceNote}</span>}
                       </span>
                     )}
-                    <span className="text-xl font-bold text-foreground">
+                    <span className="text-2xl font-black text-foreground">
                       {offer.price}
-                      {offer.priceNote && <span className="text-sm font-normal ml-1">{offer.priceNote}</span>}
+                      {offer.priceNote && <span className="text-sm font-semibold opacity-70 ml-1">{offer.priceNote}</span>}
                     </span>
                   </div>
                 </div>
                 {offer.id === "club" ? (
-                  <a href={SUPPORT_HREF} target="_blank" rel="noopener noreferrer" className="w-full rounded-full h-12 font-sans font-bold flex items-center justify-center transition shadow-[0_4px_20px_-4px_rgba(250,204,21,0.5)] bg-[#FACC15] text-[#1a1a1a] hover:bg-[#e5b800]">
+                  <a href={SUPPORT_HREF} target="_blank" rel="noopener noreferrer" className="block w-full rounded-full h-12 font-sans font-bold transition bg-[#FACC15] text-[#1a1a1a] hover:bg-[#e5b800] flex items-center justify-center">
                     Возникли вопросы?
                   </a>
                 ) : (
-                  <button onClick={onClose} className="w-full rounded-full h-12 font-sans font-bold transition shadow-[0_4px_20px_-4px_rgba(250,204,21,0.5)] bg-[#FACC15] text-[#1a1a1a] hover:bg-[#e5b800]">
+                  <button onClick={onClose} className="w-full rounded-full h-12 font-sans font-bold transition bg-[#FACC15] text-[#1a1a1a] hover:bg-[#e5b800]">
                     Понятно
                   </button>
                 )}
@@ -364,7 +360,7 @@ export function LeadFormModal({
     : "Перейти к оплате";
 
   const resetAndClose = () => {
-    setData({ name: "", phone: "", telegram: "",  country: "", comment: "", amount: "" });
+    setData({ name: "", phone: "", telegram: "", country: "", comment: "", amount: "" });
     setSent(false);
     setSubmitting(false);
     onClose();
@@ -472,29 +468,29 @@ export function LeadFormModal({
                   <p className="text-base font-bold text-foreground leading-tight whitespace-pre-line">
                     {offer.title}
                   </p>
-                  <p className="mt-2 text-sm text-muted-foreground leading-relaxed">{subtitle}</p>
+                  <p className="text-sm text-muted-foreground mt-1">{subtitle}</p>
                 </div>
-                <button onClick={resetAndClose} aria-label="Закрыть" className="ml-4 flex items-center justify-center h-8 w-8 aspect-square rounded-full bg-muted hover:bg-muted/80 transition shrink-0">
-                  <X className="h-4 w-4 text-foreground" />
+                <button onClick={resetAndClose} className="ml-4 mt-1 rounded-full p-2 hover:bg-muted transition" aria-label="Закрыть">
+                  <X className="h-5 w-5 text-muted-foreground" />
                 </button>
               </div>
 
               <div className="px-6 pb-6">
                 {sent ? (
-                  <div className="flex flex-col items-center justify-center py-10 text-center gap-4">
-                    <div className="h-14 w-14 rounded-full bg-green-100 flex items-center justify-center">
-                      <Check className="h-7 w-7 text-green-600" strokeWidth={3} />
+                  <div className="flex flex-col items-center text-center py-8">
+                    <div className="w-16 h-16 rounded-full bg-emerald-100 flex items-center justify-center mb-4">
+                      <Check className="h-8 w-8 text-emerald-600" strokeWidth={2.5} />
                     </div>
-                    <h3 className="text-lg font-bold text-foreground">
+                    <h3 className="text-lg font-bold text-foreground mb-2">
                       {isLeadOnly ? "Заявка отправлена" : "Перенаправляем на оплату"}
                     </h3>
-                    <p className="text-sm text-muted-foreground max-w-xs">
+                    <p className="text-sm text-muted-foreground leading-relaxed">
                       {isLeadOnly
                         ? "Мы внимательно рассмотрим вашу заявку и свяжемся с вами в ближайшее время."
                         : "Сейчас откроется защищённая страница оплаты."}
                     </p>
                     {isLeadOnly && (
-                      <button onClick={resetAndClose} className="rounded-full px-6 h-10 font-semibold bg-[#FACC15] text-[#1a1a1a] hover:bg-[#e5b800] transition">
+                      <button onClick={resetAndClose} className="mt-6 rounded-full px-8 h-12 font-sans font-bold transition bg-[#FACC15] text-[#1a1a1a] hover:bg-[#e5b800]">
                         Закрыть
                       </button>
                     )}
@@ -503,89 +499,63 @@ export function LeadFormModal({
                   <form onSubmit={submit} className="space-y-4">
                     <div>
                       <label className="text-sm font-medium text-foreground">Имя</label>
-                      <input value={data.name} onChange={(e) => setData((p) => ({ ...p, name: e.target.value }))} className={inputCls} placeholder="Как к вам обращаться?" autoComplete="name" />
+                      <input type="text" value={data.name} onChange={(e) => setData((p) => ({ ...p, name: e.target.value }))} className={inputCls} placeholder="Как к вам обращаться?" autoComplete="name" />
                     </div>
                     <div>
                       <label className="text-sm font-medium text-foreground">Телефон</label>
-                      <input value={data.phone} onChange={(e) => setData((p) => ({ ...p, phone: e.target.value }))} className={inputCls} placeholder="+49…" autoComplete="tel" inputMode="tel" />
+                      <input type="tel" value={data.phone} onChange={(e) => setData((p) => ({ ...p, phone: e.target.value }))} className={inputCls} placeholder="+49…" autoComplete="tel" inputMode="tel" />
                     </div>
                     <div>
                       <label className="text-sm font-medium text-foreground">Telegram (необязательно)</label>
-                      <input value={data.telegram} onChange={(e) => setData((p) => ({ ...p, telegram: e.target.value }))} onBlur={() => setData((p) => ({ ...p, telegram: normalizeTelegram(p.telegram) }))} className={`${inputCls} ${data.telegram.trim().length > 0 && !tgValid ? "border-destructive/40" : ""}`} placeholder="@username" autoComplete="off" />
-                      <p className="mt-1 text-xs text-muted-foreground">
+                      <input type="text" value={data.telegram} onChange={(e) => setData((p) => ({ ...p, telegram: e.target.value }))} onBlur={() => setData((p) => ({ ...p, telegram: normalizeTelegram(p.telegram) }))} className={`${inputCls} ${data.telegram.trim().length > 0 && !tgValid ? "border-destructive/40" : ""}`} placeholder="@username" autoComplete="off" />
+                      <p className={`text-xs mt-1 ${data.telegram.trim().length > 0 && !tgValid ? "text-destructive" : "text-muted-foreground"}`}>
                         {data.telegram.trim().length > 0 && !tgValid ? "Формат: @username (латиница/цифры/underscore)" : "Можно оставить пустым"}
                       </p>
                     </div>
                     
-                  <div className="space-y-2">
-                    <label className="text-sm font-medium text-foreground">
-                      Страна
-                    </label>
-                  
-                    <div className="relative">
-                      <select
-                        value={data.country}
-                        onChange={(e) =>
-                          setData((p) => ({ ...p, country: e.target.value }))
-                        }
-                        required
-                        className="
-                          w-full
-                          h-12
-                          rounded-2xl
-                          px-4
-                          pr-10
-                          bg-card/70
-                          border border-border
-                          text-foreground
-                          outline-none
-                          appearance-none
-                        "
-                      >
-                        <option value="">Выберите страну</option>
-                      
-                        {COUNTRY_LIST.map((country) => (
-                          <option key={country} value={country}>
-                            {country}
-                          </option>
-                        ))}
-                      </select>
-                  
-                      <svg
-                        className="
-                          pointer-events-none
-                          absolute
-                          right-4
-                          top-1/2
-                          -translate-y-1/2
-                          w-4
-                          h-4
-                          text-black/50
-                          block
-                        "
-                        viewBox="0 0 20 20"
-                        fill="currentColor"
-                      >
-                        <path
-                          fillRule="evenodd"
-                          d="M5.23 7.21a.75.75 0 011.06.02L10 10.94l3.71-3.71a.75.75 0 111.06 1.06l-4.24 4.24a.75.75 0 01-1.06 0L5.21 8.29a.75.75 0 01.02-1.08z"
-                          clipRule="evenodd"
-                        />
-                      </svg>
+                    <div>
+                      <label className="text-sm font-medium text-foreground">Страна</label>
+                      <div className="relative mt-2">
+                        <select
+                          value={data.country}
+                          onChange={(e) => setData((p) => ({ ...p, country: e.target.value }))}
+                          required
+                          className="w-full h-12 rounded-2xl px-4 pr-10 bg-card/70 border border-border text-foreground outline-none appearance-none"
+                        >
+                          <option value="" disabled>Выберите страну</option>
+                          {COUNTRY_LIST.map((country) => (
+                            <option key={country} value={country}>{country}</option>
+                          ))}
+                        </select>
+                        <svg className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+                        </svg>
+                      </div>
                     </div>
-                  </div>
 
                     {isAmbassador && (
                       <div>
                         <label className="text-sm font-medium text-foreground">Сумма доната (EUR)</label>
-                        <input value={data.amount} onChange={(e) => setData((p) => ({ ...p, amount: e.target.value.replace(/[^\d.,]/g, "") }))} className={inputCls} placeholder="Например: 25" inputMode="decimal" autoComplete="off" />
-                        <p className="mt-1 text-xs text-muted-foreground">Минимум 5 €, максимум 50 000 €.</p>
+                        <input type="text" value={data.amount} onChange={(e) => setData((p) => ({ ...p, amount: e.target.value.replace(/[^\d.,]/g, "") }))} className={inputCls} placeholder="Например: 25" inputMode="decimal" autoComplete="off" />
+                        <p className="text-xs text-muted-foreground mt-1">Минимум 5 €, максимум 50 000 €.</p>
                       </div>
                     )}
 
                     <div>
-                      <label className="text-sm font-medium text-foreground">Комментарий (необязательно)</label>
-                      <textarea value={data.comment} onChange={(e) => setData((p) => ({ ...p, comment: e.target.value }))} className="mt-2 w-full min-h-[80px] rounded-2xl p-4 bg-card/70 border border-border outline-none focus:ring-2 focus:ring-ring/20 resize-none text-foreground" placeholder="Удобное время / вопрос / город…" />
+                      <label className="text-sm font-medium text-foreground">
+                        {isAmbassador ? "Опишите свою ситуацию" : "Комментарий (необязательно)"}
+                      </label>
+                    
+                      <textarea
+                        value={data.comment}
+                        onChange={(e) => setData((p) => ({ ...p, comment: e.target.value }))}
+                        className="mt-2 w-full min-h-[80px] rounded-2xl p-4 bg-card/70 border border-border outline-none focus:ring-2 focus:ring-ring/20 resize-none text-foreground"
+                        placeholder={
+                          isAmbassador
+                            ? "Напишите несколько слов о вашей ситуации…"
+                            : "Удобное время / вопрос"
+                        }
+                      />
                     </div>
 
                     <button type="submit" disabled={isDisabled} className="w-full rounded-full h-12 font-sans font-bold transition shadow-[0_4px_20px_-4px_rgba(250,204,21,0.5)] disabled:opacity-50 bg-[#FACC15] text-[#1a1a1a] hover:bg-[#e5b800]">
@@ -731,10 +701,10 @@ export function OfferCard({
       {/* ── Header / price section ── */}
       <div className={[
         "flex flex-col relative",
-        isWide ? "p-8 sm:p-10 lg:p-12 lg:flex-1 lg:justify-center" : "p-7 sm:p-9",
+        isWide ? "p-8 sm:p-10 lg:p-12 lg:flex-1 lg:justify-center" : "p-5 pb-3 sm:p-9",
       ].join(" ")}>
         {offer.badge && (
-          <div className={`mb-4 ${isWide ? "lg:mb-5" : ""}`}>
+          <div className={`mb-3 sm:mb-4 ${isWide ? "lg:mb-5" : ""}`}>
             <span className={[
               "inline-flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-[0.15em] px-3.5 py-1.5 rounded-full",
               offer.id === "club" ? "bg-[#1a1a1a] text-[#FACC15]" : "bg-[#E64B1E] text-white",
@@ -747,20 +717,19 @@ export function OfferCard({
 
         <div className="mt-1">
           <span className={[
-            "inline-block rounded-2xl px-5 py-2.5 font-black tracking-tight leading-[1.1]",
+            "inline-block rounded-2xl px-4 py-2 sm:px-5 sm:py-2.5 font-black tracking-tight leading-[1.1]",
             t.titleBg,
             t.titleColor,
-            isWide ? "text-2xl sm:text-3xl lg:text-4xl" : "text-xl sm:text-2xl",
+            isWide ? "text-2xl sm:text-3xl lg:text-4xl" : "text-lg sm:text-2xl",
           ].join(" ")}>
            <TitleWithBreaks text={offer.title} />
           </span>
         </div>
 
-        <div className="mt-5 flex items-center gap-3 flex-wrap">
+        <div className="mt-3 sm:mt-5 flex items-center gap-3 flex-wrap">
           {offer.oldPrice && (
-            <span className="relative inline-block text-[#1a1a1a] font-extrabold text-2xl sm:text-3xl">
+            <span className="relative inline-block text-[#1a1a1a] font-extrabold text-xl sm:text-3xl">
               {offer.oldPrice}
-              {/* диагональная линия */}
               <span
                 aria-hidden
                 className="pointer-events-none absolute left-[-6%] top-1/2 h-[3px] w-[112%] bg-[#E64B1E] rotate-[-12deg] rounded-full"
@@ -768,22 +737,22 @@ export function OfferCard({
             </span>
           )}
           <span className={[
-            "inline-flex items-baseline gap-2 rounded-2xl px-5 py-2.5 font-black leading-none",
+            "inline-flex items-baseline gap-2 rounded-2xl px-4 py-2 sm:px-5 sm:py-2.5 font-black leading-none",
             t.priceBg,
             t.priceColor,
-            isGift ? "text-4xl sm:text-5xl" : "text-3xl sm:text-4xl lg:text-5xl",
+            isGift ? "text-3xl sm:text-5xl" : "text-2xl sm:text-4xl lg:text-5xl",
           ].join(" ")}>
             {offer.price}
             {offer.priceNote && (
-              <span className="text-sm font-semibold opacity-70">{offer.priceNote}</span>
+              <span className="text-xs sm:text-sm font-semibold opacity-70">{offer.priceNote}</span>
             )}
           </span>
         </div>
 
+        {/* Description & subtitle: hidden on mobile (<sm), visible on sm+ */}
         {offer.id === "system" ? (
-          <div className="mt-5">
+          <div className="mt-5 hidden sm:block">
             <div className="relative pl-4">
-              {/* Зеленая вертикальная полоска */}
               <div className="absolute left-0 top-1 bottom-1 w-[3px] bg-emerald-500 rounded-full" />
               <div className="space-y-1">
                 <p className="text-[14px] font-semibold text-emerald-600">
@@ -798,7 +767,7 @@ export function OfferCard({
         ) : (
           <p
             className={[
-              "mt-4 text-[14px] leading-relaxed whitespace-pre-line",
+              "mt-4 text-[14px] leading-relaxed whitespace-pre-line hidden sm:block",
               t.descColor,
               isWide ? "max-w-md" : "",
             ].join(" ")}
@@ -812,20 +781,21 @@ export function OfferCard({
         )}
       </div>
 
-      {/* ── Divider ── */}
+      {/* ── Divider: hidden on mobile ── */}
       {isWide ? (
         <div className="hidden lg:block w-px my-8 bg-black/10" />
       ) : (
-        <div className="mx-7 sm:mx-9 h-px bg-black/[0.07]" />
+        <div className="mx-7 sm:mx-9 h-px bg-black/[0.07] hidden sm:block" />
       )}
 
-      {/* ── Bullets + CTA ── */}
+      {/* ── Bullets (hidden on mobile) + CTA (always visible) ── */}
       <div className={[
         "flex flex-col h-full",
-        isWide ? "p-8 sm:p-10 lg:p-12 lg:flex-1" : "p-7 sm:p-9 pt-5",
+        isWide ? "p-8 sm:p-10 lg:p-12 lg:flex-1" : "px-5 pb-5 pt-0 sm:p-9 sm:pt-5",
       ].join(" ")}>
+        {/* Bullets: hidden on mobile */}
         <ul className={[
-          "space-y-2.5 mb-8",
+          "space-y-2.5 mb-8 hidden sm:block",
           isWide ? "columns-1 sm:columns-2 gap-x-10" : "",
         ].join(" ")}>
           {offer.bullets.map((b, i) => (
@@ -842,7 +812,8 @@ export function OfferCard({
           ))}
         </ul>
 
-        <div className={["flex gap-3 mt-auto flex-col", isWide ? "lg:flex-row" : ""].join(" ")}>
+        {/* CTA buttons: always visible */}
+        <div className={["flex gap-2.5 sm:gap-3 mt-auto flex-col", isWide ? "lg:flex-row" : ""].join(" ")}>
           {!hidePrimaryCta && (
             <button
               type="button"
@@ -851,8 +822,8 @@ export function OfferCard({
                 "rounded-full font-sans font-bold flex items-center justify-center",
                 "text-[13px] sm:text-sm",
                 "leading-tight text-center",
-                "px-4 py-3",
-                "min-h-[48px]",
+                "px-4 py-2.5 sm:py-3",
+                "min-h-[42px] sm:min-h-[48px]",
                 "whitespace-normal",
                 isWide ? "flex-1" : "w-full",
                 offer.id === "ambassador"
@@ -870,8 +841,8 @@ export function OfferCard({
               "rounded-full font-sans font-semibold",
               "text-[13px] sm:text-sm",
               "leading-tight text-center",
-              "px-4 py-3",
-              "min-h-[48px]",
+              "px-4 py-2.5 sm:py-3",
+              "min-h-[42px] sm:min-h-[48px]",
               isWide ? "lg:flex-1 w-full" : "w-full",
               t.ctaSecondary,
             ].join(" ")}
@@ -886,9 +857,9 @@ export function OfferCard({
 
 /* ─── Main ─── */
 export default function Programs() {
-const [isGSA, setIsGSA] = useState(false);
+  const [isGSA, setIsGSA] = useState(false);
 
-useStableAppHeight(setIsGSA);
+  useStableAppHeight(setIsGSA);
 
   const offers = useMemo<Offer[]>(() => [
     {
@@ -913,6 +884,7 @@ useStableAppHeight(setIsGSA);
         "Живая встреча с Ицхаком (Q&A)",
         "Рабочие инструменты и чек-листы",
         "Доступ к материалам на 30 дней",
+        "20 видео уроков, сессия с Ицхаком",
       ],
       cta: "Стать счастливым",
       variant: "light",
@@ -941,7 +913,7 @@ useStableAppHeight(setIsGSA);
     {
       id: "gift",
       payType: "free",
-      title: "Дарю тебе курс",
+      title: "Дарим тебе курс",
       description:
         "Мы верим, что система счастья должна быть доступна тем, кому сейчас особенно трудно.\nЕсли вы находитесь в сложной жизненной ситуации, вы можете подать заявку на возможность получения доступа к системе «Архитектура счастья» бесплатно.",
       mobileDescription: "Если вы сейчас в тяжёлой жизненной ситуации - подайте заявку на бесплатный доступ.",
@@ -1023,7 +995,7 @@ useStableAppHeight(setIsGSA);
             Выберите формат участия
           </h2>
           <p className="mt-5 text-black/70 text-base sm:text-lg leading-relaxed">
-            Начните с фундамента — или заходите в полный проект и стройте устойчивое состояние системно.
+            Начните с фундамента - или заходите в полный проект и стройте устойчивое состояние системно.
           </p>
         </motion.div>
 
@@ -1062,7 +1034,6 @@ useStableAppHeight(setIsGSA);
       <LeadFormModal open={leadModalOpen} onClose={() => { setLeadModalOpen(false); clearModalUrl(); }} offer={activeOffer} />
     </section>
   );
-
 
   return sectionContent;
 }

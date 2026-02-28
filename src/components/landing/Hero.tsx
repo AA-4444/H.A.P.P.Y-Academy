@@ -531,7 +531,13 @@ function OrangeHeroBlock() {
                     transition={{ duration: 0.6 }}
                     className="font-sans font-extrabold tracking-tight text-white text-3xl sm:text-5xl md:text-6xl lg:text-7xl leading-[1.05]"
                   >
-                    Академия счастья HAPPI10
+                    <span className="block">
+                      Академия счастья
+                    </span>
+                  
+                    <span className="block mt-1 lg:mt-2">
+                      HAPPI10
+                    </span>
                   </motion.h2>
 
                   <motion.p
@@ -540,8 +546,7 @@ function OrangeHeroBlock() {
                     transition={{ duration: 0.6, delay: 0.08 }}
                     className="mt-4 sm:mt-8 text-white font-sans text-[14px] sm:text-lg md:text-xl leading-relaxed max-w-5xl mx-auto"
                   >
-                    Если ты устал жить в тревоге и внутреннем хаосе - вот система из 10 элементов,
-                    которая возвращает устойчивость и ясность.
+                   20 видеоматериалов и уроков, знания которые Ицхак собирал более 20-ти лет. Для того чтобы каждый мог внедрить в свою жизнь простые 10 элементов, которые гарантируют устойчивое состояние счастья для каждого!
                   </motion.p>
 
                   <div className="mt-7 sm:mt-10 flex justify-center">

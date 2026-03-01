@@ -127,7 +127,7 @@ function buildGridMinRepeats(images: ImgSet[], rows: number, cols: number) {
   return outKeys.map((k) => byKey.get(k)!).filter(Boolean);
 }
 
-/** ✅ Вместо backgroundImage: url(...) используем picture+img cover */
+
 function CoverPicture({
   sources,
   alt = "",
@@ -165,7 +165,7 @@ function CoverPicture({
   );
 }
 
-/** SplitText — оставляю (не используется) */
+
 function SplitText({
   text,
   className,
@@ -532,7 +532,7 @@ function OrangeHeroBlock() {
                     className="font-sans font-extrabold tracking-tight text-white text-3xl sm:text-5xl md:text-6xl lg:text-7xl leading-[1.05]"
                   >
                     <span className="block">
-                      Академия счастья
+                      Архитектура счастья
                     </span>
                   
                     <span className="block mt-1 lg:mt-2">

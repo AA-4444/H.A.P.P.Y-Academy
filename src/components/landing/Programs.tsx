@@ -35,7 +35,7 @@ type Offer = {
 type LeadFormData = {
   name: string;
   phone: string;
-  telegram: string;
+  messenger: string; 
   comment: string;
   amount: string;
   country: string;
@@ -185,13 +185,27 @@ function createLeadId() {
   } catch {}
   return `lead_${Date.now()}_${Math.random().toString(16).slice(2)}`;
 }
-function buildContact(phone: string, telegram: string) {
+function buildContact(phone: string, messenger: string) {
   const parts: string[] = [];
-  const p = phone.trim();
-  const tg = normalizeTelegram(telegram);
-  if (p) parts.push(`Телефон: ${p}`);
-  if (tg && isTelegramValid(tg)) parts.push(`Telegram: ${tg}`);
+
+  if (phone.trim()) {
+    parts.push(`Телефон: ${phone.trim()}`);
+  }
+
+  if (messenger.trim()) {
+    parts.push(`Связь: ${messenger.trim()}`);
+  }
+
   return parts.join(" | ");
+}
+
+function isMessengerValid(value: string) {
+  const v = value.trim();
+
+  const isTg = /^@[a-zA-Z0-9_]{4,31}$/.test(v);
+  const isPhone = /^\+?[0-9\s\-()]{7,}$/.test(v);
+
+  return isTg || isPhone;
 }
 
 /* ─── CountdownBlock — isolated re-renders every second ─── */
@@ -323,10 +337,10 @@ export function LeadFormModal({
 }) {
   useLockBodyScroll(open);
 
-  const [data, setData] = useState<LeadFormData>({
+const [data, setData] = useState<LeadFormData>({
     name: "",
     phone: "",
-    telegram: "",
+    messenger: "",
     country: "",
     comment: "",
     amount: "",
@@ -360,7 +374,14 @@ export function LeadFormModal({
     : "Перейти к оплате";
 
   const resetAndClose = () => {
-    setData({ name: "", phone: "", telegram: "", country: "", comment: "", amount: "" });
+  setData({
+    name: "",
+    phone: "",
+    messenger: "",
+    country: "",
+    comment: "",
+    amount: "",
+  });
     setSent(false);
     setSubmitting(false);
     onClose();
@@ -372,11 +393,10 @@ export function LeadFormModal({
 
     const name = data.name.trim();
     const phone = data.phone.trim();
-    const tgNorm = normalizeTelegram(data.telegram);
     const comment = data.comment.trim();
-
+    if (!isMessengerValid(data.messenger)) return;
     if (name.length < 2 || phone.length < 5) return;
-    if (tgNorm && !isTelegramValid(tgNorm)) return;
+    
 
     setSubmitting(true);
 
@@ -398,7 +418,10 @@ export function LeadFormModal({
             offerId: offer.id,
             offerTitle: offer.title,
             name,
-            contact: buildContact(phone, data.telegram),
+           contact: buildContact(
+             phone,
+             data.messenger
+           ),
             comment,
             country: data.country,
             pageUrl: window.location.href,
@@ -419,7 +442,7 @@ export function LeadFormModal({
           offerId: offer.id,
           offerTitle: offer.title,
           name,
-          contact: buildContact(phone, data.telegram),
+          contact: buildContact(phone, data.messenger),
           country: data.country,
           comment,
           pageUrl: window.location.href,
@@ -438,19 +461,19 @@ export function LeadFormModal({
     }
   };
 
-  const tgPreview = normalizeTelegram(data.telegram);
-  const tgValid = tgPreview ? isTelegramValid(tgPreview) : true;
+
 
   const inputCls =
     "mt-2 w-full h-12 rounded-2xl px-4 bg-card/70 border border-border outline-none focus:ring-2 focus:ring-ring/20 text-foreground";
+    
 
-  const isDisabled =
+
+const isDisabled =
     submitting ||
     data.name.trim().length < 2 ||
     data.phone.trim().length < 5 ||
     data.country.trim().length === 0 ||
-    (!!normalizeTelegram(data.telegram) &&
-      !isTelegramValid(normalizeTelegram(data.telegram))) ||
+    !isMessengerValid(data.messenger) ||
     (isAmbassador && String(data.amount).trim().length === 0);
 
   return (
@@ -506,10 +529,23 @@ export function LeadFormModal({
                       <input type="tel" value={data.phone} onChange={(e) => setData((p) => ({ ...p, phone: e.target.value }))} className={inputCls} placeholder="+49…" autoComplete="tel" inputMode="tel" />
                     </div>
                     <div>
-                      <label className="text-sm font-medium text-foreground">Telegram (необязательно)</label>
-                      <input type="text" value={data.telegram} onChange={(e) => setData((p) => ({ ...p, telegram: e.target.value }))} onBlur={() => setData((p) => ({ ...p, telegram: normalizeTelegram(p.telegram) }))} className={`${inputCls} ${data.telegram.trim().length > 0 && !tgValid ? "border-destructive/40" : ""}`} placeholder="@username" autoComplete="off" />
-                      <p className={`text-xs mt-1 ${data.telegram.trim().length > 0 && !tgValid ? "text-destructive" : "text-muted-foreground"}`}>
-                        {data.telegram.trim().length > 0 && !tgValid ? "Формат: @username (латиница/цифры/underscore)" : "Можно оставить пустым"}
+                      <label className="text-sm font-medium text-foreground">
+                        Telegram или WhatsApp
+                      </label>
+                    
+                      <input
+                        type="text"
+                        value={data.messenger}
+                        onChange={(e) =>
+                          setData((p) => ({ ...p, messenger: e.target.value }))
+                        }
+                        className={inputCls}
+                        placeholder="@username или +49..."
+                        autoComplete="off"
+                      />
+                    
+                      <p className="text-xs text-muted-foreground mt-1">
+                        Введите @username или номер в международном формате
                       </p>
                     </div>
                     

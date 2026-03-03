@@ -474,7 +474,8 @@ const isDisabled =
     data.phone.trim().length < 5 ||
     data.country.trim().length === 0 ||
     !isMessengerValid(data.messenger) ||
-    (isAmbassador && String(data.amount).trim().length === 0);
+    (isAmbassador && String(data.amount).trim().length === 0) ||
+    (offer?.id === "gift" && data.comment.trim().length < 20);
 
   return (
     <AnimatePresence>
@@ -578,20 +579,25 @@ const isDisabled =
                     )}
 
                     <div>
-                      <label className="text-sm font-medium text-foreground">
-                        {isAmbassador ? "Опишите свою ситуацию" : "Комментарий (необязательно)"}
-                      </label>
+                    <label className="text-sm font-medium text-foreground">
+                      {offer?.id === "gift"
+                        ? "Опишите почему вы можете претендовать на право бесплатного прохождения курса"
+                        : isAmbassador
+                        ? "Опишите свою ситуацию"
+                        : "Комментарий"}
+                    </label>
                     
                       <textarea
                         value={data.comment}
                         onChange={(e) => setData((p) => ({ ...p, comment: e.target.value }))}
                         className="mt-2 w-full min-h-[80px] rounded-2xl p-4 bg-card/70 border border-border outline-none focus:ring-2 focus:ring-ring/20 resize-none text-foreground"
                         placeholder={
-                          isAmbassador
+                          offer?.id === "gift"
+                            ? "Опишите вашу ситуацию подробно…"
+                            : isAmbassador
                             ? "Напишите несколько слов о вашей ситуации…"
                             : "Удобное время / вопрос"
-                        }
-                      />
+                        }                      />
                     </div>
 
                     <button type="submit" disabled={isDisabled} className="w-full rounded-full h-12 font-sans font-bold transition shadow-[0_4px_20px_-4px_rgba(250,204,21,0.5)] disabled:opacity-50 bg-[#FACC15] text-[#1a1a1a] hover:bg-[#e5b800]">

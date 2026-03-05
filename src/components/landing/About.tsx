@@ -96,7 +96,7 @@ const About = () => {
         reels={reels}
       />
 
-      {/* ✅ карусель как раньше, только НЕ на мобиле */}
+      
       <div className="hidden sm:block">
         <ReelCarousel reels={reels} />
       </div>
@@ -209,7 +209,7 @@ function QuoteFullscreen({
             </div>
 
             <div className="h-10 w-10 sm:h-11 sm:w-11 rounded-full overflow-hidden ring-2 ring-white/30 relative">
-              {/* ✅ avatar через picture */}
+            
               <CoverPicture
                 sources={avatar}
                 alt={name}
@@ -326,7 +326,7 @@ function QuoteFullscreen({
             Сейчас он автор бестселлеров и наставник, который изменил жизни миллионов.
           </motion.h3>
 
-          {/* ✅ карусель */}
+        
           <div className="mt-5 w-screen relative left-1/2 -translate-x-1/2 overflow-hidden">
             <motion.div
               className={[

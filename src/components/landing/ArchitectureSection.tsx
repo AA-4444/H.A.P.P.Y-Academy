@@ -162,7 +162,7 @@ export default function ArchitectureSection() {
 		  {/* content */}
 		  <div className="relative px-6 sm:px-10 lg:px-14 py-10 sm:py-12 lg:py-14">
 			<motion.h2 className="font-sans font-extrabold tracking-tight text-black text-3xl sm:text-5xl lg:text-6xl leading-[1.05] max-w-5xl">
-			  Архитектура Счастья - это система из 10 несущих элементов
+			 © Архитектура Счастья - это система из 10 несущих элементов
 			</motion.h2>
 
 			<p className="mt-6 sm:mt-7 font-sans text-black/75 text-base sm:text-lg leading-relaxed max-w-3xl">

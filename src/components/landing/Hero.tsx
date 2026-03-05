@@ -550,13 +550,19 @@ function OrangeHeroBlock() {
                   </motion.p>
 
                   <div className="mt-7 sm:mt-10 flex justify-center">
-                    <Button
-                      size="xl"
-                      onClick={goPrograms}
-                      className="rounded-full px-10 bg-yellow-400 text-black hover:bg-yellow-300 font-semibold"
-                    >
-                      О программе
-                    </Button>
+                    <div className="flex flex-col items-center">
+                      <Button
+                        size="xl"
+                        onClick={goPrograms}
+                        className="rounded-full px-10 bg-yellow-400 text-black hover:bg-yellow-300 font-semibold"
+                      >
+                        О программе
+                      </Button>
+                  
+                      <div className="mt-2 text-[#E64B1E] text-sm font-semibold">
+                        Переходи
+                      </div>
+                    </div>
                   </div>
 
                   <div className="mt-7 sm:mt-12 flex justify-center">

@@ -19,6 +19,7 @@ type Offer = {
   mobileDescription: string;
   price: string;
   priceNote?: string;
+  priceAlt?: string;
   oldPrice?: string;
   oldPriceNote?: string;
   bullets: string[];
@@ -209,14 +210,14 @@ function isMessengerValid(value: string) {
 }
 
 /* ─── CountdownBlock — isolated re-renders every second ─── */
-const COUNTDOWN_TARGET = new Date(2026, 1, 28, 0, 0, 0);
+const COUNTDOWN_TARGET = new Date(Date.now() + 10 * 24 * 60 * 60 * 1000);
 
 function CountdownBlock({ target }: { target: Date }) {
   const cd = useCountdown(target);
   return (
     <div className="mt-4 flex flex-col items-start">
       <span className="text-[10px] uppercase tracking-widest text-black/40 font-semibold">
-        Открытие продаж через
+        Скидка закончится через
       </span>
       <span className="text-lg font-black text-[#E64B1E] tabular-nums mt-0.5">
         {cd.msLeft > 0
@@ -361,14 +362,14 @@ const [data, setData] = useState<LeadFormData>({
       ? "Заявка на программу"
       : "Заявка";
 
-const subtitle = isLeadOnly || offer?.id === "club"
+const subtitle = isLeadOnly
       ? "Оставьте контакты — мы свяжемся с вами."
       : isAmbassador
       ? "Оставьте контакты и сумму — вы перейдёте к оплате доната."
       : "Оставьте контакты — вы перейдёте к оплате.";
 
 const submitLabel =
-      isLeadOnly || offer?.id === "club"
+      isLeadOnly
         ? "Оставить заявку"
         : isAmbassador
         ? "Перейти к оплате доната"
@@ -411,28 +412,48 @@ const submitLabel =
         }
       }
 
-      if (offer.id === "gift" || offer.id === "club") {
-        const r = await fetch("/api/lead", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            offerId: offer.id,
-            offerTitle: offer.title,
-            name,
-           contact: buildContact(
-             phone,
-             data.messenger
-           ),
-            comment,
-            country: data.country,
-            pageUrl: window.location.href,
-          }),
-        });
-        if (!r.ok) throw new Error(`Lead error: ${r.status}`);
-        setSent(true);
-        setSubmitting(false);
-        return;
-      }
+    if (offer.id === "gift") {
+      const r = await fetch("/api/lead", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          offerId: offer.id,
+          offerTitle: offer.title,
+          name,
+          contact: buildContact(phone, data.messenger),
+          comment,
+          country: data.country,
+          pageUrl: window.location.href,
+        }),
+      });
+    
+      if (!r.ok) throw new Error(`Lead error: ${r.status}`);
+    
+      setSent(true);
+      setSubmitting(false);
+      return;
+    }
+    
+    if (offer.id === "club") {
+      const r = await fetch("/api/lead", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          offerId: offer.id,
+          offerTitle: offer.title,
+          name,
+          contact: buildContact(phone, data.messenger),
+          comment,
+          country: data.country,
+          pageUrl: window.location.href,
+        }),
+      });
+    
+      if (!r.ok) throw new Error(`Lead error: ${r.status}`);
+    
+      window.location.href = "https://t.me/tribute/app?startapp=ssF9";
+      return;
+    }
 
       const res = await fetch("/api/stripe/checkout", {
         method: "POST",
@@ -600,6 +621,9 @@ const isDisabled =
                             : "Удобное время / вопрос"
                         }                      />
                     </div>
+                
+                    
+                  
 
                     <button type="submit" disabled={isDisabled} className="w-full rounded-full h-12 font-sans font-bold transition shadow-[0_4px_20px_-4px_rgba(250,204,21,0.5)] disabled:opacity-50 bg-[#FACC15] text-[#1a1a1a] hover:bg-[#e5b800]">
                       {submitting ? "Отправляем..." : submitLabel}
@@ -709,12 +733,14 @@ export function OfferCard({
   isWide,
   onOpenMore,
   onOpenLead,
+  freeUsers,
 }: {
   offer: Offer;
   index: number;
   isWide: boolean;
   onOpenMore: (id: string) => void;
   onOpenLead: (id: string) => void;
+  freeUsers: number;
 }) {
   const isGift = offer.id === "gift";
   const hidePrimaryCta = offer.id === "club";
@@ -789,7 +815,14 @@ export function OfferCard({
             {offer.priceNote && (
               <span className="text-xs sm:text-sm font-semibold opacity-70">{offer.priceNote}</span>
             )}
+           
           </span>
+        {offer.id === "club" && offer.priceAlt && (
+          <div className="mt-2 inline-flex items-center justify-center rounded-xl bg-white px-4 py-2 text-sm font-bold text-[#E64B1E]">
+            {offer.priceAlt}
+          </div>
+        )}
+          
         </div>
 
         {/* Description & subtitle: hidden on mobile (<sm), visible on sm+ */}
@@ -807,12 +840,12 @@ export function OfferCard({
              </div>
            </div>
          </div>
-       ) : offer.id === "club" ? (
-         <div className="mt-5 hidden sm:block">
-           <div className="bg-[#E64B1E] text-white px-4 py-3 rounded-xl text-sm font-bold">
-             {offer.highlightText}
-           </div>
-         </div>
+    ) : offer.id === "club" ? (
+      <div className="mt-4">
+        <div className="bg-[#16A34A] text-white px-4 py-3 rounded-xl text-sm font-semibold">
+          {offer.highlightText}
+        </div>
+      </div>
        ): (
           <p
             className={[
@@ -860,50 +893,56 @@ export function OfferCard({
             </li>
           ))}
         </ul>
+        {offer.id === "gift" && (
+          <div className="mt-4 text-center">
+            <p className="text-sm text-black/60">
+              Сейчас на бесплатной основе проходят курс
+            </p>
+        
+            <div className="text-3xl font-black text-[#E64B1E]">
+              {freeUsers} человек
+            </div>
+        
+            <button
+              onClick={() =>
+                document
+                  .getElementById("ambassador")
+                  ?.scrollIntoView({ behavior: "smooth" })
+              }
+              className="mt-2 text-sm font-bold text-[#E64B1E]"
+            >
+              Стать спонсором →
+            </button>
+          </div>
+        )}
 
         {/* CTA buttons: always visible */}
      <div className={["flex gap-2.5 sm:gap-3 mt-auto flex-col", isWide ? "lg:flex-row" : ""].join(" ")}>
        
        {/* PRIMARY CTA */}
-       {(offer.id !== "club") && (
-         <button
-           type="button"
-           onClick={() => onOpenLead(offer.id)}
-           className={[
-             "rounded-full font-sans font-bold flex items-center justify-center",
-             "text-[13px] sm:text-sm",
-             "leading-tight text-center",
-             "px-4 py-2.5 sm:py-3",
-             "min-h-[42px] sm:min-h-[48px]",
-             "whitespace-normal",
-             isWide ? "flex-1" : "w-full",
-             offer.id === "ambassador"
-               ? "bg-white text-[#1a1a1a] hover:bg-white/90 shadow-md"
-               : t.ctaPrimary,
-           ].join(" ")}
-         >
-           {offer.cta}
-         </button>
-       )}
+      <button
+        type="button"
+        onClick={() => onOpenLead(offer.id)}
+        className={[
+          "rounded-full font-sans font-bold flex items-center justify-center",
+          "text-[13px] sm:text-sm",
+          "leading-tight text-center",
+          "px-4 py-2.5 sm:py-3",
+          "min-h-[42px] sm:min-h-[48px]",
+          "whitespace-normal",
+          isWide ? "flex-1" : "w-full",
+          offer.id === "ambassador"
+          ? "bg-white text-[#1a1a1a] hover:bg-white/90 shadow-md"
+          : offer.id === "club"
+          ? "bg-white text-[#1a1a1a] hover:bg-white/90 shadow-md"
+          : t.ctaPrimary
+        ].join(" ")}
+      >
+        {offer.cta}
+      </button>
      
        {/* CLUB CTA */}
-       {offer.id === "club" && (
-         <button
-           type="button"
-           onClick={() => onOpenLead(offer.id)}
-           className={[
-             "rounded-full font-sans font-bold flex items-center justify-center",
-             "text-[13px] sm:text-sm",
-             "px-4 py-2.5 sm:py-3",
-             "min-h-[42px] sm:min-h-[48px]",
-             isWide ? "flex-1" : "w-full",
-             "bg-white text-[#1a1a1a] hover:bg-white/90 shadow-md",
-           ].join(" ")}
-         >
-           Подать заявку
-         </button>
-       )}
-     
+          
        {/* SECONDARY CTA */}
        <button
          type="button"
@@ -930,6 +969,28 @@ export function OfferCard({
 /* ─── Main ─── */
 export default function Programs() {
   const [isGSA, setIsGSA] = useState(false);
+  
+ const START_USERS = 120;
+ const START_DATE = new Date("2026-03-01");
+ 
+ const calcUsers = () => {
+   const now = new Date();
+   const diffDays = Math.floor(
+     (now.getTime() - START_DATE.getTime()) / (1000 * 60 * 60 * 24)
+   );
+ 
+   return START_USERS + diffDays * 10;
+ };
+ 
+ const [freeUsers, setFreeUsers] = useState(calcUsers());
+ 
+ useEffect(() => {
+   const id = setInterval(() => {
+     setFreeUsers(calcUsers());
+   }, 60000);
+ 
+   return () => clearInterval(id);
+ }, []);
 
   useStableAppHeight(setIsGSA);
 
@@ -937,6 +998,7 @@ export default function Programs() {
     {
       id: "system",
       payType: "one_time",
+      ctaNote: "countdown",
       title: "© Система\n«Архитектура счастья»",
       longSubtitle: "Фундаментальный Курс от Ицхака Пинтосевича.",
       highlightText: "Плод 20-ти летних изучений природы счастья.",
@@ -968,22 +1030,32 @@ export default function Programs() {
       payType: "subscription",
       title: "© Клуб\n«Архитектура счастья»",
       highlightText: "Доступ ко всем курсам Ицхака Пинтосевича",
+      priceAlt: "или 250 € / год (выгоднее)",
       description: "Полный проект вашего внутреннего дома.",
       mobileDescription: "Полная система из 10 ключевых элементов.\nПолный проект вашего внутреннего дома.",
-      price: "49 €",
-      priceNote: "/ мес",
+    
+     price: "49 €",
+     priceNote: "/ мес",
+     
+    
+    
       bullets: [
         "Видео-уроки и тренинги",
-        "Полная система 10 элементов",
-        "Еженедельные онлайн-встречи с Ицхаком",
-        "Личный саппорт кураторов",
+        "Аватар Ицхака отвечает 24/7",
+        "Доступ к курсам Ицхака Пинтосевича",
+        "Ответы на волнующие вопросы",
+        "Полный спектр жизненного баланса",
+        "Здоровый эндорфин и энергия",
+        "Ясность мышления",
+        "Понимание предназначения",
+        "Счастливые отношения",
         "Сообщество осознанных людей",
-        "Каждый месяц розыгрыш ценных призов среди участников",
       ],
-      cta: "Войти в клуб",
+    
+      cta: "Купить сейчас",
       variant: "yellow",
     },
-    {
+        {
       id: "gift",
       payType: "free",
       title: "© Дарим тебе курс",
@@ -994,8 +1066,9 @@ export default function Programs() {
       bullets: [
         "Люди с подтвержденной инвалидностью",
         "Люди с тяжелым заболеванием",
-        "Те, кто пережил потерю близкого",
-        "Пенсионеры, матери одиночки",
+        "Утрата близкого члена семьи",
+        "Пенсионеры",
+        "Матери одиночки",
       ],
       longDescription: "Как это работает:\n\n1. Заполните форму заявки\n2. Кратко опишите ситуацию\n3. Приложите подтверждающий документ\n\nПосле рассмотрения заявки вы получите ответ на указанные контакты.",
       cta: "Подать заявку",
@@ -1082,7 +1155,15 @@ export default function Programs() {
           className="grid gap-5 lg:gap-6 grid-cols-1 md:grid-cols-2 lg:grid-cols-3"
         >
           {topRow.map((o, i) => (
-            <OfferCard key={o.id} offer={o} index={i} isWide={false} onOpenMore={openMore} onOpenLead={openLead} />
+           <OfferCard
+             key={o.id}
+             offer={o}
+             index={i}
+             isWide={false}
+             onOpenMore={openMore}
+             onOpenLead={openLead}
+             freeUsers={freeUsers}
+           />
           ))}
         </motion.div>
 
@@ -1097,7 +1178,16 @@ export default function Programs() {
             }}
             className="mt-5 lg:mt-6"
           >
-            <OfferCard offer={bottomCard} index={3} isWide onOpenMore={openMore} onOpenLead={openLead} />
+           <div id="ambassador">
+             <OfferCard
+               offer={bottomCard}
+               index={3}
+               isWide
+               onOpenMore={openMore}
+               onOpenLead={openLead}
+               freeUsers={freeUsers}
+             />
+           </div>
           </motion.div>
         )}
       </div>

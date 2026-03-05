@@ -894,7 +894,7 @@ export function OfferCard({
           ))}
         </ul>
         {offer.id === "gift" && (
-          <div className="mt-4 text-center">
+        <div className="mt-6 text-center">
             <p className="text-sm text-black/60">
               Сейчас на бесплатной основе проходят курс
             </p>
@@ -903,16 +903,16 @@ export function OfferCard({
               {freeUsers} человек
             </div>
         
-            <button
-              onClick={() =>
-                document
-                  .getElementById("ambassador")
-                  ?.scrollIntoView({ behavior: "smooth" })
-              }
-              className="mt-2 text-sm font-bold text-[#E64B1E]"
-            >
-              Стать спонсором →
-            </button>
+           <button
+             onClick={() =>
+               document
+                 .getElementById("ambassador")
+                 ?.scrollIntoView({ behavior: "smooth" })
+             }
+            className="mt-5 mb-3 w-full rounded-full bg-[#16A34A] text-white py-3 text-sm font-bold hover:bg-[#15803D] transition"
+           >
+             Стать спонсором
+           </button>
           </div>
         )}
 

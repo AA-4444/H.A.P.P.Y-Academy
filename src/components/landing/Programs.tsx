@@ -361,17 +361,18 @@ const [data, setData] = useState<LeadFormData>({
       ? "Заявка на программу"
       : "Заявка";
 
-  const subtitle = isLeadOnly
-    ? "Оставьте контакты — мы свяжемся с вами."
-    : isAmbassador
-    ? "Оставьте контакты и сумму — вы перейдёте к оплате доната."
-    : "Оставьте контакты — вы перейдёте к оплате.";
+const subtitle = isLeadOnly || offer?.id === "club"
+      ? "Оставьте контакты — мы свяжемся с вами."
+      : isAmbassador
+      ? "Оставьте контакты и сумму — вы перейдёте к оплате доната."
+      : "Оставьте контакты — вы перейдёте к оплате.";
 
-  const submitLabel = isLeadOnly
-    ? "Оставить заявку"
-    : isAmbassador
-    ? "Перейти к оплате доната"
-    : "Перейти к оплате";
+const submitLabel =
+      isLeadOnly || offer?.id === "club"
+        ? "Оставить заявку"
+        : isAmbassador
+        ? "Перейти к оплате доната"
+        : "Перейти к оплате";
 
   const resetAndClose = () => {
   setData({
@@ -410,7 +411,7 @@ const [data, setData] = useState<LeadFormData>({
         }
       }
 
-      if (offer.id === "gift") {
+      if (offer.id === "gift" || offer.id === "club") {
         const r = await fetch("/api/lead", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -792,21 +793,27 @@ export function OfferCard({
         </div>
 
         {/* Description & subtitle: hidden on mobile (<sm), visible on sm+ */}
-        {offer.id === "system" ? (
-          <div className="mt-5 hidden sm:block">
-            <div className="relative pl-4">
-              <div className="absolute left-0 top-1 bottom-1 w-[3px] bg-emerald-500 rounded-full" />
-              <div className="space-y-1">
-                <p className="text-[14px] font-semibold text-emerald-600">
-                  {offer.longSubtitle}
-                </p>
-                <p className="text-[14px] font-medium text-emerald-700">
-                  {offer.highlightText}
-                </p>
-              </div>
-            </div>
-          </div>
-        ) : (
+       {offer.id === "system" ? (
+         <div className="mt-5 hidden sm:block">
+           <div className="relative pl-4">
+             <div className="absolute left-0 top-1 bottom-1 w-[3px] bg-emerald-500 rounded-full" />
+             <div className="space-y-1">
+               <p className="text-[14px] font-semibold text-emerald-600">
+                 {offer.longSubtitle}
+               </p>
+               <p className="text-[14px] font-medium text-emerald-700">
+                 {offer.highlightText}
+               </p>
+             </div>
+           </div>
+         </div>
+       ) : offer.id === "club" ? (
+         <div className="mt-5 hidden sm:block">
+           <div className="bg-[#E64B1E] text-white px-4 py-3 rounded-xl text-sm font-bold">
+             {offer.highlightText}
+           </div>
+         </div>
+       ): (
           <p
             className={[
               "mt-4 text-[14px] leading-relaxed whitespace-pre-line hidden sm:block",
@@ -855,43 +862,66 @@ export function OfferCard({
         </ul>
 
         {/* CTA buttons: always visible */}
-        <div className={["flex gap-2.5 sm:gap-3 mt-auto flex-col", isWide ? "lg:flex-row" : ""].join(" ")}>
-          {!hidePrimaryCta && (
-            <button
-              type="button"
-              onClick={() => onOpenLead(offer.id)}
-              className={[
-                "rounded-full font-sans font-bold flex items-center justify-center",
-                "text-[13px] sm:text-sm",
-                "leading-tight text-center",
-                "px-4 py-2.5 sm:py-3",
-                "min-h-[42px] sm:min-h-[48px]",
-                "whitespace-normal",
-                isWide ? "flex-1" : "w-full",
-                offer.id === "ambassador"
-                  ? "bg-white text-[#1a1a1a] hover:bg-white/90 shadow-md"
-                  : t.ctaPrimary,
-              ].join(" ")}
-            >
-              {offer.cta}
-            </button>
-          )}
-          <button
-            type="button"
-            onClick={() => onOpenMore(offer.id)}
-            className={[
-              "rounded-full font-sans font-semibold",
-              "text-[13px] sm:text-sm",
-              "leading-tight text-center",
-              "px-4 py-2.5 sm:py-3",
-              "min-h-[42px] sm:min-h-[48px]",
-              isWide ? "lg:flex-1 w-full" : "w-full",
-              t.ctaSecondary,
-            ].join(" ")}
-          >
-            Узнать больше
-          </button>
-        </div>
+     <div className={["flex gap-2.5 sm:gap-3 mt-auto flex-col", isWide ? "lg:flex-row" : ""].join(" ")}>
+       
+       {/* PRIMARY CTA */}
+       {(offer.id !== "club") && (
+         <button
+           type="button"
+           onClick={() => onOpenLead(offer.id)}
+           className={[
+             "rounded-full font-sans font-bold flex items-center justify-center",
+             "text-[13px] sm:text-sm",
+             "leading-tight text-center",
+             "px-4 py-2.5 sm:py-3",
+             "min-h-[42px] sm:min-h-[48px]",
+             "whitespace-normal",
+             isWide ? "flex-1" : "w-full",
+             offer.id === "ambassador"
+               ? "bg-white text-[#1a1a1a] hover:bg-white/90 shadow-md"
+               : t.ctaPrimary,
+           ].join(" ")}
+         >
+           {offer.cta}
+         </button>
+       )}
+     
+       {/* CLUB CTA */}
+       {offer.id === "club" && (
+         <button
+           type="button"
+           onClick={() => onOpenLead(offer.id)}
+           className={[
+             "rounded-full font-sans font-bold flex items-center justify-center",
+             "text-[13px] sm:text-sm",
+             "px-4 py-2.5 sm:py-3",
+             "min-h-[42px] sm:min-h-[48px]",
+             isWide ? "flex-1" : "w-full",
+             "bg-white text-[#1a1a1a] hover:bg-white/90 shadow-md",
+           ].join(" ")}
+         >
+           Подать заявку
+         </button>
+       )}
+     
+       {/* SECONDARY CTA */}
+       <button
+         type="button"
+         onClick={() => onOpenMore(offer.id)}
+         className={[
+           "rounded-full font-sans font-semibold",
+           "text-[13px] sm:text-sm",
+           "leading-tight text-center",
+           "px-4 py-2.5 sm:py-3",
+           "min-h-[42px] sm:min-h-[48px]",
+           isWide ? "lg:flex-1 w-full" : "w-full",
+           t.ctaSecondary,
+         ].join(" ")}
+       >
+         Узнать больше
+       </button>
+     
+     </div>
       </div>
     </motion.article>
   );
@@ -928,7 +958,7 @@ export default function Programs() {
         "Доступ к материалам на 30 дней",
         "20 видео уроков, сессия с Ицхаком",
       ],
-      cta: "Стать счастливым",
+      cta: "Купить сейчас",
       variant: "light",
       longDescription: "Разовый платёж. После оплаты вы получите доступ к материалам на 1 год.",
       badge: "Скидка 90%",
@@ -937,6 +967,7 @@ export default function Programs() {
       id: "club",
       payType: "subscription",
       title: "Клуб\n«Архитектура счастья»",
+      highlightText: "Доступ ко всем курсам Ицхака Пинтосевича",
       description: "Полный проект вашего внутреннего дома.",
       mobileDescription: "Полная система из 10 ключевых элементов.\nПолный проект вашего внутреннего дома.",
       price: "49 €",
@@ -947,7 +978,7 @@ export default function Programs() {
         "Еженедельные онлайн-встречи с Ицхаком",
         "Личный саппорт кураторов",
         "Сообщество осознанных людей",
-        "7 элементов системы «Архитектура счастья»",
+        "Каждый месяц розыгрыш ценных призов среди участников",
       ],
       cta: "Войти в клуб",
       variant: "yellow",
@@ -964,8 +995,7 @@ export default function Programs() {
         "Люди с подтвержденной инвалидностью",
         "Люди с тяжелым заболеванием",
         "Те, кто пережил потерю близкого",
-        "Люди в серьёзном психологическом кризисе",
-        "Другие социально уязвимые категории",
+        "Пенсионеры, матери одиночки",
       ],
       longDescription: "Как это работает:\n\n1. Заполните форму заявки\n2. Кратко опишите ситуацию\n3. Приложите подтверждающий документ\n\nПосле рассмотрения заявки вы получите ответ на указанные контакты.",
       cta: "Подать заявку",

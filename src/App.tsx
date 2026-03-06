@@ -27,7 +27,7 @@ const App = () => (
     <TooltipProvider>
       <Toaster />
       <Sonner />
-      <BrowserRouter>
+      <BrowserRouter basename={window.location.pathname.startsWith("/quiz") ? "/quiz" : "/"}>
         <Routes>
           <Route path="/" element={<Index />} />
        

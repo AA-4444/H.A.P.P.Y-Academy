@@ -1,16 +1,12 @@
 {
   "rewrites": [
     {
-      "source": "/quiz",
-      "destination": "https://compass-eta-rosy.vercel.app"
-    },
-    {
       "source": "/quiz/:path*",
       "destination": "https://compass-eta-rosy.vercel.app/:path*"
     },
     {
-      "source": "/(.*)",
-      "destination": "/"
+      "source": "/quiz",
+      "destination": "https://compass-eta-rosy.vercel.app"
     }
   ]
 }

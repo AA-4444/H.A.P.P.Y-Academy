@@ -727,6 +727,76 @@ const CARD_THEMES: Record<string, {
 
 const DEFAULT_THEME = CARD_THEMES.system;
 
+const GIFT_REVIEWS = [
+  {
+    text: "Я уже чувствую, что внутри стало спокойнее. Появилась надежда и ощущение опоры.",
+    author: "Анна",
+  },
+  {
+    text: "После курса стало легче дышать, ушёл хаос в голове и вернулась энергия.",
+    author: "Мария",
+  },
+  {
+    text: "Очень вовремя. Этот доступ помог мне снова почувствовать радость жизни.",
+    author: "Елена",
+  },
+];
+
+function GiftMiniReviews() {
+  const [index, setIndex] = useState(0);
+
+  useEffect(() => {
+    const id = window.setInterval(() => {
+      setIndex((prev) => (prev + 1) % GIFT_REVIEWS.length);
+    }, 3500);
+
+    return () => window.clearInterval(id);
+  }, []);
+
+  return (
+    <div className="mt-5 sm:mt-6">
+      <div className="text-[11px] font-bold uppercase tracking-[0.18em] text-black/40 mb-2">
+        Отзывы
+      </div>
+
+      <div className="relative overflow-hidden rounded-[20px] bg-[#FFF7E5] border border-[#E64B1E]/15 px-4 py-4 h-[150px] sm:h-[138px]">
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={index}
+            initial={{ opacity: 0, x: 16 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: -16 }}
+            transition={{ duration: 0.3 }}
+            className="absolute inset-0 px-4 py-4 flex flex-col justify-between"
+          >
+            <p className="text-[14px] leading-relaxed text-black/75">
+              “{GIFT_REVIEWS[index].text}”
+            </p>
+
+            <div className="mt-3 text-sm font-bold text-[#E64B1E]">
+              {GIFT_REVIEWS[index].author}
+            </div>
+          </motion.div>
+        </AnimatePresence>
+      </div>
+
+      <div className="mt-3 flex items-center justify-center gap-2">
+        {GIFT_REVIEWS.map((_, i) => (
+          <button
+            key={i}
+            type="button"
+            onClick={() => setIndex(i)}
+            className={[
+              "h-2.5 rounded-full transition-all",
+              i === index ? "w-6 bg-[#E64B1E]" : "w-2.5 bg-black/15 hover:bg-black/25",
+            ].join(" ")}
+            aria-label={`Перейти к отзыву ${i + 1}`}
+          />
+        ))}
+      </div>
+    </div>
+  );
+}
 export function OfferCard({
   offer,
   index,
@@ -894,27 +964,31 @@ export function OfferCard({
           ))}
         </ul>
         {offer.id === "gift" && (
-        <div className="mt-6 text-center">
-            <p className="text-sm text-black/60">
-              Сейчас на бесплатной основе проходят курс
-            </p>
-        
-            <div className="text-3xl font-black text-[#E64B1E]">
-              {freeUsers} человек
-            </div>
-        
-           <button
-             onClick={() =>
-               document
-                 .getElementById("ambassador")
-                 ?.scrollIntoView({ behavior: "smooth" })
-             }
-            className="mt-5 mb-3 w-full rounded-full bg-[#16A34A] text-white py-3 text-sm font-bold hover:bg-[#15803D] transition"
-           >
-             Стать спонсором
-           </button>
-          </div>
-        )}
+  <div className="mt-6">
+    <div className="text-center">
+      <p className="text-sm text-black/60">
+        Сейчас на бесплатной основе проходят курс
+      </p>
+
+      <div className="text-3xl font-black text-[#E64B1E]">
+        {freeUsers} человек
+      </div>
+    </div>
+
+    <GiftMiniReviews />
+
+    <button
+      onClick={() =>
+        document
+          .getElementById("ambassador")
+          ?.scrollIntoView({ behavior: "smooth" })
+      }
+      className="mt-5 mb-3 w-full rounded-full bg-[#16A34A] text-white py-3 text-sm font-bold hover:bg-[#15803D] transition"
+    >
+      Стать спонсором
+    </button>
+  </div>
+)}
 
         {/* CTA buttons: always visible */}
      <div className={["flex gap-2.5 sm:gap-3 mt-auto flex-col", isWide ? "lg:flex-row" : ""].join(" ")}>
@@ -1061,7 +1135,7 @@ export default function Programs() {
       title: "© Дарим тебе курс",
       description:
         "Мы верим, что система счастья должна быть доступна тем, кому сейчас особенно трудно.\nЕсли вы находитесь в сложной жизненной ситуации, вы можете подать заявку на возможность получения доступа к системе «Архитектура счастья» бесплатно.",
-      mobileDescription: "Если вы сейчас в тяжёлой жизненной ситуации - подайте заявку на бесплатный доступ.",
+      mobileDescription: "Если вы отвечаете таким критериям:",
       price: "0 €",
       bullets: [
         "Люди с подтвержденной инвалидностью",

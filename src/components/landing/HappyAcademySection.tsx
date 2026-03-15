@@ -150,57 +150,58 @@ const HappyAcademySection = () => {
 
 		  {/* content */}
 		  <div className="relative px-6 sm:px-10 lg:px-14 py-12 sm:py-14 lg:py-16">
-			<div className="grid lg:grid-cols-2 gap-10 lg:gap-14 items-start">
-			  {/* LEFT */}
-			  <div className="max-w-xl min-w-0">
-				<motion.h2
-				  initial={{ opacity: 0, y: 14, filter: "blur(10px)" }}
-				  whileInView={{ opacity: 1, y: 0, filter: "blur(0px)" }}
-				  viewport={{ once: true, amount: 0.45 }}
-				  transition={{ duration: 0.65, ease: "easeOut" }}
-				  className="font-sans font-extrabold tracking-tight text-[32px] leading-[1.08] sm:text-5xl md:text-6xl text-black break-normal hyphens-none"
-				>
-				  Почему большинство людей «иногда»
-				  <br className="sm:hidden" /> счастливы», но не устойчиво?
-				</motion.h2>
+		<div className="grid lg:grid-cols-2 gap-10 lg:gap-14 items-start">
+  {/* LEFT */}
+  <div className="max-w-xl min-w-0">
+    <motion.h2
+      initial={{ opacity: 0, y: 14, filter: "blur(10px)" }}
+      whileInView={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+      viewport={{ once: true, amount: 0.45 }}
+      transition={{ duration: 0.65, ease: "easeOut" }}
+      className="font-sans font-extrabold tracking-tight text-[32px] leading-[1.08] sm:text-5xl md:text-6xl text-black break-normal hyphens-none"
+    >
+      Почему люди теряют энергию
+      <br className="hidden sm:block" /> и радость жизни
+    </motion.h2>
 
-				<motion.p
-				  initial={{ opacity: 0, y: 10, filter: "blur(8px)" }}
-				  whileInView={{ opacity: 1, y: 0, filter: "blur(0px)" }}
-				  viewport={{ once: true, amount: 0.45 }}
-				  transition={{ duration: 0.55, ease: "easeOut", delay: 0.08 }}
-				  className="mt-6 font-sans text-black/65 text-sm sm:text-base leading-relaxed max-w-[52ch]"
-				>
-				  Потому что люди строят настроение, а не систему. Здесь начинается
-				  переход от реакции к созданию.
-				</motion.p>
-			  </div>
+    <motion.p
+      initial={{ opacity: 0, y: 10, filter: "blur(8px)" }}
+      whileInView={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+      viewport={{ once: true, amount: 0.45 }}
+      transition={{ duration: 0.55, ease: "easeOut", delay: 0.08 }}
+      className="mt-6 font-sans text-black/65 text-sm sm:text-base leading-relaxed max-w-[56ch]"
+    >
+      Постоянный стресс, перегрузка работой, потеря фокуса и отсутствие
+      времени на себя. В результате человек теряет энергию и перестаёт
+      чувствовать радость жизни.
+    </motion.p>
+  </div>
 
-			  {/* RIGHT */}
-			  <div className="max-w-2xl min-w-0 space-y-4">
-				<MotionChip>Счастье путают с эмоцией.</MotionChip>
-				<MotionChip>Но эмоции - это погода.</MotionChip>
-				<MotionChip>А счастье - архитектура состояния.</MotionChip>
-				<MotionChip>Без структуры любое благополучие временно.</MotionChip>
-				<MotionChip>Как «красивый ремонт без фундамента».</MotionChip>
+  {/* RIGHT */}
+  <div className="max-w-2xl min-w-0 space-y-4">
+    <MotionChip>постоянный стресс</MotionChip>
+    <MotionChip>перегрузка работой</MotionChip>
+    <MotionChip>потеря фокуса</MotionChip>
+    <MotionChip>отсутствие времени на себя</MotionChip>
+    <MotionChip>потеря энергии и радости жизни</MotionChip>
 
-				<div className="pt-3 grid gap-2 sm:gap-3">
-				  <MotionPoint>нет системы</MotionPoint>
-				  <MotionPoint>нет внутренней архитектуры</MotionPoint>
-				  <MotionPoint>жизнь в реакции, а не в создании</MotionPoint>
-				</div>
+    <div className="pt-3 grid gap-2 sm:gap-3">
+      <MotionPoint>нет внутреннего ресурса</MotionPoint>
+      <MotionPoint>сложно восстановиться и замедлиться</MotionPoint>
+      <MotionPoint>жизнь превращается в постоянную гонку</MotionPoint>
+    </div>
 
-				<div className="pt-6">
-				  <Button
-					size="lg"
-					onClick={goPrograms}
-					className="h-12 px-10 rounded-full bg-yellow-400 text-black hover:bg-yellow-300 font-semibold w-full sm:w-auto"
-				  >
-					Стать счастливым
-				  </Button>
-				</div>
-			  </div>
-			</div>
+    <div className="pt-6">
+      <Button
+        size="lg"
+        onClick={goPrograms}
+        className="h-12 px-10 rounded-full bg-yellow-400 text-black hover:bg-yellow-300 font-semibold w-full sm:w-auto"
+      >
+        О программе
+      </Button>
+    </div>
+  </div>
+</div>
 		  </div>
 		</motion.div>
 	  </div>
@@ -287,18 +288,23 @@ function FullScreenSlider({ slides }: { slides: ImgSet[] }) {
 	  {/* текст */}
 	  <div className="absolute inset-0 flex items-center justify-center px-6">
 		<div className="max-w-4xl text-center">
-		  <motion.h3
-			initial={{ opacity: 0, y: 20 }}
-			animate={{ opacity: 1, y: 0 }}
-			transition={{ duration: 0.8 }}
-			className="text-white font-extrabold text-3xl sm:text-4xl md:text-5xl lg:text-6xl leading-[1.15]"
-		  >
-			Если ты устал жить в тревоге и внутреннем хаосе -
-			<br className="hidden sm:block" />
-			вот система из 10 элементов,
-			<br className="hidden sm:block" />
-			которая возвращает устойчивость и ясность.
-		  </motion.h3>
+		 <motion.div
+  initial={{ opacity: 0, y: 20 }}
+  animate={{ opacity: 1, y: 0 }}
+  transition={{ duration: 0.8 }}
+  className="max-w-5xl text-center"
+>
+  <h3 className="text-white font-extrabold text-3xl sm:text-4xl md:text-5xl lg:text-6xl leading-[1.12]">
+    Почему люди теряют энергию
+    <br className="hidden sm:block" />и радость жизни
+  </h3>
+
+  <p className="mt-6 text-white/85 text-base sm:text-lg md:text-xl leading-relaxed max-w-3xl mx-auto">
+    Постоянный стресс - перегрузка работой - потеря фокуса - отсутствие
+    времени на себя. В результате человек теряет энергию и перестает
+    чувствовать радость жизни.
+  </p>
+</motion.div>
 		</div>
 	  </div>
 	</section>

@@ -1,10 +1,8 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef } from "react";
+import type { CSSProperties } from "react";
 import { motion } from "framer-motion";
-import { gsap } from "gsap";
 import { Button } from "@/components/ui/button";
 import { ArrowDown } from "lucide-react";
-
-
 
 // ---------- t1..t6 ----------
 import t1Avif from "@/assets/t1.jpg?w=320;640;960&format=avif&as=srcset";
@@ -52,15 +50,11 @@ import bg5Avif from "@/assets/bg6.png?w=320;640;960&format=avif&as=srcset";
 import bg5Webp from "@/assets/bg6.png?w=320;640;960&format=webp&as=srcset";
 import bg5Fallback from "@/assets/bg6.png?w=960&format=png&as=src";
 
-const TELEGRAM_BOT_URL = "https://t.me/happiness4people_bot";
-const HEADER_H = 88;
-const VIDEO_URL = "https://youtu.be/VZhCbEQUD-A?si=akJc1rkK_nx2LxL4";
-
 type ImgSet = {
-  key: string;      // уникальный ключ для алгоритма
-  avif: string;     // srcset avif
-  webp: string;     // srcset webp
-  fallback: string; // обычный src
+  key: string;
+  avif: string;
+  webp: string;
+  fallback: string;
 };
 
 function shuffle<T>(arr: T[]) {
@@ -72,10 +66,6 @@ function shuffle<T>(arr: T[]) {
   return a;
 }
 
-/**
- * ✅ Сохраняем твою логику минимальных повторов,
- * но работаем по keys, а потом возвращаем ImgSet.
- */
 function buildGridMinRepeats(images: ImgSet[], rows: number, cols: number) {
   const total = rows * cols;
   if (!images.length) return [];
@@ -90,7 +80,7 @@ function buildGridMinRepeats(images: ImgSet[], rows: number, cols: number) {
   const prevRow = new Array<string | null>(cols).fill(null);
 
   for (let r = 0; r < rows; r++) {
-    let pool = shuffle(uniqueKeys);
+    const pool = shuffle(uniqueKeys);
     const usedInRow = new Set<string>();
 
     for (let c = 0; c < cols; c++) {
@@ -127,7 +117,6 @@ function buildGridMinRepeats(images: ImgSet[], rows: number, cols: number) {
   return outKeys.map((k) => byKey.get(k)!).filter(Boolean);
 }
 
-
 function CoverPicture({
   sources,
   alt = "",
@@ -139,7 +128,7 @@ function CoverPicture({
   alt?: string;
   eager?: boolean;
   className?: string;
-  imgStyle?: React.CSSProperties;
+  imgStyle?: CSSProperties;
 }) {
   return (
     <picture className={className}>
@@ -165,77 +154,8 @@ function CoverPicture({
   );
 }
 
-
-function SplitText({
-  text,
-  className,
-  baseDelay = 0,
-  step = 0.03,
-}: {
-  text: string;
-  className?: string;
-  baseDelay?: number;
-  step?: number;
-}) {
-  const [inView, setInView] = useState(false);
-  const tokens = useMemo(() => (text ? text.split(/(\s+)/) : []), [text]);
-
-  useEffect(() => {
-    const id = window.setTimeout(() => setInView(true), 0);
-    return () => window.clearTimeout(id);
-  }, []);
-
-  let charIndex = 0;
-
-  return (
-    <span
-      className={["st-splitted", inView ? "st-inview" : "", className ?? ""].join(
-        " "
-      )}
-      aria-label={text}
-    >
-      {tokens.map((tok, ti) => {
-        const isSpace = /^\s+$/.test(tok);
-
-        if (isSpace) {
-          return (
-            <span key={`sp-${ti}`} className="st-space">
-              {tok.replace(/ /g, "\u00A0")}
-            </span>
-          );
-        }
-
-        const chars = Array.from(tok);
-
-        return (
-          <span key={`w-${ti}`} className="st-word">
-            {chars.map((ch, i) => {
-              const delay = baseDelay + charIndex * step;
-              charIndex += 1;
-
-              const isDot = ch === ".";
-              const charClass = ["st-char", isDot ? "text-accent" : ""].join(" ");
-
-              return (
-                <span key={`${ch}-${ti}-${i}`} className="st-charWrap">
-                  <span className={charClass} style={{ transitionDelay: `${delay}s` }}>
-                    {ch}
-                  </span>
-                </span>
-              );
-            })}
-          </span>
-        );
-      })}
-    </span>
-  );
-}
-
 function GridMotionBg({ images }: { images: ImgSet[] }) {
   const rowRefs = useRef<Array<HTMLDivElement | null>>([]);
-  const mouseXRef = useRef<number>(
-    typeof window !== "undefined" ? window.innerWidth / 2 : 0
-  );
 
   const isMobile =
     typeof window !== "undefined" &&
@@ -250,53 +170,53 @@ function GridMotionBg({ images }: { images: ImgSet[] }) {
     cols,
   ]);
 
-useEffect(() => {
-    let raf: number;
+  useEffect(() => {
+    let raf = 0;
     let scrolling = false;
-    let scrollTimeout: any;
-  
+    let scrollTimeout: ReturnType<typeof setTimeout> | null = null;
+
     const animateMobile = () => {
       if (scrolling) {
         raf = requestAnimationFrame(animateMobile);
         return;
       }
-  
+
       const w = window.innerWidth || 1;
       const t = performance.now() / 1000;
       const wave = 0.5 + 0.5 * Math.sin(t * 0.5);
       const xForCalc = wave * w;
       const maxMoveAmount = 180;
-  
+
       rowRefs.current.forEach((row, index) => {
         if (!row) return;
         const direction = index % 2 === 0 ? 1 : -1;
         const moveAmount =
-          ((xForCalc / w) * maxMoveAmount - maxMoveAmount / 2) *
-          direction;
-  
+          ((xForCalc / w) * maxMoveAmount - maxMoveAmount / 2) * direction;
+
         row.style.transform = `translateX(${moveAmount}px)`;
       });
-  
+
       raf = requestAnimationFrame(animateMobile);
     };
-  
+
     const handleScroll = () => {
       scrolling = true;
-      clearTimeout(scrollTimeout);
-  
+      if (scrollTimeout) clearTimeout(scrollTimeout);
+
       scrollTimeout = setTimeout(() => {
         scrolling = false;
-      }, 120); // 120ms после остановки скролла
+      }, 120);
     };
-  
+
     if (isMobile) {
       window.addEventListener("scroll", handleScroll, { passive: true });
       raf = requestAnimationFrame(animateMobile);
     }
-  
+
     return () => {
       cancelAnimationFrame(raf);
       window.removeEventListener("scroll", handleScroll);
+      if (scrollTimeout) clearTimeout(scrollTimeout);
     };
   }, [isMobile]);
 
@@ -327,7 +247,9 @@ useEffect(() => {
           {[...Array(rows)].map((_, rowIndex) => (
             <div
               key={rowIndex}
-              ref={(el) => (rowRefs.current[rowIndex] = el)}
+              ref={(el) => {
+                rowRefs.current[rowIndex] = el;
+              }}
               style={{
                 display: "grid",
                 gridTemplateColumns: `repeat(${cols}, 1fr)`,
@@ -338,8 +260,6 @@ useEffect(() => {
               {[...Array(cols)].map((_, itemIndex) => {
                 const idx = rowIndex * cols + itemIndex;
                 const img = items[idx];
-
-                // ✅ Первые несколько делаем eager (чтобы герой не был пустым)
                 const eager = idx < (isMobile ? 4 : 8);
 
                 return (
@@ -364,7 +284,6 @@ useEffect(() => {
                           filter: "saturate(1.05) contrast(1.05)",
                         }}
                       />
-
                       <div
                         style={{
                           position: "absolute",
@@ -399,7 +318,7 @@ function ScrollBadge() {
   const text = "узнать подробнее • узнать подробнее • ";
 
   return (
-    <div className="relative h-[112px] w-[112px] sm:h-[160px] sm:w-[160px]">
+    <div className="relative h-[112px] w-[112px] sm:h-[140px] sm:w-[140px] lg:h-[150px] lg:w-[150px]">
       <motion.div
         animate={{ rotate: 360 }}
         transition={{ duration: 16, repeat: Infinity, ease: "linear" }}
@@ -419,59 +338,9 @@ function ScrollBadge() {
       </motion.div>
 
       <div className="absolute inset-0 flex items-center justify-center">
-        <div className="h-10 w-10 sm:h-12 sm:w-12 rounded-full bg-white/15 backdrop-blur-sm border border-white/25 flex items-center justify-center">
-          <ArrowDown className="h-5 w-5 sm:h-6 sm:w-6 text-white" />
+        <div className="h-10 w-10 sm:h-11 sm:w-11 lg:h-12 lg:w-12 rounded-full bg-white/15 backdrop-blur-sm border border-white/25 flex items-center justify-center">
+          <ArrowDown className="h-5 w-5 sm:h-5 sm:w-5 lg:h-6 lg:w-6 text-white" />
         </div>
-      </div>
-    </div>
-  );
-}
-
-/** ✅ ПК: аккуратные чипы в "стекле" (не огромные панели) */
-function DesktopPainChips({
-  title,
-  items,
-  align,
-}: {
-  title: string;
-  items: string[];
-  align: "left" | "right";
-}) {
-  const right = align === "right";
-
-  return (
-    <div
-      className={[
-        "w-[320px] lg:w-[360px]",
-        "rounded-[22px]",
-        "bg-black/18 backdrop-blur-md border border-white/14",
-        "shadow-[0_18px_45px_rgba(0,0,0,0.22)]",
-        "px-4 lg:px-5 py-4 lg:py-5",
-      ].join(" ")}
-      style={{ textAlign: right ? "right" : "left" }}
-    >
-      <div className="text-white/55 uppercase tracking-[0.22em] text-[11px] font-semibold">
-        {title}
-      </div>
-
-      <div className="mt-3 flex flex-col gap-2">
-        {items.map((t) => (
-          <div
-            key={t}
-            className={[
-              "rounded-full",
-              "px-4 py-2.5",
-              "flex items-center gap-3",
-              right ? "justify-end" : "justify-start",
-            ].join(" ")}
-          >
-            {!right ? <span className="h-2 w-2 rounded-full bg-yellow-400" /> : null}
-            <span className="text-yellow-300 font-extrabold tracking-tight text-[16px] lg:text-[17px] leading-none">
-              {t}
-            </span>
-            {right ? <span className="h-2 w-2 rounded-full bg-yellow-400" /> : null}
-          </div>
-        ))}
       </div>
     </div>
   );
@@ -484,126 +353,83 @@ function OrangeHeroBlock() {
     else window.location.hash = "#programs";
   };
 
-  const painLeftMobile = ["Тревога", "Хаос в голове", "Выгорание"];
-  const painRightMobile = [
-    "Проблемы с деньгами",
-    "Сложные отношения",
-    "Стресс и здоровье",
-    "Нет ясности",
-  ];
-
-  const painLeftDesktop = [
-    "Тревога",
-    "Хаос в голове",
-    "Выгорание",
-    "Прокрастинация",
-    "Внутренний критик",
-    "Постоянные сомнения",
-  ];
-  const painRightDesktop = [
-    "Проблемы с деньгами",
-    "Сложные отношения",
-    "Стресс и здоровье",
-    "Нет ясности",
-    "Нет энергии",
-    "Нет сил действовать",
-  ];
-
   return (
-    <div className="relative z-10 h-full w-full">
-      <div
-        className={[
-          "h-full flex items-center justify-center",
-          "px-3 sm:px-6 lg:px-8 xl:px-10",
-          "pt-[calc(0.25rem+88px)] pb-6",
-          "sm:pt-[calc(0.75rem+88px)] sm:pb-10",
-          "lg:pt-[calc(0.75rem+88px)] lg:pb-10",
-        ].join(" ")}
-      >
+    <div className="relative z-10 w-full">
+     <div
+  className={[
+    "flex items-start justify-center",
+    "px-3 sm:px-6 lg:px-8 xl:px-10",
+    "pt-[calc(1.25rem+88px)] pb-6",
+    "sm:pt-[calc(1.75rem+88px)] sm:pb-8",
+    "lg:pt-[calc(2.5rem+88px)] lg:pb-10",
+  ].join(" ")}
+>
         <div className="w-full">
           <div className="mx-auto w-full max-w-[1280px]">
             <div className="relative rounded-[26px] sm:rounded-[36px] lg:rounded-[44px] bg-white/10 backdrop-blur-md border border-white/20 overflow-hidden shadow-2xl">
-              <div className="px-5 sm:px-10 lg:px-12 py-10 sm:pt-14 sm:pb-24 lg:pt-14 lg:pb-28">
+              <div className="px-5 sm:px-10 lg:px-12 py-10 sm:pt-12 sm:pb-16 lg:pt-12 lg:pb-14">
                 <div className="mx-auto max-w-6xl text-center">
-                  <motion.h2
+                  <motion.h1
                     initial={{ opacity: 0, y: 18 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.6 }}
-                    className="font-sans font-extrabold tracking-tight text-white text-3xl sm:text-5xl md:text-6xl lg:text-7xl leading-[1.05]"
+                    className="font-sans font-extrabold tracking-tight text-white text-3xl sm:text-5xl md:text-6xl lg:text-[72px] leading-[1.05]"
                   >
-                    <span className="block">
-                      Архитектура счастья
+                    <span className="block">Энергия, успех и счастливые</span>
+
+                    <span className="block mt-1 lg:mt-2 lg:whitespace-nowrap">
+                      отношения - это система.
                     </span>
-                  
-                    <span className="block mt-1 lg:mt-2">
-                      HAPPI10
+
+                    <span className="block mt-1 lg:mt-2 text-yellow-300">
+                      Освойте её за 10 дней.
                     </span>
-                  </motion.h2>
+                  </motion.h1>
 
                   <motion.p
                     initial={{ opacity: 0, y: 18 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.6, delay: 0.08 }}
-                    className="mt-4 sm:mt-8 text-white font-sans text-[14px] sm:text-lg md:text-xl leading-relaxed max-w-5xl mx-auto"
+                    className="mt-4 sm:mt-7 lg:mt-8 text-white font-sans text-[15px] sm:text-lg md:text-xl leading-relaxed max-w-4xl mx-auto"
                   >
-                   20 видеоматериалов и уроков, знания которые Ицхак собирал более 20-ти лет. Для того чтобы каждый мог внедрить в свою жизнь простые 10 элементов, которые гарантируют устойчивое состояние счастья для каждого!
+                    Практический онлайн-курс Ицхака Пинтосевича, который помогает
+                    вернуть энергию, добиться успеха и построить счастливые
+                    отношения.
                   </motion.p>
 
-                  <div className="mt-7 sm:mt-10 flex justify-center">
-                    <div className="flex flex-col items-center">
+                  <div className="mt-7 sm:mt-9 lg:mt-10 flex justify-center">
+                    <div className="flex flex-col sm:flex-row items-center gap-4">
                       <Button
                         size="xl"
                         onClick={goPrograms}
-                        className="rounded-full px-10 bg-yellow-400 text-black hover:bg-yellow-300 font-semibold"
+                        className="rounded-full px-10 min-w-[204px] bg-yellow-400 text-black hover:bg-yellow-300 font-semibold"
                       >
                         О программе
                       </Button>
-                  
-                      <div className="mt-2 text-[#E64B1E] text-sm font-semibold">
-                        Переходи
-                      </div>
+
+                      <Button
+                        size="xl"
+                        asChild
+                        className="rounded-full px-10 min-w-[204px] bg-white text-black hover:bg-white/90 font-semibold"
+                      >
+                        <a
+                          href="https://www.happi10.com/quiz"
+                          target="_blank"
+                          rel="noopener noreferrer"
+                        >
+                          Пройти тест
+                        </a>
+                      </Button>
                     </div>
                   </div>
 
-                  <div className="mt-7 sm:mt-12 flex justify-center">
+                  <div className="mt-6 sm:mt-8 flex justify-center">
                     <ScrollBadge />
                   </div>
-
-                  <div className="sm:hidden pointer-events-none mt-6">
-                    <div className="flex flex-wrap justify-center gap-x-6 gap-y-2">
-                      {[...painLeftMobile, ...painRightMobile].map((t) => (
-                        <div
-                          key={t}
-                          className="text-yellow-300/95 font-semibold text-[12px] leading-tight drop-shadow"
-                        >
-                          {t}
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <div className="hidden sm:block pointer-events-none">
-                <div className="absolute left-8 lg:left-10 bottom-8 lg:bottom-10">
-                  <DesktopPainChips
-                    title="что мешает жить"
-                    items={painLeftDesktop}
-                    align="left"
-                  />
-                </div>
-
-                <div className="absolute right-8 lg:right-10 bottom-8 lg:bottom-10">
-                  <DesktopPainChips
-                    title="что забирает силы"
-                    items={painRightDesktop}
-                    align="right"
-                  />
                 </div>
               </div>
             </div>
           </div>
-          {/* /max-width wrapper */}
         </div>
       </div>
     </div>
@@ -619,7 +445,6 @@ const Hero = () => {
       { key: "t4", avif: t4Avif, webp: t4Webp, fallback: t4Fallback },
       { key: "t5", avif: t5Avif, webp: t5Webp, fallback: t5Fallback },
       { key: "t6", avif: t6Avif, webp: t6Webp, fallback: t6Fallback },
-
       { key: "bg1", avif: bg1Avif, webp: bg1Webp, fallback: bg1Fallback },
       { key: "bg2", avif: bg2Avif, webp: bg2Webp, fallback: bg2Fallback },
       { key: "bg3", avif: bg3Avif, webp: bg3Webp, fallback: bg3Fallback },
@@ -629,12 +454,10 @@ const Hero = () => {
     []
   );
 
- 
-
   return (
     <section
       className="relative w-screen overflow-hidden"
-      style={{ height: "100svh" }}
+      style={{ minHeight: "100svh" }}
     >
       <GridMotionBg images={bgImages} />
 

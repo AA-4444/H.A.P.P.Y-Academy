@@ -1,11 +1,11 @@
 import { motion, useInView, useScroll, useTransform } from "framer-motion";
 import { useRef } from "react";
-import { ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import heroImage from "@/assets/cta.png";
 import { useNavigate } from "react-router-dom";
 
 const TELEGRAM_BOT_URL = "https://t.me/happiness4people_bot";
+const QUIZ_URL = "https://www.happi10.com/quiz";
 const VIDEO_URL = "";
 const HEADER_H = 0;
 
@@ -30,19 +30,13 @@ export default function CTA() {
   const scale = useTransform(scrollYProgress, [0, 0.5], [0.8, 1]);
   const opacity = useTransform(scrollYProgress, [0, 0.3], [0, 1]);
 
-  // ✅ Открыть модал "club" (49€) "Узнать больше" прямо из CTA
-  // Programs читает: ?details=1&offerId=club
   const openClubDetails = () => {
     navigate(
       { pathname: "/", search: "?details=1&offerId=club", hash: "#programs" },
       { replace: false }
     );
 
-    // ✅ ВАЖНО: navigate/pushState НЕ триггерит popstate.
-    // А Programs у тебя слушает popstate -> поэтому вручную триггерим событие.
     window.dispatchEvent(new PopStateEvent("popstate"));
-
-    // На всякий случай докрутим до секции (в SPA hash иногда не идеально)
     window.requestAnimationFrame(() => scrollToId("programs"));
   };
 
@@ -91,15 +85,10 @@ export default function CTA() {
                             "max-[360px]:text-[28px]",
                           ].join(" ")}
                         >
-                          Дом счастья не строят «когда-нибудь»
+                          Сделайте первый шаг к счастливой жизни
                         </h2>
 
-                        <p className="mt-5 sm:mt-6 font-sans text-white/80 text-[14px] sm:text-lg leading-relaxed">
-                          Его строят шаг за шагом.
-                        </p>
-
                         <div className="mt-8 sm:mt-10 flex flex-col sm:flex-row items-center justify-center gap-4">
-                          {/* ✅ теперь открывает модал "club" */}
                           <Button
                             size="xl"
                             onClick={openClubDetails}
@@ -110,11 +99,24 @@ export default function CTA() {
 
                           <Button
                             size="xl"
+                            asChild
+                            className="w-full sm:w-auto max-w-[320px] sm:max-w-none px-8 sm:px-12 rounded-full bg-[#F0623C] text-white hover:bg-[#e45733] font-semibold"
+                          >
+                            <a
+                              href={QUIZ_URL}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                            >
+                              Пройти тест
+                            </a>
+                          </Button>
+
+                          <Button
+                            size="xl"
                             onClick={goPrograms}
                             className="w-full sm:w-auto max-w-[320px] sm:max-w-none px-8 sm:px-12 rounded-full bg-red-600 text-white hover:bg-red-700 font-semibold"
                           >
                             Стать счастливым
-                            <ArrowRight className="ml-2 h-5 w-5" />
                           </Button>
                         </div>
                       </motion.div>

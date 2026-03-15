@@ -6,6 +6,7 @@ import logo from "@/assets/newlogo.svg";
 import { useNavigate, useLocation } from "react-router-dom";
 
 const TELEGRAM_BOT_URL = "https://t.me/TataZakzheva";
+const QUIZ_URL = "https://www.happi10.com/quiz";
 
 const navItems = [
   { label: "Ицхак Пинтосевич", href: "#about" },
@@ -30,7 +31,6 @@ const Header = () => {
   const navigate = useNavigate();
   const location = useLocation();
 
-  // 🔥 Логика логотипа
   const handleLogoClick = (e: React.MouseEvent) => {
     e.preventDefault();
 
@@ -81,10 +81,7 @@ const Header = () => {
           bg-transparent md:bg-[#F6F1E7]
         "
       >
-        {/* TOP BAR */}
         <div className="mx-auto max-w-7xl px-4 md:px-6 h-16 md:h-20 flex items-center justify-between gap-3 min-w-0">
-          
-          {/* Logo */}
           <motion.button
             onClick={handleLogoClick}
             initial={{ opacity: 0 }}
@@ -107,7 +104,6 @@ const Header = () => {
             />
           </motion.button>
 
-          {/* Desktop Nav */}
           <nav className="hidden md:flex items-center gap-8 shrink-0">
             {navItems.map((item, i) => (
               <motion.a
@@ -123,13 +119,20 @@ const Header = () => {
             ))}
           </nav>
 
-          {/* Desktop button */}
           <motion.div
             initial={{ opacity: 0, x: 18 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.45 }}
-            className="hidden md:flex items-center shrink-0"
+            className="hidden md:flex items-center gap-3 shrink-0"
           >
+            <Button
+              size="default"
+              onClick={() => window.open(QUIZ_URL, "_blank")}
+              className="bg-orange-500 text-white hover:bg-orange-400 font-semibold rounded-full px-6 whitespace-nowrap"
+            >
+              Пройти тест
+            </Button>
+
             <Button
               size="default"
               onClick={() => window.open(TELEGRAM_BOT_URL, "_blank")}
@@ -139,7 +142,6 @@ const Header = () => {
             </Button>
           </motion.div>
 
-          {/* MOBILE MENU BUTTON */}
           <motion.button
             layoutId="mobileMenu"
             onClick={() => setIsMobileMenuOpen(true)}
@@ -159,11 +161,9 @@ const Header = () => {
           </motion.button>
         </div>
 
-        {/* MOBILE MENU */}
         <AnimatePresence initial={false}>
           {isMobileMenuOpen && (
             <>
-              {/* Overlay */}
               <motion.div
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
@@ -173,7 +173,6 @@ const Header = () => {
                 onClick={() => setIsMobileMenuOpen(false)}
               />
 
-              {/* Panel */}
               <motion.div
                 layoutId="mobileMenu"
                 transition={{ type: "spring", stiffness: 520, damping: 38 }}
@@ -212,7 +211,15 @@ const Header = () => {
                       </a>
                     ))}
 
-                    <div className="pt-3">
+                    <div className="pt-3 flex flex-col gap-3">
+                      <Button
+                        size="lg"
+                        className="w-full bg-orange-500 text-white hover:bg-orange-400 font-semibold rounded-full"
+                        onClick={() => window.open(QUIZ_URL, "_blank")}
+                      >
+                        Пройти тест
+                      </Button>
+
                       <Button
                         size="lg"
                         className="w-full bg-yellow-400 text-black hover:bg-yellow-300 font-semibold rounded-full"

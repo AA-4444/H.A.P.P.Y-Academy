@@ -14,14 +14,16 @@ import ParticipationFormat from "@/components/landing/ParticipationFormat";
 import QuickReviews from "@/components/landing/QuickReviews";
 import MillionImpactSection from "@/components/landing/MillionImpactSection";
 import ArchitectureSection from "@/components/landing/ArchitectureSection";
+import QuizSection from "@/components/landing/QuizSection";
 
 const Index = () => {
   return (
     <main>
       <Header />
       <Hero />
+      <QuizSection />
       <HappyAcademySection />
-        <ArchitectureSection />
+      <ArchitectureSection />
           
      {/*  <TechnologySection /> */}
         <About />

@@ -731,14 +731,17 @@ const GIFT_REVIEWS = [
   {
     text: "Я уже чувствую, что внутри стало спокойнее. Появилась надежда и ощущение опоры.",
     author: "Анна",
+    avatar: "https://randomuser.me/api/portraits/women/44.jpg",
   },
   {
     text: "После курса стало легче дышать, ушёл хаос в голове и вернулась энергия.",
     author: "Мария",
+    avatar: "https://randomuser.me/api/portraits/women/68.jpg",
   },
   {
     text: "Очень вовремя. Этот доступ помог мне снова почувствовать радость жизни.",
     author: "Елена",
+    avatar: "https://randomuser.me/api/portraits/women/65.jpg",
   },
 ];
 
@@ -773,8 +776,17 @@ function GiftMiniReviews() {
               “{GIFT_REVIEWS[index].text}”
             </p>
 
-            <div className="mt-3 text-sm font-bold text-[#E64B1E]">
-              {GIFT_REVIEWS[index].author}
+            <div className="mt-3 flex items-center gap-3">
+              <img
+                src={GIFT_REVIEWS[index].avatar}
+                alt={GIFT_REVIEWS[index].author}
+                className="h-10 w-10 rounded-full object-cover border border-[#E64B1E]/15 shrink-0"
+                loading="lazy"
+              />
+
+              <div className="text-sm font-bold text-[#E64B1E]">
+                {GIFT_REVIEWS[index].author}
+              </div>
             </div>
           </motion.div>
         </AnimatePresence>

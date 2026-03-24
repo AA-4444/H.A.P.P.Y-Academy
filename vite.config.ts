@@ -3,8 +3,6 @@ import react from "@vitejs/plugin-react-swc";
 import path from "path";
 import { imagetools } from "vite-imagetools";
 
-
-// https://vitejs.dev/config/
 export default defineConfig(() => ({
   server: {
     host: "::",
@@ -13,12 +11,18 @@ export default defineConfig(() => ({
       overlay: false,
     },
   },
-  plugins: [
-    react(),imagetools()
-  ],
+  plugins: [react(), imagetools()],
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),
+    },
+  },
+  build: {
+    rollupOptions: {
+      input: {
+        main: path.resolve(__dirname, "index.html"),
+        ua: path.resolve(__dirname, "ua/index.html"),
+      },
     },
   },
 }));

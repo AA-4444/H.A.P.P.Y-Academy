@@ -1,0 +1,471 @@
+import { useEffect, useMemo, useRef, useState } from "react";
+import { animate, motion, useMotionValue } from "framer-motion";
+import { ArrowRight } from "lucide-react";
+import {
+  ComposableMap,
+  Geographies,
+  Geography,
+  Marker,
+  ZoomableGroup,
+} from "react-simple-maps";
+
+const SECTION_BG = "#F6F1E7";
+const ACCENT = "#E64B1E";
+const GEO_URL = "https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json";
+const formatInt = (n: number) => n.toLocaleString("uk-UA");
+
+export default function MillionImpactSection() {
+  const GOAL = 40_000;
+  const CURRENT = 40_000;
+  const PERCENT = 100;
+
+  const sectionRef = useRef<HTMLElement | null>(null);
+  const hasRunRef = useRef(false);
+
+  const mv = useMotionValue(0);
+  const [display, setDisplay] = useState(0);
+
+  useEffect(() => {
+    const unsub = mv.on("change", (v) => setDisplay(Math.round(v)));
+    return () => unsub();
+  }, [mv]);
+
+  const reveal = useMotionValue(0);
+
+  useEffect(() => {
+    const el = sectionRef.current;
+    if (!el) return;
+
+    const io = new IntersectionObserver(
+      (entries) => {
+        const e = entries[0];
+        if (!e?.isIntersecting) return;
+        if (hasRunRef.current) return;
+        hasRunRef.current = true;
+
+        mv.set(0);
+        reveal.set(0);
+
+        animate(mv, CURRENT, { duration: 1.1, ease: [0.22, 1, 0.36, 1] });
+        animate(reveal, 1, { duration: 1.0, ease: [0.22, 1, 0.36, 1] });
+      },
+      { threshold: 0.4 }
+    );
+
+    io.observe(el);
+    return () => io.disconnect();
+  }, [mv, reveal]);
+
+  const subtitle = useMemo(
+    () =>
+      "Методика Іцхака Пінтосевича допомагає людям у всьому світі повернути енергію, ясність і радість життя.",
+    []
+  );
+
+  const points = useMemo(() => {
+    const base: Array<[number, number]> = [
+      [37.6173, 55.7558],
+      [30.5234, 50.4501],
+      [19.0402, 47.4979],
+      [14.4378, 50.0755],
+      [2.3522, 48.8566],
+      [13.405, 52.52],
+      [-0.1276, 51.5072],
+      [12.4964, 41.9028],
+      [23.7275, 37.9838],
+      [28.9784, 41.0082],
+
+      [31.2357, 30.0444],
+      [46.6753, 24.7136],
+      [55.2708, 25.2048],
+      [51.389, 35.6892],
+
+      [3.3792, 6.5244],
+      [36.8219, -1.2921],
+      [18.4241, -33.9249],
+      [28.0473, -26.2041],
+
+      [72.8777, 19.076],
+      [77.209, 28.6139],
+      [116.4074, 39.9042],
+      [121.4737, 31.2304],
+      [139.6917, 35.6895],
+      [126.978, 37.5665],
+      [100.5018, 13.7563],
+      [106.865, -6.1751],
+      [103.8198, 1.3521],
+      [121.774, 12.8797],
+
+      [151.2093, -33.8688],
+      [144.9631, -37.8136],
+      [174.7633, -36.8485],
+
+      [-99.1332, 19.4326],
+      [-46.6333, -23.5505],
+      [-58.3816, -34.6037],
+      [-70.6693, -33.4489],
+      [-79.3832, 43.6532],
+    ];
+
+    const usa: Array<[number, number]> = [
+      [-122.4194, 37.7749],
+      [-118.2437, 34.0522],
+      [-122.3321, 47.6062],
+      [-121.8863, 37.3382],
+      [-117.1611, 32.7157],
+      [-112.074, 33.4484],
+      [-104.9903, 39.7392],
+      [-115.1398, 36.1699],
+
+      [-97.7431, 30.2672],
+      [-96.797, 32.7767],
+      [-95.3698, 29.7604],
+      [-87.6298, 41.8781],
+      [-93.265, 44.9778],
+
+      [-74.006, 40.7128],
+      [-71.0589, 42.3601],
+      [-77.0369, 38.9072],
+      [-75.1652, 39.9526],
+      [-80.1918, 25.7617],
+      [-84.388, 33.749],
+      [-81.3792, 28.5383],
+      [-86.7816, 36.1627],
+      [-90.0489, 35.1495],
+    ];
+
+    const israel: Array<[number, number]> = [
+      [34.7818, 32.0853],
+      [35.2137, 31.7683],
+      [34.9885, 32.794],
+      [34.7999, 31.2518],
+      [34.8333, 32.1667],
+      [34.8583, 32.0833],
+      [35.095, 31.0461],
+    ];
+
+    const all = [...base, ...usa, ...israel];
+
+    return all.map((c, idx) => ({
+      id: `p-${idx}`,
+      coordinates: c as [number, number],
+    }));
+  }, []);
+
+  const goPrograms = () => {
+    const el = document.getElementById("programs");
+    if (!el) return;
+    el.scrollIntoView({ behavior: "smooth", block: "start" });
+  };
+
+  return (
+    <section
+      ref={sectionRef as any}
+      id="million-impact"
+      className="relative"
+      style={{ backgroundColor: SECTION_BG }}
+    >
+      <div className="absolute inset-0 z-0 hidden sm:block">
+        <WorldMapCoverBackground
+          geoUrl={GEO_URL}
+          points={points}
+          accent={ACCENT}
+          reveal={reveal}
+          mode="cover"
+          isMobile={false}
+        />
+        <div
+          className="absolute inset-0"
+          style={{
+            background:
+              "linear-gradient(to bottom, rgba(243,238,230,0.78) 0%, rgba(243,238,230,0.58) 42%, rgba(243,238,230,0.46) 100%)",
+          }}
+        />
+      </div>
+
+      <div className="relative z-10 sm:hidden">
+        <div className="mx-auto max-w-7xl px-6 pt-12">
+          <div className="text-center max-w-5xl mx-auto">
+            <div className="text-[11px] tracking-[0.22em] uppercase text-black/45">
+              СОЦІАЛЬНИЙ ДОКАЗ
+            </div>
+
+            <h2 className="mt-4 font-sans font-extrabold tracking-tight text-4xl text-black leading-[1.05]">
+              Цей курс уже пройшли понад{" "}
+              <MarkerHighlight>40 000 людей</MarkerHighlight>
+            </h2>
+
+            <p className="mt-4 font-sans text-black/70 text-base leading-relaxed">
+              {subtitle}
+            </p>
+
+            <div className="mt-4 space-y-2 font-sans text-black/75 text-base leading-relaxed">
+              <div>40 000+ учасників</div>
+              <div>30+ країн</div>
+              <div>20 років досвіду автора</div>
+            </div>
+          </div>
+
+          <div className="mt-8 grid grid-cols-1 gap-4">
+            <div>
+              <div className="mt-2 font-sans font-extrabold tracking-tight text-2xl text-orange-500">
+                Люди по всьому світу
+              </div>
+              <div className="mt-2 font-sans text-black/60 text-sm">
+                30+ країн · 20 років досвіду автора
+              </div>
+            </div>
+
+            <div>
+              <div
+                className="font-sans font-extrabold tracking-tight text-4xl text-orange-500 tabular-nums"
+                style={{ fontVariantNumeric: "tabular-nums" }}
+              >
+                40 000+
+              </div>
+              <div className="mt-1 font-sans text-black/55 text-xs">
+                учасників курсу
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="mt-6 px-2">
+          <div
+            className="w-full"
+            style={{
+              height: "min(46svh, 360px)",
+            }}
+          >
+            <WorldMapCoverBackground
+              geoUrl={GEO_URL}
+              points={points}
+              accent={ACCENT}
+              reveal={reveal}
+              mode="contain"
+              isMobile={true}
+            />
+          </div>
+        </div>
+
+        <div className="h-6" />
+      </div>
+
+      <div className="relative z-10 hidden sm:block">
+        <div className="mx-auto max-w-7xl px-6 sm:px-8 lg:px-12 pt-14 sm:pt-16">
+          <div className="text-center max-w-5xl mx-auto">
+            <div className="text-[11px] tracking-[0.22em] uppercase text-black/45">
+              СОЦІАЛЬНИЙ ДОКАЗ
+            </div>
+
+            <h2 className="mt-4 font-sans font-extrabold tracking-tight text-4xl sm:text-5xl lg:text-6xl text-black leading-[1.05]">
+              Цей курс уже пройшли понад{" "}
+              <MarkerHighlight>40 000 людей</MarkerHighlight>
+            </h2>
+
+            <p className="mt-5 font-sans text-black/70 text-base sm:text-lg leading-relaxed">
+              {subtitle}
+            </p>
+
+            <div className="mt-5 grid grid-cols-1 sm:grid-cols-3 gap-2 sm:gap-4 max-w-4xl mx-auto">
+              <div className="font-sans font-semibold text-black/80 text-base sm:text-lg">
+                40 000+ учасників
+              </div>
+              <div className="font-sans font-semibold text-black/80 text-base sm:text-lg">
+                30+ країн
+              </div>
+              <div className="font-sans font-semibold text-black/80 text-base sm:text-lg">
+                20 років досвіду автора
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="mx-auto max-w-7xl px-6 sm:px-8 lg:px-12 mt-10 sm:mt-12">
+          <div className="grid grid-cols-1 sm:grid-cols-[1fr_auto] gap-4 sm:gap-6 items-start">
+            <div>
+              <div className="mt-2 font-sans font-extrabold tracking-tight text-2xl sm:text-3xl text-orange-500">
+                Методика працює по всьому світу
+              </div>
+              <div className="mt-2 font-sans text-black/60 text-sm sm:text-base">
+                30+ країн · 20 років досвіду автора
+              </div>
+            </div>
+
+            <div className="sm:text-right">
+              <div
+                className="font-sans font-extrabold tracking-tight text-4xl sm:text-5xl lg:text-6xl text-orange-500 tabular-nums"
+                style={{ fontVariantNumeric: "tabular-nums" }}
+              >
+                40 000+
+              </div>
+              <div className="mt-1 font-sans text-black/55 text-xs sm:text-sm">
+                учасників курсу
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="h-[58svh] sm:h-[62svh]" />
+      </div>
+
+      <div className="sticky bottom-0 z-20 will-change-transform">
+        <button
+          type="button"
+          onClick={goPrograms}
+          className={[
+            "w-full",
+            "h-[76px] sm:h-[90px]",
+            "bg-yellow-400 text-black",
+            "hover:bg-yellow-300 transition",
+            "font-sans font-extrabold",
+            "text-lg sm:text-xl",
+            "flex items-center justify-center gap-3",
+            "shadow-[0_-10px_30px_rgba(0,0,0,0.12)]",
+          ].join(" ")}
+        >
+          Стати щасливим
+          <ArrowRight className="h-6 w-6" />
+        </button>
+      </div>
+    </section>
+  );
+}
+
+function MarkerHighlight({ children }: { children: React.ReactNode }) {
+  return (
+    <span className="relative inline-block">
+      <span
+        className="absolute left-[-0.06em] right-[-0.06em] bottom-[0.08em] top-[0.55em] rounded-[18px]"
+        style={{
+          background: "rgba(250, 210, 72, 0.85)",
+          transform: "rotate(-1.2deg)",
+        }}
+      />
+      <span className="relative">{children}</span>
+    </span>
+  );
+}
+
+function WorldMapCoverBackground({
+  geoUrl,
+  points,
+  accent,
+  reveal,
+  mode,
+  isMobile,
+}: {
+  geoUrl: string;
+  points: Array<{ id: string; coordinates: [number, number] }>;
+  accent: string;
+  reveal: any;
+  mode: "cover" | "contain";
+  isMobile: boolean;
+}) {
+  const [shownCount, setShownCount] = useState(0);
+
+  useEffect(() => {
+    let prev = -1;
+
+    const unsub = reveal.on("change", (v: number) => {
+      const t = Math.max(0, Math.min(1, v));
+      const next = Math.round(points.length * t);
+
+      if (next !== prev) {
+        prev = next;
+        setShownCount(next);
+      }
+    });
+
+    return () => unsub();
+  }, [reveal, points.length]);
+
+  const visible = points.slice(0, Math.min(shownCount, 40));
+
+  const geoFill = isMobile ? "rgba(0,0,0,0.07)" : "rgba(0,0,0,0.10)";
+  const geoStroke = isMobile ? "rgba(0,0,0,0.14)" : "rgba(0,0,0,0.18)";
+
+  return (
+    <div
+      className={[
+        "w-full h-full",
+        isMobile ? "pointer-events-none" : "pointer-events-auto",
+      ].join(" ")}
+    >
+      <ComposableMap
+        projection="geoMercator"
+        projectionConfig={{
+          scale: mode === "cover" ? 185 : 150,
+        }}
+        className="w-full h-full"
+        style={{ width: "100%", height: "100%", background: "transparent" }}
+        preserveAspectRatio={mode === "cover" ? "xMidYMid slice" : "xMidYMid meet"}
+      >
+        <ZoomableGroup
+          zoom={1}
+          minZoom={1}
+          maxZoom={1}
+          center={[0, 12]}
+          translateExtent={[[0, 0], [0, 0]]}
+          disablePanning={isMobile}
+          disableZooming={true}
+        >
+          <Geographies geography={geoUrl}>
+            {({ geographies }) =>
+              geographies.map((geo) => (
+                <Geography
+                  key={geo.rsmKey}
+                  geography={geo}
+                  style={{
+                    default: {
+                      fill: geoFill,
+                      stroke: geoStroke,
+                      strokeWidth: isMobile ? 0.6 : 0.75,
+                      outline: "none",
+                    },
+                    hover: {
+                      fill: isMobile ? geoFill : "rgba(0,0,0,0.11)",
+                      stroke: isMobile ? geoStroke : "rgba(0,0,0,0.20)",
+                      strokeWidth: isMobile ? 0.6 : 0.8,
+                      outline: "none",
+                    },
+                    pressed: { fill: geoFill, outline: "none" },
+                  }}
+                />
+              ))
+            }
+          </Geographies>
+
+          {visible.map((p, idx) => (
+            <Marker key={p.id} coordinates={p.coordinates}>
+              <PulsingDot accent={accent} delay={Math.min(0.7, idx * 0.015)} />
+            </Marker>
+          ))}
+        </ZoomableGroup>
+      </ComposableMap>
+    </div>
+  );
+}
+
+function PulsingDot({ accent, delay = 0 }: { accent: string; delay?: number }) {
+  return (
+    <g>
+      <motion.circle
+        r={11}
+        fill={accent}
+        opacity={0.16}
+        initial={{ scale: 0.6, opacity: 0 }}
+        animate={{ scale: [0.8, 1.7, 0.8], opacity: [0.0, 0.18, 0.0] }}
+        style={{ willChange: "transform, opacity" }}
+        transition={{ duration: 2.2, repeat: Infinity, ease: "easeInOut", delay }}
+      />
+      <motion.circle
+        r={3.6}
+        fill={accent}
+        initial={{ scale: 0.6, opacity: 0 }}
+        animate={{ scale: 1, opacity: 0.95 }}
+        transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1], delay }}
+      />
+    </g>
+  );
+}

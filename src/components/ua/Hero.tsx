@@ -1,0 +1,477 @@
+import { useEffect, useMemo, useRef } from "react";
+import type { CSSProperties } from "react";
+import { motion } from "framer-motion";
+import { Button } from "@/components/ui/button";
+import { ArrowDown } from "lucide-react";
+
+// ---------- t1..t6 ----------
+import t1Avif from "@/assets/t1.jpg?w=320;640;960&format=avif&as=srcset";
+import t1Webp from "@/assets/t1.jpg?w=320;640;960&format=webp&as=srcset";
+import t1Fallback from "@/assets/t1.jpg?w=960&format=jpg&as=src";
+
+import t2Avif from "@/assets/t2.png?w=320;640;960&format=avif&as=srcset";
+import t2Webp from "@/assets/t2.png?w=320;640;960&format=webp&as=srcset";
+import t2Fallback from "@/assets/t2.png?w=960&format=png&as=src";
+
+import t3Avif from "@/assets/t3.jpg?w=320;640;960&format=avif&as=srcset";
+import t3Webp from "@/assets/t3.jpg?w=320;640;960&format=webp&as=srcset";
+import t3Fallback from "@/assets/t3.jpg?w=960&format=jpg&as=src";
+
+import t4Avif from "@/assets/t4.png?w=320;640;960&format=avif&as=srcset";
+import t4Webp from "@/assets/t4.png?w=320;640;960&format=webp&as=srcset";
+import t4Fallback from "@/assets/t4.png?w=960&format=png&as=src";
+
+import t5Avif from "@/assets/t5.jpg?w=320;640;960&format=avif&as=srcset";
+import t5Webp from "@/assets/t5.jpg?w=320;640;960&format=webp&as=srcset";
+import t5Fallback from "@/assets/t5.jpg?w=960&format=jpg&as=src";
+
+import t6Avif from "@/assets/t6.png?w=320;640;960&format=avif&as=srcset";
+import t6Webp from "@/assets/t6.png?w=320;640;960&format=webp&as=srcset";
+import t6Fallback from "@/assets/t6.png?w=960&format=png&as=src";
+
+// ---------- bg1..bg5 ----------
+import bg1Avif from "@/assets/bg1.png?w=320;640;960&format=avif&as=srcset";
+import bg1Webp from "@/assets/bg1.png?w=320;640;960&format=webp&as=srcset";
+import bg1Fallback from "@/assets/bg1.png?w=960&format=png&as=src";
+
+import bg2Avif from "@/assets/bg2.png?w=320;640;960&format=avif&as=srcset";
+import bg2Webp from "@/assets/bg2.png?w=320;640;960&format=webp&as=srcset";
+import bg2Fallback from "@/assets/bg2.png?w=960&format=png&as=src";
+
+import bg3Avif from "@/assets/bg4.png?w=320;640;960&format=avif&as=srcset";
+import bg3Webp from "@/assets/bg4.png?w=320;640;960&format=webp&as=srcset";
+import bg3Fallback from "@/assets/bg4.png?w=960&format=png&as=src";
+
+import bg4Avif from "@/assets/bg5.png?w=320;640;960&format=avif&as=srcset";
+import bg4Webp from "@/assets/bg5.png?w=320;640;960&format=webp&as=srcset";
+import bg4Fallback from "@/assets/bg5.png?w=960&format=png&as=src";
+
+import bg5Avif from "@/assets/bg6.png?w=320;640;960&format=avif&as=srcset";
+import bg5Webp from "@/assets/bg6.png?w=320;640;960&format=webp&as=srcset";
+import bg5Fallback from "@/assets/bg6.png?w=960&format=png&as=src";
+
+type ImgSet = {
+  key: string;
+  avif: string;
+  webp: string;
+  fallback: string;
+};
+
+function shuffle<T>(arr: T[]) {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = (Math.random() * (i + 1)) | 0;
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+function buildGridMinRepeats(images: ImgSet[], rows: number, cols: number) {
+  const total = rows * cols;
+  if (!images.length) return [];
+
+  const byKey = new Map<string, ImgSet>();
+  for (const im of images) byKey.set(im.key, im);
+
+  const uniqueKeys = Array.from(new Set(images.map((i) => i.key)));
+  const uniqLen = uniqueKeys.length;
+
+  const outKeys: string[] = new Array(total);
+  const prevRow = new Array<string | null>(cols).fill(null);
+
+  for (let r = 0; r < rows; r++) {
+    const pool = shuffle(uniqueKeys);
+    const usedInRow = new Set<string>();
+
+    for (let c = 0; c < cols; c++) {
+      let pickKey: string | null = null;
+
+      for (let i = 0; i < pool.length; i++) {
+        const k = pool[i];
+        if (usedInRow.has(k)) continue;
+        if (prevRow[c] && k === prevRow[c]) continue;
+        pickKey = k;
+        pool.splice(i, 1);
+        break;
+      }
+
+      if (!pickKey) {
+        for (let i = 0; i < pool.length; i++) {
+          const k = pool[i];
+          if (usedInRow.has(k)) continue;
+          pickKey = k;
+          pool.splice(i, 1);
+          break;
+        }
+      }
+
+      if (!pickKey) pickKey = uniqueKeys[(Math.random() * uniqLen) | 0];
+
+      usedInRow.add(pickKey);
+      outKeys[r * cols + c] = pickKey;
+    }
+
+    for (let c = 0; c < cols; c++) prevRow[c] = outKeys[r * cols + c];
+  }
+
+  return outKeys.map((k) => byKey.get(k)!).filter(Boolean);
+}
+
+function CoverPicture({
+  sources,
+  alt = "",
+  eager = false,
+  className = "",
+  imgStyle,
+}: {
+  sources: ImgSet;
+  alt?: string;
+  eager?: boolean;
+  className?: string;
+  imgStyle?: CSSProperties;
+}) {
+  return (
+    <picture className={className}>
+      <source type="image/avif" srcSet={sources.avif} />
+      <source type="image/webp" srcSet={sources.webp} />
+      <img
+        src={sources.fallback}
+        alt={alt}
+        loading={eager ? "eager" : "lazy"}
+        decoding="async"
+        style={{
+          position: "absolute",
+          inset: 0,
+          width: "100%",
+          height: "100%",
+          objectFit: "cover",
+          objectPosition: "50% 50%",
+          transform: "translateZ(0)",
+          ...imgStyle,
+        }}
+      />
+    </picture>
+  );
+}
+
+function GridMotionBg({ images }: { images: ImgSet[] }) {
+  const rowRefs = useRef<Array<HTMLDivElement | null>>([]);
+
+  const isMobile =
+    typeof window !== "undefined" &&
+    window.matchMedia("(max-width: 768px)").matches;
+
+  const rows = 4;
+  const cols = isMobile ? 4 : 7;
+
+  const items = useMemo(() => buildGridMinRepeats(images, rows, cols), [
+    images,
+    rows,
+    cols,
+  ]);
+
+  useEffect(() => {
+    let raf = 0;
+    let scrolling = false;
+    let scrollTimeout: ReturnType<typeof setTimeout> | null = null;
+
+    const animateMobile = () => {
+      if (scrolling) {
+        raf = requestAnimationFrame(animateMobile);
+        return;
+      }
+
+      const w = window.innerWidth || 1;
+      const t = performance.now() / 1000;
+      const wave = 0.5 + 0.5 * Math.sin(t * 0.5);
+      const xForCalc = wave * w;
+      const maxMoveAmount = 180;
+
+      rowRefs.current.forEach((row, index) => {
+        if (!row) return;
+        const direction = index % 2 === 0 ? 1 : -1;
+        const moveAmount =
+          ((xForCalc / w) * maxMoveAmount - maxMoveAmount / 2) * direction;
+
+        row.style.transform = `translateX(${moveAmount}px)`;
+      });
+
+      raf = requestAnimationFrame(animateMobile);
+    };
+
+    const handleScroll = () => {
+      scrolling = true;
+      if (scrollTimeout) clearTimeout(scrollTimeout);
+
+      scrollTimeout = setTimeout(() => {
+        scrolling = false;
+      }, 120);
+    };
+
+    if (isMobile) {
+      window.addEventListener("scroll", handleScroll, { passive: true });
+      raf = requestAnimationFrame(animateMobile);
+    }
+
+    return () => {
+      cancelAnimationFrame(raf);
+      window.removeEventListener("scroll", handleScroll);
+      if (scrollTimeout) clearTimeout(scrollTimeout);
+    };
+  }, [isMobile]);
+
+  const gap = isMobile ? "0.75rem" : "1rem";
+  const gridW = isMobile ? "210vw" : "150vw";
+  const gridH = isMobile ? "210svh" : "150vh";
+
+  return (
+    <div className="absolute inset-0 overflow-hidden">
+      <div
+        className="absolute left-1/2 top-1/2"
+        style={{
+          width: gridW,
+          height: gridH,
+          transform: "translate(-50%, -50%) rotate(-15deg)",
+          transformOrigin: "center center",
+        }}
+      >
+        <div
+          style={{
+            width: "100%",
+            height: "100%",
+            display: "grid",
+            gridTemplateRows: `repeat(${rows}, 1fr)`,
+            gap,
+          }}
+        >
+          {[...Array(rows)].map((_, rowIndex) => (
+            <div
+              key={rowIndex}
+              ref={(el) => {
+                rowRefs.current[rowIndex] = el;
+              }}
+              style={{
+                display: "grid",
+                gridTemplateColumns: `repeat(${cols}, 1fr)`,
+                gap,
+                willChange: "transform",
+              }}
+            >
+              {[...Array(cols)].map((_, itemIndex) => {
+                const idx = rowIndex * cols + itemIndex;
+                const img = items[idx];
+                const eager = idx < (isMobile ? 4 : 8);
+
+                return (
+                  <div key={itemIndex} style={{ position: "relative" }}>
+                    <div
+                      style={{
+                        position: "relative",
+                        width: "100%",
+                        height: "100%",
+                        overflow: "hidden",
+                        borderRadius: 14,
+                        backgroundColor: "#111",
+                        border: "1px solid rgba(255,255,255,0.06)",
+                        boxShadow: "0 10px 30px rgba(0,0,0,0.25)",
+                      }}
+                    >
+                      <CoverPicture
+                        sources={img}
+                        eager={eager}
+                        className="absolute inset-0"
+                        imgStyle={{
+                          filter: "saturate(1.05) contrast(1.05)",
+                        }}
+                      />
+                      <div
+                        style={{
+                          position: "absolute",
+                          inset: 0,
+                          background:
+                            "linear-gradient(180deg, rgba(0,0,0,0.10) 0%, rgba(0,0,0,0.55) 100%)",
+                        }}
+                      />
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <div
+        className="absolute inset-0 pointer-events-none"
+        style={{
+          backgroundImage:
+            "radial-gradient(rgba(255,255,255,0.05) 1px, transparent 1px)",
+          backgroundSize: "180px 180px",
+          opacity: 0.18,
+        }}
+      />
+    </div>
+  );
+}
+
+function ScrollBadge() {
+  const text = "дізнатися більше • дізнатися більше • ";
+
+  return (
+    <div className="relative h-[112px] w-[112px] sm:h-[140px] sm:w-[140px] lg:h-[150px] lg:w-[150px]">
+      <motion.div
+        animate={{ rotate: 360 }}
+        transition={{ duration: 16, repeat: Infinity, ease: "linear" }}
+        className="absolute inset-0"
+      >
+        <svg viewBox="0 0 200 200" className="h-full w-full">
+          <defs>
+            <path
+              id="circlePath"
+              d="M 100,100 m -78,0 a 78,78 0 1,1 156,0 a 78,78 0 1,1 -156,0"
+            />
+          </defs>
+          <text fill="rgba(255,255,255,0.85)" fontSize="13" letterSpacing="2.5">
+            <textPath href="#circlePath">{text.repeat(2)}</textPath>
+          </text>
+        </svg>
+      </motion.div>
+
+      <div className="absolute inset-0 flex items-center justify-center">
+        <div className="h-10 w-10 sm:h-11 sm:w-11 lg:h-12 lg:w-12 rounded-full bg-white/15 backdrop-blur-sm border border-white/25 flex items-center justify-center">
+          <ArrowDown className="h-5 w-5 sm:h-5 sm:w-5 lg:h-6 lg:w-6 text-white" />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function OrangeHeroBlock() {
+  const goPrograms = () => {
+    const el = document.getElementById("programs");
+    if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
+    else window.location.hash = "#programs";
+  };
+
+  return (
+    <div className="relative z-10 w-full">
+      <div
+        className={[
+          "flex items-start justify-center",
+          "px-3 sm:px-6 lg:px-8 xl:px-10",
+          "pt-[calc(1.25rem+88px)] pb-6",
+          "sm:pt-[calc(1.75rem+88px)] sm:pb-8",
+          "lg:pt-[calc(2.5rem+88px)] lg:pb-10",
+        ].join(" ")}
+      >
+        <div className="w-full">
+          <div className="mx-auto w-full max-w-[1280px]">
+            <div className="relative rounded-[26px] sm:rounded-[36px] lg:rounded-[44px] bg-white/10 backdrop-blur-md border border-white/20 overflow-hidden shadow-2xl">
+              <div className="px-5 sm:px-10 lg:px-12 py-10 sm:pt-12 sm:pb-16 lg:pt-12 lg:pb-14">
+                <div className="mx-auto max-w-6xl text-center">
+                  <motion.h1
+                    initial={{ opacity: 0, y: 18 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.6 }}
+                    className="font-sans font-extrabold tracking-tight text-white text-3xl sm:text-5xl md:text-6xl lg:text-[72px] leading-[1.05]"
+                  >
+                    <span className="block">Енергія, успіх і щасливі</span>
+
+                    <span className="block mt-1 lg:mt-2 lg:whitespace-nowrap">
+                      стосунки - це система.
+                    </span>
+
+                    <span className="block mt-1 lg:mt-2 text-yellow-300">
+                      Опануйте її за 10 днів.
+                    </span>
+                  </motion.h1>
+
+                  <motion.p
+                    initial={{ opacity: 0, y: 18 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.6, delay: 0.08 }}
+                    className="mt-4 sm:mt-7 lg:mt-8 text-white font-sans text-[15px] sm:text-lg md:text-xl leading-relaxed max-w-4xl mx-auto"
+                  >
+                    Практичний онлайн-курс Іцхака Пінтосевича, який допомагає
+                    повернути енергію, досягти успіху та побудувати щасливі
+                    стосунки.
+                  </motion.p>
+
+                  <div className="mt-7 sm:mt-9 lg:mt-10 flex justify-center">
+                    <div className="flex flex-col sm:flex-row items-center gap-4">
+                      <Button
+                        size="xl"
+                        onClick={goPrograms}
+                        className="rounded-full px-10 min-w-[204px] bg-yellow-400 text-black hover:bg-yellow-300 font-semibold"
+                      >
+                        Про програму
+                      </Button>
+
+                      <Button
+                        size="xl"
+                        asChild
+                        className="rounded-full px-10 min-w-[204px] bg-white text-black hover:bg-white/90 font-semibold"
+                      >
+                        <a
+                          href="https://www.happi10.com/quiz"
+                          target="_blank"
+                          rel="noopener noreferrer"
+                        >
+                          Пройти тест
+                        </a>
+                      </Button>
+                    </div>
+                  </div>
+
+                  <div className="mt-6 sm:mt-8 flex justify-center">
+                    <ScrollBadge />
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+const Hero = () => {
+  const bgImages = useMemo<ImgSet[]>(
+    () => [
+      { key: "t1", avif: t1Avif, webp: t1Webp, fallback: t1Fallback },
+      { key: "t2", avif: t2Avif, webp: t2Webp, fallback: t2Fallback },
+      { key: "t3", avif: t3Avif, webp: t3Webp, fallback: t3Fallback },
+      { key: "t4", avif: t4Avif, webp: t4Webp, fallback: t4Fallback },
+      { key: "t5", avif: t5Avif, webp: t5Webp, fallback: t5Fallback },
+      { key: "t6", avif: t6Avif, webp: t6Webp, fallback: t6Fallback },
+      { key: "bg1", avif: bg1Avif, webp: bg1Webp, fallback: bg1Fallback },
+      { key: "bg2", avif: bg2Avif, webp: bg2Webp, fallback: bg2Fallback },
+      { key: "bg3", avif: bg3Avif, webp: bg3Webp, fallback: bg3Fallback },
+      { key: "bg4", avif: bg4Avif, webp: bg4Webp, fallback: bg4Fallback },
+      { key: "bg5", avif: bg5Avif, webp: bg5Webp, fallback: bg5Fallback },
+    ],
+    []
+  );
+
+  return (
+    <section
+      className="relative w-screen overflow-hidden"
+      style={{ minHeight: "100svh" }}
+    >
+      <GridMotionBg images={bgImages} />
+
+      <div className="absolute inset-0 pointer-events-none">
+        <div className="absolute inset-0 bg-black/20" />
+        <div className="absolute inset-0 bg-gradient-to-b from-black/55 via-black/25 to-black/65" />
+        <div className="absolute inset-0 bg-gradient-to-r from-black/35 via-transparent to-black/10" />
+      </div>
+
+      <OrangeHeroBlock />
+
+      <div className="pointer-events-none absolute inset-0 ring-1 ring-black/10" />
+    </section>
+  );
+};
+
+export default Hero;

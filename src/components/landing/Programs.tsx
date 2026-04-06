@@ -1402,7 +1402,7 @@ export default function Programs() {
       {
         id: "club",
         payType: "lead",
-        title: "© Марафон\n«Архитектура счастья»",
+        title: "© Клуб\n«Архитектура счастья»",
         highlightText: "После заявки откроется мини-апп Happi10",
         description:
           "Оставьте заявку и переходите в мини-апп Happi10 для дальнейшего доступа.",

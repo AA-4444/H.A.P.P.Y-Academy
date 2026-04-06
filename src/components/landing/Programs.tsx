@@ -10,8 +10,6 @@ const COUNTRY_LIST = Object.values(
   countries.getNames("ru", { select: "official" })
 ).sort((a, b) => a.localeCompare(b, "ru"));
 
-
-/* ─── types ─── */
 type Offer = {
   id: string;
   title: string;
@@ -27,7 +25,7 @@ type Offer = {
   variant: "light" | "yellow";
   ctaNote?: string;
   longDescription?: string;
-  payType?: "one_time" | "subscription" | "free" | "donation";
+  payType?: "one_time" | "subscription" | "free" | "donation" | "lead";
   badge?: string;
   longSubtitle?: string;
   highlightText?: string;
@@ -35,24 +33,24 @@ type Offer = {
 
 type LeadFormData = {
   name: string;
+  email: string;
+  telegramUsername: string;
   phone: string;
-  messenger: string; 
+  messenger: string;
   comment: string;
   amount: string;
   country: string;
 };
 
 const SUPPORT_HREF = "https://t.me/TataZakzheva/";
-
-
-
-/* ─── hooks ─── */
+const MINI_APP_BOT_HREF = "https://t.me/happi10_app_bot";
 
 function useStableAppHeight(setIsGSA: (v: boolean) => void) {
   useEffect(() => {
-    const gsa = typeof navigator !== "undefined" && /GSA\//.test(navigator.userAgent);
+    const gsa =
+      typeof navigator !== "undefined" && /GSA\//.test(navigator.userAgent);
     setIsGSA(gsa);
-    
+
     if (gsa && "scrollRestoration" in history) {
       history.scrollRestoration = "manual";
     }
@@ -60,7 +58,7 @@ function useStableAppHeight(setIsGSA: (v: boolean) => void) {
     const setHeight = () => {
       const h = gsa
         ? window.innerHeight
-        : (window.visualViewport?.height ?? window.innerHeight);
+        : window.visualViewport?.height ?? window.innerHeight;
       document.documentElement.style.setProperty("--app-height", `${h}px`);
     };
 
@@ -71,7 +69,9 @@ function useStableAppHeight(setIsGSA: (v: boolean) => void) {
       document.body.classList.add("gsa-lock");
     }
 
-    const onOrientationChange = () => { setTimeout(setHeight, 150); };
+    const onOrientationChange = () => {
+      setTimeout(setHeight, 150);
+    };
     window.addEventListener("orientationchange", onOrientationChange);
     window.addEventListener("pageshow", setHeight);
 
@@ -118,23 +118,27 @@ function useLockBodyScroll(locked: boolean) {
 }
 
 function useCountdown(target: Date) {
-  const [msLeft, setMsLeft] = useState(() => Math.max(0, target.getTime() - Date.now()));
+  const [msLeft, setMsLeft] = useState(() =>
+    Math.max(0, target.getTime() - Date.now())
+  );
+
   useEffect(() => {
     const id = window.setInterval(() => {
       setMsLeft(Math.max(0, target.getTime() - Date.now()));
     }, 1000);
     return () => window.clearInterval(id);
   }, [target]);
+
   const totalSec = Math.floor(msLeft / 1000);
   const days = Math.floor(totalSec / 86400);
   const hours = Math.floor((totalSec % 86400) / 3600);
   const mins = Math.floor((totalSec % 3600) / 60);
   const secs = totalSec % 60;
   const pad2 = (n: number) => String(n).padStart(2, "0");
+
   return { msLeft, days, hours: pad2(hours), mins: pad2(mins), secs: pad2(secs) };
 }
 
-/* ─── helpers ─── */
 function TitleWithBreaks({ text }: { text: string }) {
   const lines = String(text ?? "").split("\n");
   return (
@@ -169,16 +173,6 @@ function clearModalUrl() {
   window.history.replaceState({}, "", url.toString());
 }
 
-function normalizeTelegram(raw: string) {
-  const t = String(raw ?? "").trim();
-  if (!t) return "";
-  const noAt = t.replace(/^@+/, "");
-  const cleaned = noAt.replace(/\s+/g, "");
-  return cleaned ? `@${cleaned}` : "";
-}
-function isTelegramValid(tg: string) {
-  return /^@[a-zA-Z0-9_]{4,31}$/.test(tg);
-}
 function createLeadId() {
   try {
     const c: any = typeof crypto !== "undefined" ? crypto : null;
@@ -186,30 +180,34 @@ function createLeadId() {
   } catch {}
   return `lead_${Date.now()}_${Math.random().toString(16).slice(2)}`;
 }
+
 function buildContact(phone: string, messenger: string) {
   const parts: string[] = [];
-
-  if (phone.trim()) {
-    parts.push(`Телефон: ${phone.trim()}`);
-  }
-
-  if (messenger.trim()) {
-    parts.push(`Связь: ${messenger.trim()}`);
-  }
-
+  if (phone.trim()) parts.push(`Телефон: ${phone.trim()}`);
+  if (messenger.trim()) parts.push(`Связь: ${messenger.trim()}`);
   return parts.join(" | ");
+}
+
+function normalizeTelegramUsername(value: string) {
+  const v = String(value || "").trim().replace(/^@+/, "");
+  return v ? `@${v}` : "";
+}
+
+function isValidTelegramUsername(value: string) {
+  return /^@[a-zA-Z0-9_]{4,31}$/.test(value.trim());
+}
+
+function isValidEmail(value: string) {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value.trim());
 }
 
 function isMessengerValid(value: string) {
   const v = value.trim();
-
   const isTg = /^@[a-zA-Z0-9_]{4,31}$/.test(v);
   const isPhone = /^\+?[0-9\s\-()]{7,}$/.test(v);
-
   return isTg || isPhone;
 }
 
-/* ─── CountdownBlock — isolated re-renders every second ─── */
 const COUNTDOWN_TARGET = new Date(Date.now() + 10 * 24 * 60 * 60 * 1000);
 
 function CountdownBlock({ target }: { target: Date }) {
@@ -228,7 +226,6 @@ function CountdownBlock({ target }: { target: Date }) {
   );
 }
 
-/* ─── BulletsModal ─── */
 export function BulletsModal({
   open,
   onClose,
@@ -240,9 +237,12 @@ export function BulletsModal({
   onJoinClub: () => void;
 }) {
   useLockBodyScroll(open);
+
   useEffect(() => {
     if (!open) return;
-    const onKey = (e: KeyboardEvent) => { if (e.key === "Escape") onClose(); };
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onClose();
+    };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
   }, [open, onClose]);
@@ -251,27 +251,54 @@ export function BulletsModal({
     <AnimatePresence>
       {open && offer ? (
         <>
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-[100] bg-black/60 backdrop-blur-sm" onClick={onClose} />
-          <motion.div initial={{ opacity: 0, y: 40 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 40 }} transition={{ duration: 0.35, ease: [0.4, 0, 0.2, 1] }} className="fixed inset-0 z-[101] flex items-end sm:items-center justify-center p-0 sm:p-6">
-            <div className="relative w-full max-w-lg overflow-y-auto rounded-t-[28px] sm:rounded-[28px] bg-background shadow-2xl" style={{ maxHeight: "calc(var(--app-height, 100vh) - 32px)" }}>
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[100] bg-black/60 backdrop-blur-sm"
+            onClick={onClose}
+          />
+          <motion.div
+            initial={{ opacity: 0, y: 40 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 40 }}
+            transition={{ duration: 0.35, ease: [0.4, 0, 0.2, 1] }}
+            className="fixed inset-0 z-[101] flex items-end sm:items-center justify-center p-0 sm:p-6"
+          >
+            <div
+              className="relative w-full max-w-lg overflow-y-auto rounded-t-[28px] sm:rounded-[28px] bg-background shadow-2xl"
+              style={{ maxHeight: "calc(var(--app-height, 100vh) - 32px)" }}
+            >
               <div className="sticky top-0 z-10 flex items-start justify-between p-6 pb-3 bg-background rounded-t-[28px]">
                 <div>
                   <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground mb-1">
                     {offer.id === "gift" ? "Кому подходит" : "Что внутри"}
                   </p>
-                  <h3 className="text-xl font-black text-foreground leading-tight whitespace-pre-line">{offer.title}</h3>
+                  <h3 className="text-xl font-black text-foreground leading-tight whitespace-pre-line">
+                    {offer.title}
+                  </h3>
                 </div>
-                <button onClick={onClose} className="ml-4 mt-1 rounded-full p-2 hover:bg-muted transition" aria-label="Закрыть">
+                <button
+                  onClick={onClose}
+                  className="ml-4 mt-1 rounded-full p-2 hover:bg-muted transition"
+                  aria-label="Закрыть"
+                >
                   <X className="h-5 w-5 text-muted-foreground" />
                 </button>
               </div>
+
               <div className="px-6 pb-2">
-                <p className="text-sm text-muted-foreground leading-relaxed whitespace-pre-line">{offer.description}</p>
+                <p className="text-sm text-muted-foreground leading-relaxed whitespace-pre-line">
+                  {offer.description}
+                </p>
               </div>
+
               {offer.id === "gift" ? (
                 <ul className="px-6 pb-4 space-y-2">
                   {offer.bullets.map((b, i) => (
-                    <li key={i} className="text-sm text-foreground leading-relaxed">— {b}</li>
+                    <li key={i} className="text-sm text-foreground leading-relaxed">
+                      — {b}
+                    </li>
                   ))}
                 </ul>
               ) : (
@@ -286,34 +313,55 @@ export function BulletsModal({
                   ))}
                 </ul>
               )}
+
               {offer.longDescription && (
                 <div className="px-6 pb-4">
                   <h4 className="text-sm font-bold text-foreground mb-1">Подробнее</h4>
-                  <p className="text-sm text-muted-foreground whitespace-pre-line leading-relaxed">{offer.longDescription}</p>
+                  <p className="text-sm text-muted-foreground whitespace-pre-line leading-relaxed">
+                    {offer.longDescription}
+                  </p>
                 </div>
               )}
+
               <div className="sticky bottom-0 bg-background px-6 py-4 border-t border-border">
                 <div className="flex items-center justify-between mb-3">
-                  <span className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">Цена</span>
+                  <span className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
+                    Цена
+                  </span>
                   <div className="flex items-baseline gap-2">
                     {offer.oldPrice && (
                       <span className="text-sm line-through text-muted-foreground">
                         {offer.oldPrice}
-                        {offer.oldPriceNote && <span className="text-xs ml-0.5">{offer.oldPriceNote}</span>}
+                        {offer.oldPriceNote && (
+                          <span className="text-xs ml-0.5">{offer.oldPriceNote}</span>
+                        )}
                       </span>
                     )}
                     <span className="text-2xl font-black text-foreground">
                       {offer.price}
-                      {offer.priceNote && <span className="text-sm font-semibold opacity-70 ml-1">{offer.priceNote}</span>}
+                      {offer.priceNote && (
+                        <span className="text-sm font-semibold opacity-70 ml-1">
+                          {offer.priceNote}
+                        </span>
+                      )}
                     </span>
                   </div>
                 </div>
+
                 {offer.id === "club" ? (
-                  <a href={SUPPORT_HREF} target="_blank" rel="noopener noreferrer" className="block w-full rounded-full h-12 font-sans font-bold transition bg-[#FACC15] text-[#1a1a1a] hover:bg-[#e5b800] flex items-center justify-center">
+                  <a
+                    href={SUPPORT_HREF}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="block w-full rounded-full h-12 font-sans font-bold transition bg-[#FACC15] text-[#1a1a1a] hover:bg-[#e5b800] flex items-center justify-center"
+                  >
                     Возникли вопросы?
                   </a>
                 ) : (
-                  <button onClick={onClose} className="w-full rounded-full h-12 font-sans font-bold transition bg-[#FACC15] text-[#1a1a1a] hover:bg-[#e5b800]">
+                  <button
+                    onClick={onClose}
+                    className="w-full rounded-full h-12 font-sans font-bold transition bg-[#FACC15] text-[#1a1a1a] hover:bg-[#e5b800]"
+                  >
                     Понятно
                   </button>
                 )}
@@ -326,7 +374,6 @@ export function BulletsModal({
   );
 }
 
-/* ─── LeadFormModal ─── */
 export function LeadFormModal({
   open,
   onClose,
@@ -338,8 +385,10 @@ export function LeadFormModal({
 }) {
   useLockBodyScroll(open);
 
-const [data, setData] = useState<LeadFormData>({
+  const [data, setData] = useState<LeadFormData>({
     name: "",
+    email: "",
+    telegramUsername: "",
     phone: "",
     messenger: "",
     country: "",
@@ -352,38 +401,45 @@ const [data, setData] = useState<LeadFormData>({
 
   const isLeadOnly = offer?.id === "gift";
   const isAmbassador = offer?.id === "ambassador";
+  const isMarathon = offer?.id === "marathon";
 
-  const title =
-    isAmbassador
-      ? "Поддержать донатом"
-      : offer?.id === "club"
-      ? "Заявка на клуб"
-      : offer?.payType === "one_time"
-      ? "Заявка на программу"
-      : "Заявка";
+  const title = isAmbassador
+    ? "Поддержать донатом"
+    : offer?.id === "club"
+    ? "Заявка в мини-апп"
+    : isMarathon
+    ? "Заявка на марафон"
+    : offer?.payType === "one_time"
+    ? "Заявка на программу"
+    : "Заявка";
 
-const subtitle = isLeadOnly
-      ? "Оставьте контакты — мы свяжемся с вами."
-      : isAmbassador
-      ? "Оставьте контакты и сумму — вы перейдёте к оплате доната."
-      : "Оставьте контакты — вы перейдёте к оплате.";
+  const subtitle = isMarathon
+    ? "Оставьте данные — заявка сохранится, затем откроется страница оплаты, а после оплаты станет доступна Telegram-группа марафона."
+    : isLeadOnly
+    ? "Оставьте контакты — мы свяжемся с вами."
+    : isAmbassador
+    ? "Оставьте контакты и сумму — вы перейдёте к оплате доната."
+    : "Оставьте контакты — вы перейдёте в мини-апп.";
 
-const submitLabel =
-      isLeadOnly
-        ? "Оставить заявку"
-        : isAmbassador
-        ? "Перейти к оплате доната"
-        : "Перейти к оплате";
+  const submitLabel = isMarathon
+    ? "Получить доступ"
+    : isLeadOnly
+    ? "Оставить заявку"
+    : isAmbassador
+    ? "Перейти к оплате доната"
+    : "Перейти в мини-апп";
 
   const resetAndClose = () => {
-  setData({
-    name: "",
-    phone: "",
-    messenger: "",
-    country: "",
-    comment: "",
-    amount: "",
-  });
+    setData({
+      name: "",
+      email: "",
+      telegramUsername: "",
+      phone: "",
+      messenger: "",
+      country: "",
+      comment: "",
+      amount: "",
+    });
     setSent(false);
     setSubmitting(false);
     onClose();
@@ -394,11 +450,10 @@ const submitLabel =
     if (submitting || !offer) return;
 
     const name = data.name.trim();
+    const email = data.email.trim();
+    const telegramUsername = normalizeTelegramUsername(data.telegramUsername);
     const phone = data.phone.trim();
     const comment = data.comment.trim();
-    if (!isMessengerValid(data.messenger)) return;
-    if (name.length < 2 || phone.length < 5) return;
-    
 
     setSubmitting(true);
 
@@ -412,48 +467,116 @@ const submitLabel =
         }
       }
 
-    if (offer.id === "gift") {
-      const r = await fetch("/api/lead", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          offerId: offer.id,
-          offerTitle: offer.title,
-          name,
-          contact: buildContact(phone, data.messenger),
-          comment,
-          country: data.country,
-          pageUrl: window.location.href,
-        }),
-      });
-    
-      if (!r.ok) throw new Error(`Lead error: ${r.status}`);
-    
-      setSent(true);
-      setSubmitting(false);
-      return;
-    }
-    
-    if (offer.id === "club") {
-      const r = await fetch("/api/lead", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          offerId: offer.id,
-          offerTitle: offer.title,
-          name,
-          contact: buildContact(phone, data.messenger),
-          comment,
-          country: data.country,
-          pageUrl: window.location.href,
-        }),
-      });
-    
-      if (!r.ok) throw new Error(`Lead error: ${r.status}`);
-    
-      window.location.href = "https://t.me/tribute/app?startapp=ssF9";
-      return;
-    }
+      if (offer.id === "marathon") {
+        if (
+          name.length < 2 ||
+          !isValidEmail(email) ||
+          !isValidTelegramUsername(telegramUsername) ||
+          phone.length < 5 ||
+          data.country.trim().length === 0
+        ) {
+          alert("Пожалуйста, заполните все обязательные поля корректно.");
+          setSubmitting(false);
+          return;
+        }
+
+        const leadId = createLeadId();
+
+        const leadRes = await fetch("/api/lead", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            offerId: offer.id,
+            offerTitle: offer.title,
+            name,
+            email,
+            telegramUsername,
+            phone,
+            country: data.country,
+            comment,
+            pageUrl: window.location.href,
+            price: offer.price,
+          }),
+        });
+
+        const leadJson = await leadRes.json().catch(() => ({}));
+
+        if (!leadRes.ok || !leadJson?.ok) {
+          throw new Error(`Marathon lead error: ${leadRes.status}`);
+        }
+
+        const checkoutRes = await fetch("/api/stripe/checkout", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            leadId,
+            stage: "pre_payment",
+            offerId: offer.id,
+            offerTitle: offer.title,
+            name,
+            email,
+            telegramUsername,
+            phone,
+            country: data.country,
+            comment,
+            pageUrl: window.location.href,
+          }),
+        });
+
+        const checkoutJson = await checkoutRes.json().catch(() => ({}));
+
+        if (!checkoutRes.ok || !checkoutJson?.url) {
+          throw new Error(`Marathon checkout error: ${checkoutRes.status}`);
+        }
+
+        setSent(true);
+        window.location.href = checkoutJson.url;
+        return;
+      }
+
+      if (offer.id === "gift") {
+        const r = await fetch("/api/lead", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            offerId: offer.id,
+            offerTitle: offer.title,
+            name,
+            contact: buildContact(phone, data.messenger),
+            comment,
+            country: data.country,
+            pageUrl: window.location.href,
+          }),
+        });
+
+        if (!r.ok) throw new Error(`Lead error: ${r.status}`);
+
+        setSent(true);
+        setSubmitting(false);
+        return;
+      }
+
+      if (offer.id === "club") {
+        const r = await fetch("/api/lead", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            offerId: offer.id,
+            offerTitle: offer.title,
+            name,
+            contact: buildContact(phone, data.messenger),
+            comment,
+            country: data.country,
+            pageUrl: window.location.href,
+            price: offer.price,
+          }),
+        });
+
+        if (!r.ok) throw new Error(`Lead error: ${r.status}`);
+
+        window.location.href = MINI_APP_BOT_HREF;
+        return;
+      }
 
       const res = await fetch("/api/stripe/checkout", {
         method: "POST",
@@ -471,9 +594,11 @@ const submitLabel =
           ...(offer.id === "ambassador" ? { amount: data.amount } : {}),
         }),
       });
+
       if (!res.ok) throw new Error(`Stripe checkout error: ${res.status}`);
       const json = (await res.json()) as { url?: string };
       if (!json?.url) throw new Error("No checkout url");
+
       setSent(true);
       window.location.href = json.url;
     } catch (err) {
@@ -483,29 +608,54 @@ const submitLabel =
     }
   };
 
-
-
   const inputCls =
     "mt-2 w-full h-12 rounded-2xl px-4 bg-card/70 border border-border outline-none focus:ring-2 focus:ring-ring/20 text-foreground";
-    
 
+  const isDisabled = (() => {
+    if (submitting) return true;
 
-const isDisabled =
-    submitting ||
-    data.name.trim().length < 2 ||
-    data.phone.trim().length < 5 ||
-    data.country.trim().length === 0 ||
-    !isMessengerValid(data.messenger) ||
-    (isAmbassador && String(data.amount).trim().length === 0) ||
-    (offer?.id === "gift" && data.comment.trim().length < 20);
+    if (isMarathon) {
+      return (
+        data.name.trim().length < 2 ||
+        !isValidEmail(data.email) ||
+        !isValidTelegramUsername(normalizeTelegramUsername(data.telegramUsername)) ||
+        data.phone.trim().length < 5 ||
+        data.country.trim().length === 0
+      );
+    }
+
+    return (
+      data.name.trim().length < 2 ||
+      data.phone.trim().length < 5 ||
+      data.country.trim().length === 0 ||
+      !isMessengerValid(data.messenger) ||
+      (isAmbassador && String(data.amount).trim().length === 0) ||
+      (offer?.id === "gift" && data.comment.trim().length < 20)
+    );
+  })();
 
   return (
     <AnimatePresence>
       {open && offer ? (
         <>
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-[100] bg-black/60 backdrop-blur-sm" onClick={resetAndClose} />
-          <motion.div initial={{ opacity: 0, y: 40 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 40 }} transition={{ duration: 0.35, ease: [0.4, 0, 0.2, 1] }} className="fixed inset-0 z-[101] flex items-end sm:items-center justify-center p-0 sm:p-6">
-            <div className="relative w-full max-w-lg overflow-y-auto rounded-t-[28px] sm:rounded-[28px] bg-background shadow-2xl" style={{ maxHeight: "calc(var(--app-height, 100vh) - 32px)" }}>
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[100] bg-black/60 backdrop-blur-sm"
+            onClick={resetAndClose}
+          />
+          <motion.div
+            initial={{ opacity: 0, y: 40 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 40 }}
+            transition={{ duration: 0.35, ease: [0.4, 0, 0.2, 1] }}
+            className="fixed inset-0 z-[101] flex items-end sm:items-center justify-center p-0 sm:p-6"
+          >
+            <div
+              className="relative w-full max-w-lg overflow-y-auto rounded-t-[28px] sm:rounded-[28px] bg-background shadow-2xl"
+              style={{ maxHeight: "calc(var(--app-height, 100vh) - 32px)" }}
+            >
               <div className="sticky top-0 z-10 flex items-start justify-between p-6 pb-3 bg-background rounded-t-[28px]">
                 <div>
                   <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground mb-1">
@@ -516,7 +666,11 @@ const isDisabled =
                   </p>
                   <p className="text-sm text-muted-foreground mt-1">{subtitle}</p>
                 </div>
-                <button onClick={resetAndClose} className="ml-4 mt-1 rounded-full p-2 hover:bg-muted transition" aria-label="Закрыть">
+                <button
+                  onClick={resetAndClose}
+                  className="ml-4 mt-1 rounded-full p-2 hover:bg-muted transition"
+                  aria-label="Закрыть"
+                >
                   <X className="h-5 w-5 text-muted-foreground" />
                 </button>
               </div>
@@ -528,15 +682,20 @@ const isDisabled =
                       <Check className="h-8 w-8 text-emerald-600" strokeWidth={2.5} />
                     </div>
                     <h3 className="text-lg font-bold text-foreground mb-2">
-                      {isLeadOnly ? "Заявка отправлена" : "Перенаправляем на оплату"}
+                      {isLeadOnly ? "Заявка отправлена" : "Перенаправляем"}
                     </h3>
                     <p className="text-sm text-muted-foreground leading-relaxed">
                       {isLeadOnly
                         ? "Мы внимательно рассмотрим вашу заявку и свяжемся с вами в ближайшее время."
-                        : "Сейчас откроется защищённая страница оплаты."}
+                        : isMarathon
+                        ? "Сейчас откроется страница оплаты."
+                        : "Сейчас откроется мини-апп."}
                     </p>
                     {isLeadOnly && (
-                      <button onClick={resetAndClose} className="mt-6 rounded-full px-8 h-12 font-sans font-bold transition bg-[#FACC15] text-[#1a1a1a] hover:bg-[#e5b800]">
+                      <button
+                        onClick={resetAndClose}
+                        className="mt-6 rounded-full px-8 h-12 font-sans font-bold transition bg-[#FACC15] text-[#1a1a1a] hover:bg-[#e5b800]"
+                      >
                         Закрыть
                       </button>
                     )}
@@ -545,94 +704,213 @@ const isDisabled =
                   <form onSubmit={submit} className="space-y-4">
                     <div>
                       <label className="text-sm font-medium text-foreground">Имя</label>
-                      <input type="text" value={data.name} onChange={(e) => setData((p) => ({ ...p, name: e.target.value }))} className={inputCls} placeholder="Как к вам обращаться?" autoComplete="name" />
-                    </div>
-                    <div>
-                      <label className="text-sm font-medium text-foreground">Телефон</label>
-                      <input type="tel" value={data.phone} onChange={(e) => setData((p) => ({ ...p, phone: e.target.value }))} className={inputCls} placeholder="+49…" autoComplete="tel" inputMode="tel" />
-                    </div>
-                    <div>
-                      <label className="text-sm font-medium text-foreground">
-                        Telegram или WhatsApp
-                      </label>
-                    
                       <input
                         type="text"
-                        value={data.messenger}
+                        value={data.name}
                         onChange={(e) =>
-                          setData((p) => ({ ...p, messenger: e.target.value }))
+                          setData((p) => ({ ...p, name: e.target.value }))
                         }
                         className={inputCls}
-                        placeholder="@username или +49..."
-                        autoComplete="off"
+                        placeholder="Как к вам обращаться?"
+                        autoComplete="name"
                       />
-                    
-                      <p className="text-xs text-muted-foreground mt-1">
-                        Введите @username или номер в международном формате
-                      </p>
                     </div>
-                    
+
+                    {isMarathon ? (
+                      <>
+                        <div>
+                          <label className="text-sm font-medium text-foreground">
+                            Email
+                          </label>
+                          <input
+                            type="email"
+                            value={data.email}
+                            onChange={(e) =>
+                              setData((p) => ({ ...p, email: e.target.value }))
+                            }
+                            className={inputCls}
+                            placeholder="you@example.com"
+                            autoComplete="email"
+                          />
+                        </div>
+
+                        <div>
+                          <label className="text-sm font-medium text-foreground">
+                            Telegram username
+                          </label>
+                          <input
+                            type="text"
+                            value={data.telegramUsername}
+                            onChange={(e) =>
+                              setData((p) => ({
+                                ...p,
+                                telegramUsername: e.target.value,
+                              }))
+                            }
+                            className={inputCls}
+                            placeholder="@username"
+                            autoComplete="off"
+                          />
+                          <p className="text-xs text-muted-foreground mt-1">
+                            Введите username в Telegram, например @alex
+                          </p>
+                        </div>
+
+                        <div>
+                          <label className="text-sm font-medium text-foreground">
+                            Телефон
+                          </label>
+                          <input
+                            type="tel"
+                            value={data.phone}
+                            onChange={(e) =>
+                              setData((p) => ({ ...p, phone: e.target.value }))
+                            }
+                            className={inputCls}
+                            placeholder="+49..."
+                            autoComplete="tel"
+                            inputMode="tel"
+                          />
+                        </div>
+                      </>
+                    ) : (
+                      <>
+                        <div>
+                          <label className="text-sm font-medium text-foreground">
+                            Телефон
+                          </label>
+                          <input
+                            type="tel"
+                            value={data.phone}
+                            onChange={(e) =>
+                              setData((p) => ({ ...p, phone: e.target.value }))
+                            }
+                            className={inputCls}
+                            placeholder="+49…"
+                            autoComplete="tel"
+                            inputMode="tel"
+                          />
+                        </div>
+
+                        <div>
+                          <label className="text-sm font-medium text-foreground">
+                            Telegram или WhatsApp
+                          </label>
+
+                          <input
+                            type="text"
+                            value={data.messenger}
+                            onChange={(e) =>
+                              setData((p) => ({ ...p, messenger: e.target.value }))
+                            }
+                            className={inputCls}
+                            placeholder="@username или +49..."
+                            autoComplete="off"
+                          />
+
+                          <p className="text-xs text-muted-foreground mt-1">
+                            Введите @username или номер в международном формате
+                          </p>
+                        </div>
+                      </>
+                    )}
+
                     <div>
                       <label className="text-sm font-medium text-foreground">Страна</label>
                       <div className="relative mt-2">
                         <select
                           value={data.country}
-                          onChange={(e) => setData((p) => ({ ...p, country: e.target.value }))}
+                          onChange={(e) =>
+                            setData((p) => ({ ...p, country: e.target.value }))
+                          }
                           required
                           className="w-full h-12 rounded-2xl px-4 pr-10 bg-card/70 border border-border text-foreground outline-none appearance-none"
                         >
-                          <option value="" disabled>Выберите страну</option>
+                          <option value="" disabled>
+                            Выберите страну
+                          </option>
                           {COUNTRY_LIST.map((country) => (
-                            <option key={country} value={country}>{country}</option>
+                            <option key={country} value={country}>
+                              {country}
+                            </option>
                           ))}
                         </select>
-                        <svg className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                          <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+                        <svg
+                          className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          stroke="currentColor"
+                          strokeWidth={2}
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            d="M19 9l-7 7-7-7"
+                          />
                         </svg>
                       </div>
                     </div>
 
                     {isAmbassador && (
                       <div>
-                        <label className="text-sm font-medium text-foreground">Сумма доната (EUR)</label>
-                        <input type="text" value={data.amount} onChange={(e) => setData((p) => ({ ...p, amount: e.target.value.replace(/[^\d.,]/g, "") }))} className={inputCls} placeholder="Например: 25" inputMode="decimal" autoComplete="off" />
-                        <p className="text-xs text-muted-foreground mt-1">Минимум 5 €, максимум 50 000 €.</p>
+                        <label className="text-sm font-medium text-foreground">
+                          Сумма доната (EUR)
+                        </label>
+                        <input
+                          type="text"
+                          value={data.amount}
+                          onChange={(e) =>
+                            setData((p) => ({
+                              ...p,
+                              amount: e.target.value.replace(/[^\d.,]/g, ""),
+                            }))
+                          }
+                          className={inputCls}
+                          placeholder="Например: 25"
+                          inputMode="decimal"
+                          autoComplete="off"
+                        />
+                        <p className="text-xs text-muted-foreground mt-1">
+                          Минимум 5 €, максимум 50 000 €.
+                        </p>
                       </div>
                     )}
 
                     <div>
-                    <label className="text-sm font-medium text-foreground">
-                      {offer?.id === "gift"
-                        ? "Опишите почему вы можете претендовать на право бесплатного прохождения курса"
-                        : isAmbassador
-                        ? "Опишите свою ситуацию"
-                        : "Комментарий"}
-                    </label>
-                    
+                      <label className="text-sm font-medium text-foreground">
+                        {offer?.id === "gift"
+                          ? "Опишите почему вы можете претендовать на право бесплатного прохождения курса"
+                          : isAmbassador
+                          ? "Опишите свою ситуацию"
+                          : "Комментарий"}
+                      </label>
+
                       <textarea
                         value={data.comment}
-                        onChange={(e) => setData((p) => ({ ...p, comment: e.target.value }))}
+                        onChange={(e) =>
+                          setData((p) => ({ ...p, comment: e.target.value }))
+                        }
                         className="mt-2 w-full min-h-[80px] rounded-2xl p-4 bg-card/70 border border-border outline-none focus:ring-2 focus:ring-ring/20 resize-none text-foreground"
                         placeholder={
                           offer?.id === "gift"
                             ? "Опишите вашу ситуацию подробно…"
                             : isAmbassador
                             ? "Напишите несколько слов о вашей ситуации…"
-                            : "Удобное время / вопрос"
-                        }                      />
+                            : "Если хотите, оставьте комментарий…"
+                        }
+                      />
                     </div>
-                
-                    
-                  
 
-                    <button type="submit" disabled={isDisabled} className="w-full rounded-full h-12 font-sans font-bold transition shadow-[0_4px_20px_-4px_rgba(250,204,21,0.5)] disabled:opacity-50 bg-[#FACC15] text-[#1a1a1a] hover:bg-[#e5b800]">
+                    <button
+                      type="submit"
+                      disabled={isDisabled}
+                      className="w-full rounded-full h-12 font-sans font-bold transition shadow-[0_4px_20px_-4px_rgba(250,204,21,0.5)] disabled:opacity-50 bg-[#FACC15] text-[#1a1a1a] hover:bg-[#e5b800]"
+                    >
                       {submitting ? "Отправляем..." : submitLabel}
                     </button>
 
                     <p className="text-xs text-muted-foreground leading-snug">
-                      {isLeadOnly
-                        ? "Нажимая «Оставить заявку», вы соглашаетесь на обработку данных для связи с вами."
-                        : "Нажимая «Перейти к оплате», вы соглашаетесь на обработку данных для связи с вами."}
+                      Нажимая кнопку, вы соглашаетесь на обработку данных для связи с вами.
                     </p>
                   </form>
                 )}
@@ -645,25 +923,25 @@ const isDisabled =
   );
 }
 
-/* ─────────────────────────────────────────────
-   CARD THEMES — each card has a unique visual identity
-   ───────────────────────────────────────────── */
-const CARD_THEMES: Record<string, {
-  bg: string;
-  border: string;
-  shadow: string;
-  hoverShadow: string;
-  titleColor: string;
-  titleBg: string;
-  priceColor: string;
-  priceBg: string;
-  bulletIcon: string;
-  bulletIconText: string;
-  ctaPrimary: string;
-  ctaSecondary: string;
-  descColor: string;
-}> = {
-  system: {
+const CARD_THEMES: Record<
+  string,
+  {
+    bg: string;
+    border: string;
+    shadow: string;
+    hoverShadow: string;
+    titleColor: string;
+    titleBg: string;
+    priceColor: string;
+    priceBg: string;
+    bulletIcon: string;
+    bulletIconText: string;
+    ctaPrimary: string;
+    ctaSecondary: string;
+    descColor: string;
+  }
+> = {
+  marathon: {
     bg: "bg-white",
     border: "border-[#E64B1E]/25",
     shadow: "shadow-[0_8px_40px_-8px_rgba(0,0,0,0.08)]",
@@ -674,7 +952,8 @@ const CARD_THEMES: Record<string, {
     priceBg: "bg-[#FACC15]",
     bulletIcon: "bg-[#E64B1E]",
     bulletIconText: "text-white",
-    ctaPrimary: "bg-[#FACC15] text-[#1a1a1a] hover:bg-[#e5b800] shadow-[0_4px_20px_-4px_rgba(250,204,21,0.5)]",
+    ctaPrimary:
+      "bg-[#FACC15] text-[#1a1a1a] hover:bg-[#e5b800] shadow-[0_4px_20px_-4px_rgba(250,204,21,0.5)]",
     ctaSecondary: "bg-[#E64B1E] text-white hover:bg-[#d4441a]",
     descColor: "text-black/55",
   },
@@ -689,7 +968,8 @@ const CARD_THEMES: Record<string, {
     priceBg: "bg-[#E64B1E]",
     bulletIcon: "bg-[#E64B1E]",
     bulletIconText: "text-white",
-    ctaPrimary: "bg-[#FACC15] text-[#1a1a1a] hover:bg-[#e5b800] shadow-[0_4px_20px_-4px_rgba(250,204,21,0.5)]",
+    ctaPrimary:
+      "bg-[#FACC15] text-[#1a1a1a] hover:bg-[#e5b800] shadow-[0_4px_20px_-4px_rgba(250,204,21,0.5)]",
     ctaSecondary: "bg-[#E64B1E] text-white hover:bg-[#d4441a]",
     descColor: "text-black/50",
   },
@@ -704,7 +984,8 @@ const CARD_THEMES: Record<string, {
     priceBg: "bg-[#FACC15]",
     bulletIcon: "bg-[#E64B1E]",
     bulletIconText: "text-white",
-    ctaPrimary: "bg-[#FACC15] text-[#1a1a1a] hover:bg-[#e5b800] shadow-[0_4px_20px_-4px_rgba(250,204,21,0.5)]",
+    ctaPrimary:
+      "bg-[#FACC15] text-[#1a1a1a] hover:bg-[#e5b800] shadow-[0_4px_20px_-4px_rgba(250,204,21,0.5)]",
     ctaSecondary: "bg-[#E64B1E] text-white hover:bg-[#d4441a]",
     descColor: "text-black/55",
   },
@@ -719,13 +1000,14 @@ const CARD_THEMES: Record<string, {
     priceBg: "bg-[#E64B1E]",
     bulletIcon: "bg-[#E64B1E]",
     bulletIconText: "text-white",
-    ctaPrimary: "bg-[#FACC15] text-[#1a1a1a] hover:bg-[#e5b800] shadow-[0_4px_20px_-4px_rgba(250,204,21,0.5)]",
+    ctaPrimary:
+      "bg-[#FACC15] text-[#1a1a1a] hover:bg-[#e5b800] shadow-[0_4px_20px_-4px_rgba(250,204,21,0.5)]",
     ctaSecondary: "bg-[#E64B1E] text-white hover:bg-[#d4441a]",
     descColor: "text-black/50",
   },
 };
 
-const DEFAULT_THEME = CARD_THEMES.system;
+const DEFAULT_THEME = CARD_THEMES.marathon;
 
 const GIFT_REVIEWS = [
   {
@@ -752,7 +1034,6 @@ function GiftMiniReviews() {
     const id = window.setInterval(() => {
       setIndex((prev) => (prev + 1) % GIFT_REVIEWS.length);
     }, 3500);
-
     return () => window.clearInterval(id);
   }, []);
 
@@ -783,7 +1064,6 @@ function GiftMiniReviews() {
                 className="h-10 w-10 rounded-full object-cover border border-[#E64B1E]/15 shrink-0"
                 loading="lazy"
               />
-
               <div className="text-sm font-bold text-[#E64B1E]">
                 {GIFT_REVIEWS[index].author}
               </div>
@@ -800,7 +1080,9 @@ function GiftMiniReviews() {
             onClick={() => setIndex(i)}
             className={[
               "h-2.5 rounded-full transition-all",
-              i === index ? "w-6 bg-[#E64B1E]" : "w-2.5 bg-black/15 hover:bg-black/25",
+              i === index
+                ? "w-6 bg-[#E64B1E]"
+                : "w-2.5 bg-black/15 hover:bg-black/25",
             ].join(" ")}
             aria-label={`Перейти к отзыву ${i + 1}`}
           />
@@ -809,6 +1091,7 @@ function GiftMiniReviews() {
     </div>
   );
 }
+
 export function OfferCard({
   offer,
   index,
@@ -825,7 +1108,6 @@ export function OfferCard({
   freeUsers: number;
 }) {
   const isGift = offer.id === "gift";
-  const hidePrimaryCta = offer.id === "club";
   const t = CARD_THEMES[offer.id] ?? DEFAULT_THEME;
 
   return (
@@ -849,17 +1131,22 @@ export function OfferCard({
         "transition-shadow duration-500",
       ].join(" ")}
     >
-      {/* ── Header / price section ── */}
-      <div className={[
-        "flex flex-col relative",
-        isWide ? "p-8 sm:p-10 lg:p-12 lg:flex-1 lg:justify-center" : "p-5 pb-3 sm:p-9",
-      ].join(" ")}>
+      <div
+        className={[
+          "flex flex-col relative",
+          isWide ? "p-8 sm:p-10 lg:p-12 lg:flex-1 lg:justify-center" : "p-5 pb-3 sm:p-9",
+        ].join(" ")}
+      >
         {offer.badge && (
           <div className={`mb-3 sm:mb-4 ${isWide ? "lg:mb-5" : ""}`}>
-            <span className={[
-              "inline-flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-[0.15em] px-3.5 py-1.5 rounded-full",
-              offer.id === "club" ? "bg-[#1a1a1a] text-[#FACC15]" : "bg-[#E64B1E] text-white",
-            ].join(" ")}>
+            <span
+              className={[
+                "inline-flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-[0.15em] px-3.5 py-1.5 rounded-full",
+                offer.id === "club"
+                  ? "bg-[#1a1a1a] text-[#FACC15]"
+                  : "bg-[#E64B1E] text-white",
+              ].join(" ")}
+            >
               {offer.badge}
               <span className="h-1.5 w-1.5 rounded-full bg-current opacity-60" />
             </span>
@@ -867,13 +1154,15 @@ export function OfferCard({
         )}
 
         <div className="mt-1">
-          <span className={[
-            "inline-block rounded-2xl px-4 py-2 sm:px-5 sm:py-2.5 font-black tracking-tight leading-[1.1]",
-            t.titleBg,
-            t.titleColor,
-            isWide ? "text-2xl sm:text-3xl lg:text-4xl" : "text-lg sm:text-2xl",
-          ].join(" ")}>
-           <TitleWithBreaks text={offer.title} />
+          <span
+            className={[
+              "inline-block rounded-2xl px-4 py-2 sm:px-5 sm:py-2.5 font-black tracking-tight leading-[1.1]",
+              t.titleBg,
+              t.titleColor,
+              isWide ? "text-2xl sm:text-3xl lg:text-4xl" : "text-lg sm:text-2xl",
+            ].join(" ")}
+          >
+            <TitleWithBreaks text={offer.title} />
           </span>
         </div>
 
@@ -887,48 +1176,50 @@ export function OfferCard({
               />
             </span>
           )}
-          <span className={[
-            "inline-flex items-baseline gap-2 rounded-2xl px-4 py-2 sm:px-5 sm:py-2.5 font-black leading-none",
-            t.priceBg,
-            t.priceColor,
-            isGift ? "text-3xl sm:text-5xl" : "text-2xl sm:text-4xl lg:text-5xl",
-          ].join(" ")}>
+          <span
+            className={[
+              "inline-flex items-baseline gap-2 rounded-2xl px-4 py-2 sm:px-5 sm:py-2.5 font-black leading-none",
+              t.priceBg,
+              t.priceColor,
+              isGift ? "text-3xl sm:text-5xl" : "text-2xl sm:text-4xl lg:text-5xl",
+            ].join(" ")}
+          >
             {offer.price}
             {offer.priceNote && (
-              <span className="text-xs sm:text-sm font-semibold opacity-70">{offer.priceNote}</span>
+              <span className="text-xs sm:text-sm font-semibold opacity-70">
+                {offer.priceNote}
+              </span>
             )}
-           
           </span>
-        {offer.id === "club" && offer.priceAlt && (
-          <div className="mt-2 inline-flex items-center justify-center rounded-xl bg-white px-4 py-2 text-sm font-bold text-[#E64B1E]">
-            {offer.priceAlt}
-          </div>
-        )}
-          
+
+          {offer.id === "club" && offer.priceAlt && (
+            <div className="mt-2 inline-flex items-center justify-center rounded-xl bg-white px-4 py-2 text-sm font-bold text-[#E64B1E]">
+              {offer.priceAlt}
+            </div>
+          )}
         </div>
 
-        {/* Description & subtitle: hidden on mobile (<sm), visible on sm+ */}
-       {offer.id === "system" ? (
-         <div className="mt-5 hidden sm:block">
-           <div className="relative pl-4">
-             <div className="absolute left-0 top-1 bottom-1 w-[3px] bg-emerald-500 rounded-full" />
-             <div className="space-y-1">
-               <p className="text-[14px] font-semibold text-emerald-600">
-                 {offer.longSubtitle}
-               </p>
-               <p className="text-[14px] font-medium text-emerald-700">
-                 {offer.highlightText}
-               </p>
-             </div>
-           </div>
-         </div>
-    ) : offer.id === "club" ? (
-      <div className="mt-4">
-        <div className="bg-[#16A34A] text-white px-4 py-3 rounded-xl text-sm font-semibold">
-          {offer.highlightText}
-        </div>
-      </div>
-       ): (
+        {offer.id === "marathon" ? (
+          <div className="mt-5 hidden sm:block">
+            <div className="relative pl-4">
+              <div className="absolute left-0 top-1 bottom-1 w-[3px] bg-emerald-500 rounded-full" />
+              <div className="space-y-1">
+                <p className="text-[14px] font-semibold text-emerald-600">
+                  {offer.longSubtitle}
+                </p>
+                <p className="text-[14px] font-medium text-emerald-700">
+                  {offer.highlightText}
+                </p>
+              </div>
+            </div>
+          </div>
+        ) : offer.id === "club" ? (
+          <div className="mt-4">
+            <div className="bg-[#16A34A] text-white px-4 py-3 rounded-xl text-sm font-semibold">
+              {offer.highlightText}
+            </div>
+          </div>
+        ) : (
           <p
             className={[
               "mt-4 text-[14px] leading-relaxed whitespace-pre-line hidden sm:block",
@@ -940,34 +1231,37 @@ export function OfferCard({
           </p>
         )}
 
-       {offer.id === "gift" && (
-  <p className="mt-4 text-sm sm:text-[14px] leading-relaxed font-semibold text-[#E64B1E]">
-    Право на бесплатное прохождение курса предоставляется лицам,
-    подтвердившим документально свой статус инвалидности.
-  </p>
-)}
+        {offer.id === "gift" && (
+          <p className="mt-4 text-sm sm:text-[14px] leading-relaxed font-semibold text-[#E64B1E]">
+            Право на бесплатное прохождение курса предоставляется лицам,
+            подтвердившим документально свой статус инвалидности.
+          </p>
+        )}
       </div>
 
-      {/* ── Divider: hidden on mobile ── */}
       {isWide ? (
         <div className="hidden lg:block w-px my-8 bg-black/10" />
       ) : (
         <div className="mx-7 sm:mx-9 h-px bg-black/[0.07] hidden sm:block" />
       )}
 
-      {/* ── Bullets (hidden on mobile) + CTA (always visible) ── */}
-      <div className={[
-        "flex flex-col h-full",
-        isWide ? "p-8 sm:p-10 lg:p-12 lg:flex-1" : "px-5 pb-5 pt-0 sm:p-9 sm:pt-5",
-      ].join(" ")}>
-        {/* Bullets: hidden on mobile */}
-        <ul className={[
-          "space-y-2.5 mb-8 hidden sm:block",
-          isWide ? "columns-1 sm:columns-2 gap-x-10" : "",
-        ].join(" ")}>
+      <div
+        className={[
+          "flex flex-col h-full",
+          isWide ? "p-8 sm:p-10 lg:p-12 lg:flex-1" : "px-5 pb-5 pt-0 sm:p-9 sm:pt-5",
+        ].join(" ")}
+      >
+        <ul
+          className={[
+            "space-y-2.5 mb-8 hidden sm:block",
+            isWide ? "columns-1 sm:columns-2 gap-x-10" : "",
+          ].join(" ")}
+        >
           {offer.bullets.map((b, i) => (
             <li key={i} className="flex items-start gap-3 break-inside-avoid mb-2.5">
-              <span className={`mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full ${t.bulletIcon} ${t.bulletIconText}`}>
+              <span
+                className={`mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full ${t.bulletIcon} ${t.bulletIconText}`}
+              >
                 {isGift ? (
                   <Heart className="h-3 w-3" strokeWidth={2.5} fill="currentColor" />
                 ) : (
@@ -978,207 +1272,201 @@ export function OfferCard({
             </li>
           ))}
         </ul>
+
         {offer.id === "gift" && (
-  <div className="mt-6">
-    <div className="text-center">
-      <p className="text-sm text-black/60">
-        Сейчас на бесплатной основе проходят курс
-      </p>
+          <div className="mt-6">
+            <div className="text-center">
+              <p className="text-sm text-black/60">
+                Сейчас на бесплатной основе проходят курс
+              </p>
+              <div className="text-3xl font-black text-[#E64B1E]">
+                {freeUsers} человек
+              </div>
+            </div>
 
-      <div className="text-3xl font-black text-[#E64B1E]">
-        {freeUsers} человек
-      </div>
-    </div>
+            <GiftMiniReviews />
 
-    <GiftMiniReviews />
+            <button
+              onClick={() =>
+                document
+                  .getElementById("ambassador")
+                  ?.scrollIntoView({ behavior: "smooth" })
+              }
+              className="mt-5 mb-3 w-full rounded-full bg-[#16A34A] text-white py-3 text-sm font-bold hover:bg-[#15803D] transition"
+            >
+              Стать спонсором
+            </button>
+          </div>
+        )}
 
-    <button
-      onClick={() =>
-        document
-          .getElementById("ambassador")
-          ?.scrollIntoView({ behavior: "smooth" })
-      }
-      className="mt-5 mb-3 w-full rounded-full bg-[#16A34A] text-white py-3 text-sm font-bold hover:bg-[#15803D] transition"
-    >
-      Стать спонсором
-    </button>
-  </div>
-)}
+        <div
+          className={[
+            "flex gap-2.5 sm:gap-3 mt-auto flex-col",
+            isWide ? "lg:flex-row" : "",
+          ].join(" ")}
+        >
+          <button
+            type="button"
+            onClick={() => onOpenLead(offer.id)}
+            className={[
+              "rounded-full font-sans font-bold flex items-center justify-center",
+              "text-[13px] sm:text-sm",
+              "leading-tight text-center",
+              "px-4 py-2.5 sm:py-3",
+              "min-h-[42px] sm:min-h-[48px]",
+              "whitespace-normal",
+              isWide ? "flex-1" : "w-full",
+              offer.id === "ambassador"
+                ? "bg-white text-[#1a1a1a] hover:bg-white/90 shadow-md"
+                : offer.id === "club"
+                ? "bg-white text-[#1a1a1a] hover:bg-white/90 shadow-md"
+                : t.ctaPrimary,
+            ].join(" ")}
+          >
+            {offer.cta}
+          </button>
 
-        {/* CTA buttons: always visible */}
-     <div className={["flex gap-2.5 sm:gap-3 mt-auto flex-col", isWide ? "lg:flex-row" : ""].join(" ")}>
-       
-       {/* PRIMARY CTA */}
-      <button
-        type="button"
-        onClick={() => onOpenLead(offer.id)}
-        className={[
-          "rounded-full font-sans font-bold flex items-center justify-center",
-          "text-[13px] sm:text-sm",
-          "leading-tight text-center",
-          "px-4 py-2.5 sm:py-3",
-          "min-h-[42px] sm:min-h-[48px]",
-          "whitespace-normal",
-          isWide ? "flex-1" : "w-full",
-          offer.id === "ambassador"
-          ? "bg-white text-[#1a1a1a] hover:bg-white/90 shadow-md"
-          : offer.id === "club"
-          ? "bg-white text-[#1a1a1a] hover:bg-white/90 shadow-md"
-          : t.ctaPrimary
-        ].join(" ")}
-      >
-        {offer.cta}
-      </button>
-     
-       {/* CLUB CTA */}
-          
-       {/* SECONDARY CTA */}
-       <button
-         type="button"
-         onClick={() => onOpenMore(offer.id)}
-         className={[
-           "rounded-full font-sans font-semibold",
-           "text-[13px] sm:text-sm",
-           "leading-tight text-center",
-           "px-4 py-2.5 sm:py-3",
-           "min-h-[42px] sm:min-h-[48px]",
-           isWide ? "lg:flex-1 w-full" : "w-full",
-           t.ctaSecondary,
-         ].join(" ")}
-       >
-         Узнать больше
-       </button>
-     
-     </div>
+          <button
+            type="button"
+            onClick={() => onOpenMore(offer.id)}
+            className={[
+              "rounded-full font-sans font-semibold",
+              "text-[13px] sm:text-sm",
+              "leading-tight text-center",
+              "px-4 py-2.5 sm:py-3",
+              "min-h-[42px] sm:min-h-[48px]",
+              isWide ? "lg:flex-1 w-full" : "w-full",
+              t.ctaSecondary,
+            ].join(" ")}
+          >
+            Узнать больше
+          </button>
+        </div>
       </div>
     </motion.article>
   );
 }
 
-/* ─── Main ─── */
 export default function Programs() {
   const [isGSA, setIsGSA] = useState(false);
-  
- const START_USERS = 120;
- const START_DATE = new Date("2026-03-01");
- 
- const calcUsers = () => {
-   const now = new Date();
-   const diffDays = Math.floor(
-     (now.getTime() - START_DATE.getTime()) / (1000 * 60 * 60 * 24)
-   );
- 
-   return START_USERS + diffDays * 10;
- };
- 
- const [freeUsers, setFreeUsers] = useState(calcUsers());
- 
- useEffect(() => {
-   const id = setInterval(() => {
-     setFreeUsers(calcUsers());
-   }, 60000);
- 
-   return () => clearInterval(id);
- }, []);
+
+  const START_USERS = 120;
+  const START_DATE = new Date("2026-03-01");
+
+  const calcUsers = () => {
+    const now = new Date();
+    const diffDays = Math.floor(
+      (now.getTime() - START_DATE.getTime()) / (1000 * 60 * 60 * 24)
+    );
+    return START_USERS + diffDays * 10;
+  };
+
+  const [freeUsers, setFreeUsers] = useState(calcUsers());
+
+  useEffect(() => {
+    const id = setInterval(() => {
+      setFreeUsers(calcUsers());
+    }, 60000);
+    return () => clearInterval(id);
+  }, []);
 
   useStableAppHeight(setIsGSA);
 
-  const offers = useMemo<Offer[]>(() => [
-    {
-      id: "system",
-      payType: "one_time",
-      ctaNote: "countdown",
-      title: "© Система\n«Архитектура счастья»",
-      longSubtitle: "Фундаментальный Курс от Ицхака Пинтосевича.",
-      highlightText: "Плод 20-ти летних изучений природы счастья.",
-      description:
-        "Вы начинаете управлять своим состоянием, целями и энергией.\nСчастье перестаёт быть случайностью - становится архитектурой.",
-      mobileDescription:
-        "Вы начинаете управлять своим состоянием, целями и энергией.\nСчастье перестаёт быть случайностью - становится архитектурой.",
-      oldPrice: "499 €",
-      price: "49 €",
-      bullets: [
-        "10 элементов системы счастья",
-        "Ежедневные практики (10–15 минут)",
-        "Архитектура целей без выгорания",
-        "Управление энергией",
-        "Гибкость мышления",
-        "Стратегия отношений",
-        "Живая встреча с Ицхаком (Q&A)",
-        "Рабочие инструменты и чек-листы",
-        "Доступ к материалам на 30 дней",
-        "20 видео уроков, сессия с Ицхаком",
-      ],
-      cta: "Купить сейчас",
-      variant: "light",
-      longDescription: "Разовый платёж. После оплаты вы получите доступ к материалам на 1 год.",
-      badge: "Скидка 90%",
-    },
-    {
-      id: "club",
-      payType: "subscription",
-      title: "© Клуб\n«Архитектура счастья»",
-      highlightText: "Доступ ко всем курсам Ицхака Пинтосевича",
-      priceAlt: "или 250 € / год (выгоднее)",
-      description: "Полный проект вашего внутреннего дома.",
-      mobileDescription: "Полная система из 10 ключевых элементов.\nПолный проект вашего внутреннего дома.",
-    
-     price: "49 €",
-     priceNote: "/ мес",
-     
-    
-    
-      bullets: [
-        "Видео-уроки и тренинги",
-        "Аватар Ицхака отвечает 24/7",
-        "Доступ к курсам Ицхака Пинтосевича",
-        "Ответы на волнующие вопросы",
-        "Полный спектр жизненного баланса",
-        "Здоровый эндорфин и энергия",
-        "Ясность мышления",
-        "Понимание предназначения",
-        "Счастливые отношения",
-        "Сообщество осознанных людей",
-      ],
-    
-      cta: "Купить сейчас",
-      variant: "yellow",
-    },
-        {
-      id: "gift",
-      payType: "free",
-      title: "© Дарим тебе курс",
-      description:
-        "Мы верим, что система счастья должна быть доступна тем, кому сейчас особенно трудно.\nЕсли вы находитесь в сложной жизненной ситуации, вы можете подать заявку на возможность получения доступа к системе «Архитектура счастья» бесплатно.",
-      mobileDescription: "Если вы отвечаете таким критериям:",
-      price: "0 €",
-    bullets: [
-  "Лица с подтверждённым статусом инвалидности",
-],
-      longDescription: "Как это работает:\n\n1. Заполните форму заявки\n2. Кратко опишите ситуацию\n3. Приложите подтверждающий документ\n\nПосле рассмотрения заявки вы получите ответ на указанные контакты.",
-      cta: "Подать заявку",
-      variant: "light",
-      badge: "Бесплатно",
-    },
-    {
-      id: "ambassador",
-      payType: "donation",
-      title: "© Амбассадор счастья",
-      description:
-        "Вы становитесь частью закрытого круга людей, которые не просто развиваются сами - а создают возможность восстановления для других.\nВаш вклад финансирует бесплатный доступ к системе «Архитектура счастья» для людей, переживающих болезнь, утрату и кризис.",
-      mobileDescription: "Поддержите инициативу и создайте возможность восстановления для других. Ваш вклад финансирует бесплатный доступ для людей в кризисе.",
-      price: "Любая сумма",
-      bullets: [
-        "Финансирование бесплатного доступа к системе",
-        "Поддержка людей в кризисе",
-        "Углубление собственного ощущения смысла и влияния",
-      ],
-      longDescription: "Это уровень выше обычного участия. Это позиция.\n\nЛюди, которые поддерживают других, усиливают собственное ощущение смысла, влияния и внутреннего достоинства.\nСчастье углубляется, когда им делятся.",
-      cta: "Стать Амбассадором",
-      variant: "yellow",
-      badge: "Благотворительность",
-    },
-  ], []);
+  const offers = useMemo<Offer[]>(
+    () => [
+      {
+        id: "marathon",
+        payType: "lead",
+        title: "© Марафон\n«Мой Баланс»",
+        longSubtitle: "Живой формат с актуальной встречей",
+        highlightText: "Каждый четверг • 16:00 по Израилю",
+        description:
+          "Еженедельный марафон в живом формате. После заявки данные сохраняются в Google Sheet, затем открывается страница оплаты, а после успешной оплаты становится доступна Telegram-группа текущего марафона.",
+        mobileDescription:
+          "Живой марафон с актуальной датой и временем. После заявки откроется страница оплаты, а затем Telegram-группа текущего марафона.",
+        price: "9 €",
+        bullets: [
+          "Живой марафон в Zoom",
+          "Каждый четверг",
+          "16:00 по Израилю",
+          "Отдельная Telegram-группа под текущий марафон",
+          "Быстрый доступ после формы и оплаты",
+          "Удобный вход для участников",
+        ],
+        cta: "Получить доступ",
+        variant: "light",
+        longDescription:
+          "После заполнения формы заявка сохраняется в Google Sheet. Затем открывается страница оплаты. После успешной оплаты участник получает доступ в Telegram-группу текущего марафона.",
+        badge: "Актуальная встреча",
+      },
+      {
+        id: "club",
+        payType: "lead",
+        title: "© Марафон\n«Архитектура счастья»",
+        highlightText: "После заявки откроется мини-апп Happi10",
+        description:
+          "Оставьте заявку и переходите в мини-апп Happi10 для дальнейшего доступа.",
+        mobileDescription:
+          "Оставьте заявку и переходите в мини-апп Happi10 для дальнейшего доступа.",
+        price: "49 €",
+        priceNote: "/ мес",
+        priceAlt: "или 250 € / год (выгоднее)",
+        bullets: [
+          "Видео-уроки и тренинги",
+          "Аватар Ицхака отвечает 24/7",
+          "Доступ к материалам Happi10",
+          "Полный спектр жизненного баланса",
+          "Ясность мышления",
+          "Понимание предназначения",
+          "Счастливые отношения",
+          "Сообщество осознанных людей",
+          "Удобный вход через мини-апп",
+          "Ежемесячная или годовая подписка",
+        ],
+        cta: "Перейти в мини-апп",
+        variant: "yellow",
+        longDescription:
+          "После заполнения формы пользователь сразу переходит в мини-апп Happi10.",
+        badge: "Подписка",
+      },
+      {
+        id: "gift",
+        payType: "free",
+        title: "© Дарим тебе курс",
+        description:
+          "Мы верим, что система счастья должна быть доступна тем, кому сейчас особенно трудно.\nЕсли вы находитесь в сложной жизненной ситуации, вы можете подать заявку на возможность получения доступа к системе «Архитектура счастья» бесплатно.",
+        mobileDescription: "Если вы отвечаете таким критериям:",
+        price: "0 €",
+        bullets: ["Лица с подтверждённым статусом инвалидности"],
+        longDescription:
+          "Как это работает:\n\n1. Заполните форму заявки\n2. Кратко опишите ситуацию\n3. Приложите подтверждающий документ\n\nПосле рассмотрения заявки вы получите ответ на указанные контакты.",
+        cta: "Подать заявку",
+        variant: "light",
+        badge: "Бесплатно",
+      },
+      {
+        id: "ambassador",
+        payType: "donation",
+        title: "© Амбассадор счастья",
+        description:
+          "Вы становитесь частью закрытого круга людей, которые не просто развиваются сами - а создают возможность восстановления для других.\nВаш вклад финансирует бесплатный доступ к системе «Архитектура счастья» для людей, переживающих болезнь, утрату и кризис.",
+        mobileDescription:
+          "Поддержите инициативу и создайте возможность восстановления для других. Ваш вклад финансирует бесплатный доступ для людей в кризисе.",
+        price: "Любая сумма",
+        bullets: [
+          "Финансирование бесплатного доступа к системе",
+          "Поддержка людей в кризисе",
+          "Углубление собственного ощущения смысла и влияния",
+        ],
+        longDescription:
+          "Это уровень выше обычного участия. Это позиция.\n\nЛюди, которые поддерживают других, усиливают собственное ощущение смысла, влияния и внутреннего достоинства.\nСчастье углубляется, когда им делятся.",
+        cta: "Стать Амбассадором",
+        variant: "yellow",
+        badge: "Благотворительность",
+      },
+    ],
+    []
+  );
 
   const topRow = offers.slice(0, 3);
   const bottomCard = offers[3];
@@ -1186,28 +1474,60 @@ export default function Programs() {
   const [bulletsModalOpen, setBulletsModalOpen] = useState(false);
   const [leadModalOpen, setLeadModalOpen] = useState(false);
   const [activeOfferId, setActiveOfferId] = useState<string | null>(null);
-  const activeOffer = useMemo(() => offers.find((o) => o.id === activeOfferId) ?? null, [offers, activeOfferId]);
 
-  const openMore = (id: string) => { setActiveOfferId(id); setBulletsModalOpen(true); setLeadModalOpen(false); setModalUrl("details", id); };
-  const openLead = (id: string) => { setActiveOfferId(id); setLeadModalOpen(true); setBulletsModalOpen(false); setModalUrl("lead", id); };
+  const activeOffer = useMemo(
+    () => offers.find((o) => o.id === activeOfferId) ?? null,
+    [offers, activeOfferId]
+  );
+
+  const openMore = (id: string) => {
+    setActiveOfferId(id);
+    setBulletsModalOpen(true);
+    setLeadModalOpen(false);
+    setModalUrl("details", id);
+  };
+
+  const openLead = (id: string) => {
+    setActiveOfferId(id);
+    setLeadModalOpen(true);
+    setBulletsModalOpen(false);
+    setModalUrl("lead", id);
+  };
 
   useEffect(() => {
     if (typeof window === "undefined") return;
+
     const applyFromUrl = () => {
       const sp = new URLSearchParams(window.location.search);
       const lead = sp.get("lead");
       const details = sp.get("details");
       const offerId = sp.get("offerId");
-      if (lead === "1" && offerId) { setActiveOfferId(offerId); setLeadModalOpen(true); setBulletsModalOpen(false); return; }
-      if (details === "1" && offerId) { setActiveOfferId(offerId); setBulletsModalOpen(true); setLeadModalOpen(false); return; }
-      setLeadModalOpen(false); setBulletsModalOpen(false); setActiveOfferId(null);
+
+      if (lead === "1" && offerId) {
+        setActiveOfferId(offerId);
+        setLeadModalOpen(true);
+        setBulletsModalOpen(false);
+        return;
+      }
+
+      if (details === "1" && offerId) {
+        setActiveOfferId(offerId);
+        setBulletsModalOpen(true);
+        setLeadModalOpen(false);
+        return;
+      }
+
+      setLeadModalOpen(false);
+      setBulletsModalOpen(false);
+      setActiveOfferId(null);
     };
+
     applyFromUrl();
     window.addEventListener("popstate", applyFromUrl);
     return () => window.removeEventListener("popstate", applyFromUrl);
   }, []);
 
-  const sectionContent = (
+  return (
     <section id="programs" className="bg-[#F6F1E7]">
       <div className="mx-auto max-w-[1400px] px-5 sm:px-8 lg:px-12 py-14 sm:py-20">
         <motion.div
@@ -1225,7 +1545,7 @@ export default function Programs() {
             Выберите формат участия
           </h2>
           <p className="mt-5 text-black/70 text-base sm:text-lg leading-relaxed">
-            Начните с фундамента - или заходите в полный проект и стройте устойчивое состояние системно.
+            Выберите удобный формат участия: живой марафон, мини-апп или специальная заявка.
           </p>
         </motion.div>
 
@@ -1240,15 +1560,15 @@ export default function Programs() {
           className="grid gap-5 lg:gap-6 grid-cols-1 md:grid-cols-2 lg:grid-cols-3"
         >
           {topRow.map((o, i) => (
-           <OfferCard
-             key={o.id}
-             offer={o}
-             index={i}
-             isWide={false}
-             onOpenMore={openMore}
-             onOpenLead={openLead}
-             freeUsers={freeUsers}
-           />
+            <OfferCard
+              key={o.id}
+              offer={o}
+              index={i}
+              isWide={false}
+              onOpenMore={openMore}
+              onOpenLead={openLead}
+              freeUsers={freeUsers}
+            />
           ))}
         </motion.div>
 
@@ -1263,24 +1583,38 @@ export default function Programs() {
             }}
             className="mt-5 lg:mt-6"
           >
-           <div id="ambassador">
-             <OfferCard
-               offer={bottomCard}
-               index={3}
-               isWide
-               onOpenMore={openMore}
-               onOpenLead={openLead}
-               freeUsers={freeUsers}
-             />
-           </div>
+            <div id="ambassador">
+              <OfferCard
+                offer={bottomCard}
+                index={3}
+                isWide
+                onOpenMore={openMore}
+                onOpenLead={openLead}
+                freeUsers={freeUsers}
+              />
+            </div>
           </motion.div>
         )}
       </div>
 
-      <BulletsModal open={bulletsModalOpen} onClose={() => { setBulletsModalOpen(false); clearModalUrl(); }} offer={activeOffer} onJoinClub={() => {}} />
-      <LeadFormModal open={leadModalOpen} onClose={() => { setLeadModalOpen(false); clearModalUrl(); }} offer={activeOffer} />
+      <BulletsModal
+        open={bulletsModalOpen}
+        onClose={() => {
+          setBulletsModalOpen(false);
+          clearModalUrl();
+        }}
+        offer={activeOffer}
+        onJoinClub={() => {}}
+      />
+
+      <LeadFormModal
+        open={leadModalOpen}
+        onClose={() => {
+          setLeadModalOpen(false);
+          clearModalUrl();
+        }}
+        offer={activeOffer}
+      />
     </section>
   );
-
-  return sectionContent;
 }

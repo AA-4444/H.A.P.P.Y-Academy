@@ -427,7 +427,7 @@ export function LeadFormModal({
     ? "Оставить заявку"
     : isAmbassador
     ? "Перейти к оплате доната"
-    : "Перейти в мини-апп";
+    : "Вступить в клуб";
 
   const resetAndClose = () => {
     setData({

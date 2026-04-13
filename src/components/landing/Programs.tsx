@@ -156,20 +156,21 @@ function TitleWithBreaks({ text }: { text: string }) {
 function setModalUrl(kind: "lead" | "details", offerId: string) {
   if (typeof window === "undefined") return;
   const url = new URL(window.location.href);
-  url.searchParams.delete("lead");
-  url.searchParams.delete("details");
-  url.searchParams.delete("offerId");
-  url.searchParams.set(kind, "1");
-  url.searchParams.set("offerId", offerId);
+  url.searchParams.delete("m");
+
+  if (kind === "lead") {
+    url.searchParams.set("m", offerId);
+  } else {
+    url.searchParams.set("m", `details-${offerId}`);
+  }
+
   window.history.pushState({ kind, offerId }, "", url.toString());
 }
 
 function clearModalUrl() {
   if (typeof window === "undefined") return;
   const url = new URL(window.location.href);
-  url.searchParams.delete("lead");
-  url.searchParams.delete("details");
-  url.searchParams.delete("offerId");
+  url.searchParams.delete("m");
   window.history.replaceState({}, "", url.toString());
 }
 
@@ -1377,8 +1378,8 @@ export default function Programs() {
       {
         id: "marathon",
         payType: "lead",
-        title: "© Марафон\n«Мой Баланс»",
-        longSubtitle: "Живой формат с актуальной встречей",
+        title: "© Марафон\n«Гибкость и ментальный фокус»",
+        longSubtitle: "Живой треннинг на котором ты вернешь контроль. Избавишся от апатии и прокрастенации. Научишься востанавливать энерегию.",
         highlightText: "Каждый четверг • 16:00 по Израилю",
         description:
           "Еженедельный марафон в живом формате. После заявки данные сохраняются в Google Sheet, затем открывается страница оплаты, а после успешной оплаты становится доступна Telegram-группа текущего марафона.",
@@ -1499,27 +1500,26 @@ export default function Programs() {
 
     const applyFromUrl = () => {
       const sp = new URLSearchParams(window.location.search);
-      const lead = sp.get("lead");
-      const details = sp.get("details");
-      const offerId = sp.get("offerId");
+      const modal = sp.get("m");
 
-      if (lead === "1" && offerId) {
-        setActiveOfferId(offerId);
-        setLeadModalOpen(true);
+      if (!modal) {
+        setLeadModalOpen(false);
         setBulletsModalOpen(false);
+        setActiveOfferId(null);
         return;
       }
 
-      if (details === "1" && offerId) {
+      if (modal.startsWith("details-")) {
+        const offerId = modal.replace("details-", "");
         setActiveOfferId(offerId);
         setBulletsModalOpen(true);
         setLeadModalOpen(false);
         return;
       }
 
-      setLeadModalOpen(false);
+      setActiveOfferId(modal);
+      setLeadModalOpen(true);
       setBulletsModalOpen(false);
-      setActiveOfferId(null);
     };
 
     applyFromUrl();

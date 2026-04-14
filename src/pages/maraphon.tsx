@@ -121,6 +121,32 @@ const cssVars = `
   }
 `;
 
+function useStableAppHeight() {
+  useEffect(() => {
+    const setHeight = () => {
+      const h = window.visualViewport?.height ?? window.innerHeight;
+      document.documentElement.style.setProperty("--app-height", `${h}px`);
+    };
+
+    setHeight();
+
+    const onResize = () => setHeight();
+    const onOrientationChange = () => setTimeout(setHeight, 150);
+
+    window.addEventListener("resize", onResize);
+    window.addEventListener("orientationchange", onOrientationChange);
+    window.addEventListener("pageshow", setHeight);
+    window.visualViewport?.addEventListener("resize", onResize);
+
+    return () => {
+      window.removeEventListener("resize", onResize);
+      window.removeEventListener("orientationchange", onOrientationChange);
+      window.removeEventListener("pageshow", setHeight);
+      window.visualViewport?.removeEventListener("resize", onResize);
+    };
+  }, []);
+}
+
 function useLockBodyScroll(locked: boolean) {
   useEffect(() => {
     if (!locked) return;
@@ -336,9 +362,12 @@ function LeadFormModal({
             transition={{ duration: 0.35, ease: [0.4, 0, 0.2, 1] }}
             className="fixed inset-0 z-[101] flex items-end sm:items-center justify-center p-0 sm:p-6"
           >
-            <div className="relative w-full max-w-lg overflow-y-auto rounded-t-[28px] sm:rounded-[28px] bg-[#F6F1E7] shadow-2xl max-h-[calc(100vh-32px)]">
-              <div className="sticky top-0 z-10 flex items-start justify-between p-6 pb-3 bg-[#F6F1E7] rounded-t-[28px]">
-                <div>
+            <div
+              className="relative w-full max-w-lg overflow-y-auto rounded-t-[28px] sm:rounded-[28px] bg-[#F6F1E7] shadow-2xl"
+              style={{ maxHeight: "calc(var(--app-height, 100vh) - 16px)" }}
+            >
+              <div className="sticky top-0 z-10 flex items-start justify-between p-5 sm:p-6 pb-3 bg-[#F6F1E7] rounded-t-[28px] border-b border-black/5">
+                <div className="pr-3">
                   <p className="text-xs font-semibold uppercase tracking-widest text-black/50 mb-1">
                     Заявка на марафон
                   </p>
@@ -351,14 +380,14 @@ function LeadFormModal({
                 </div>
                 <button
                   onClick={resetAndClose}
-                  className="ml-4 mt-1 rounded-full p-2 hover:bg-black/5 transition"
+                  className="shrink-0 rounded-full p-2 hover:bg-black/5 transition"
                   aria-label="Закрыть"
                 >
                   <X className="h-5 w-5 text-black/60" />
                 </button>
               </div>
 
-              <div className="px-6 pb-6">
+              <div className="px-5 sm:px-6 pb-5 sm:pb-6">
                 {sent ? (
                   <div className="flex flex-col items-center text-center py-8">
                     <div className="w-16 h-16 rounded-full bg-emerald-100 flex items-center justify-center mb-4">
@@ -486,17 +515,27 @@ function LeadFormModal({
                       />
                     </div>
 
-                    <button
-                      type="submit"
-                      disabled={isDisabled}
-                      className="w-full rounded-full h-12 font-sans font-bold transition disabled:opacity-50 bg-[hsl(var(--cta-yellow))] text-foreground hover:opacity-90"
-                    >
-                      {submitting ? "Отправляем..." : "Вступить в марафон"}
-                    </button>
+                    <div className="sticky bottom-0 bg-[#F6F1E7] pt-2 pb-1">
+                      <button
+                        type="submit"
+                        disabled={isDisabled}
+                        className="w-full rounded-full h-12 font-sans font-bold transition disabled:opacity-50 bg-[hsl(var(--cta-yellow))] text-foreground hover:opacity-90"
+                      >
+                        {submitting ? "Отправляем..." : "Вступить в марафон"}
+                      </button>
 
-                    <p className="text-xs text-black/50 leading-snug">
-                      Нажимая кнопку, вы соглашаетесь на обработку данных для связи с вами.
-                    </p>
+                      <button
+                        type="button"
+                        onClick={resetAndClose}
+                        className="w-full mt-2 rounded-full h-11 font-sans font-semibold text-black/70 hover:bg-black/5 transition"
+                      >
+                        Закрыть
+                      </button>
+
+                      <p className="text-xs text-black/50 leading-snug mt-3">
+                        Нажимая кнопку, вы соглашаетесь на обработку данных для связи с вами.
+                      </p>
+                    </div>
                   </form>
                 )}
               </div>
@@ -510,6 +549,8 @@ function LeadFormModal({
 
 function Maraphon() {
   const [leadModalOpen, setLeadModalOpen] = useState(false);
+
+  useStableAppHeight();
 
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -830,7 +871,7 @@ function Maraphon() {
         <div className="max-w-lg mx-auto flex flex-col items-center text-center gap-5">
           <p className="text-2xl font-black uppercase tracking-wide">Pintosevich</p>
 
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 w-full">
+          <div className="flex items-center gap-5">
             {socials.map((item) => {
               const Icon = item.icon;
               return (
@@ -839,13 +880,11 @@ function Maraphon() {
                   href={item.href}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="rounded-2xl border border-white/10 bg-white/5 px-4 py-4 hover:bg-white/10 transition-colors"
+                  aria-label={item.label}
+                  title={item.label}
+                  className="text-[hsl(var(--cta-yellow))] hover:opacity-80 transition-opacity"
                 >
-                  <div className="flex items-center justify-center mb-2">
-                    <Icon className="w-5 h-5" />
-                  </div>
-                  <div className="text-sm font-bold">{item.label}</div>
-                  <div className="text-xs text-white/60 mt-1">{item.followers}</div>
+                  <Icon className="w-6 h-6" />
                 </a>
               );
             })}

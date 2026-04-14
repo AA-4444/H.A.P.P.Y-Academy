@@ -1386,6 +1386,7 @@ export default function Programs() {
         mobileDescription:
           "Живой марафон с актуальной датой и временем. После заявки откроется страница оплаты, а затем Telegram-группа текущего марафона.",
         price: "9 €",
+oldPrice: "49 €",
         bullets: [
           "Живой марафон в Zoom",
           "Каждый четверг",

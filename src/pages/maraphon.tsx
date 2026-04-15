@@ -649,7 +649,7 @@ function Maraphon() {
             <div className="flex items-center gap-3">
               <div className="bg-[hsl(var(--cta-yellow))] rounded-2xl px-4 py-3 shadow-lg flex-1 text-left">
                 <p className="text-foreground font-extrabold text-base leading-tight">
-                  Четверг, 18:00–19:00 (Израиль)
+                  Четверг, 19:00 (Израиль)
                 </p>
                 <p className="text-foreground/70 text-sm mt-1 italic">
                   Запись доступна сразу после эфира
@@ -662,7 +662,7 @@ function Maraphon() {
                   className="w-16 h-16 object-contain"
                 />
                 <p className="text-[hsl(var(--accent))] font-medium text-sm italic mt-1">
-                  16 апреля 2026
+                  каждый четверг
                 </p>
               </div>
             </div>
@@ -686,7 +686,7 @@ function Maraphon() {
             </h1>
             <div className="flex justify-between mt-3">
               <p className="text-[hsl(var(--accent))] font-medium text-sm">
-                16 апреля 2026
+                 каждый четверг
               </p>
               <p className="text-foreground/60 text-sm">система Вим Хофа</p>
             </div>
@@ -826,7 +826,7 @@ function Maraphon() {
             transition={{ duration: 0.5 }}
             className="text-[hsl(var(--muted-foreground))] italic mb-3 text-base"
           >
-            16 апреля 2026
+             каждый четверг
           </motion.p>
 
           <motion.button

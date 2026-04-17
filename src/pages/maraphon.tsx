@@ -22,11 +22,8 @@ const COUNTRY_LIST = Object.values(
 
 type LeadFormData = {
   name: string;
-  email: string;
-  telegramUsername: string;
   phone: string;
   country: string;
-  comment: string;
 };
 
 type SocialItem = {
@@ -179,19 +176,6 @@ function createLeadId() {
   return `lead_${Date.now()}_${Math.random().toString(16).slice(2)}`;
 }
 
-function normalizeTelegramUsername(value: string) {
-  const v = String(value || "").trim().replace(/^@+/, "");
-  return v ? `@${v}` : "";
-}
-
-function isValidTelegramUsername(value: string) {
-  return /^@[a-zA-Z0-9_]{4,31}$/.test(value.trim());
-}
-
-function isValidEmail(value: string) {
-  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value.trim());
-}
-
 function setModalUrl() {
   if (typeof window === "undefined") return;
   const url = new URL(window.location.href);
@@ -217,11 +201,8 @@ function LeadFormModal({
 
   const [data, setData] = useState<LeadFormData>({
     name: "",
-    email: "",
-    telegramUsername: "",
     phone: "",
     country: "",
-    comment: "",
   });
 
   const [sent, setSent] = useState(false);
@@ -239,11 +220,8 @@ function LeadFormModal({
   const resetAndClose = () => {
     setData({
       name: "",
-      email: "",
-      telegramUsername: "",
       phone: "",
       country: "",
-      comment: "",
     });
     setSent(false);
     setSubmitting(false);
@@ -253,8 +231,6 @@ function LeadFormModal({
   const isDisabled =
     submitting ||
     data.name.trim().length < 2 ||
-    !isValidEmail(data.email) ||
-    !isValidTelegramUsername(normalizeTelegramUsername(data.telegramUsername)) ||
     data.phone.trim().length < 5 ||
     data.country.trim().length === 0;
 
@@ -266,19 +242,10 @@ function LeadFormModal({
     if (submitting) return;
 
     const name = data.name.trim();
-    const email = data.email.trim();
-    const telegramUsername = normalizeTelegramUsername(data.telegramUsername);
     const phone = data.phone.trim();
     const country = data.country.trim();
-    const comment = data.comment.trim();
 
-    if (
-      name.length < 2 ||
-      !isValidEmail(email) ||
-      !isValidTelegramUsername(telegramUsername) ||
-      phone.length < 5 ||
-      country.length === 0
-    ) {
+    if (name.length < 2 || phone.length < 5 || country.length === 0) {
       alert("Пожалуйста, заполните все обязательные поля корректно.");
       return;
     }
@@ -295,11 +262,8 @@ function LeadFormModal({
           offerId: "marathon",
           offerTitle: "© Марафон\n«Гибкость и ментальный фокус»",
           name,
-          email,
-          telegramUsername,
           phone,
           country,
-          comment,
           pageUrl: window.location.href,
           price: "9 €",
         }),
@@ -320,11 +284,8 @@ function LeadFormModal({
           offerId: "marathon",
           offerTitle: "© Марафон\n«Гибкость и ментальный фокус»",
           name,
-          email,
-          telegramUsername,
           phone,
           country,
-          comment,
           pageUrl: window.location.href,
         }),
       });
@@ -417,42 +378,6 @@ function LeadFormModal({
                     </div>
 
                     <div>
-                      <label className="text-sm font-medium text-foreground">Email</label>
-                      <input
-                        type="email"
-                        value={data.email}
-                        onChange={(e) =>
-                          setData((p) => ({ ...p, email: e.target.value }))
-                        }
-                        className={inputCls}
-                        placeholder="you@example.com"
-                        autoComplete="email"
-                      />
-                    </div>
-
-                    <div>
-                      <label className="text-sm font-medium text-foreground">
-                        Telegram username
-                      </label>
-                      <input
-                        type="text"
-                        value={data.telegramUsername}
-                        onChange={(e) =>
-                          setData((p) => ({
-                            ...p,
-                            telegramUsername: e.target.value,
-                          }))
-                        }
-                        className={inputCls}
-                        placeholder="@username"
-                        autoComplete="off"
-                      />
-                      <p className="text-xs text-black/50 mt-1">
-                        Введите username в Telegram, например @alex
-                      </p>
-                    </div>
-
-                    <div>
                       <label className="text-sm font-medium text-foreground">Телефон</label>
                       <input
                         type="tel"
@@ -501,18 +426,6 @@ function LeadFormModal({
                           />
                         </svg>
                       </div>
-                    </div>
-
-                    <div>
-                      <label className="text-sm font-medium text-foreground">Комментарий</label>
-                      <textarea
-                        value={data.comment}
-                        onChange={(e) =>
-                          setData((p) => ({ ...p, comment: e.target.value }))
-                        }
-                        className="mt-2 w-full min-h-[88px] rounded-2xl p-4 bg-white/80 border border-black/10 outline-none focus:ring-2 focus:ring-black/10 resize-none text-foreground"
-                        placeholder="Если хотите, оставьте комментарий…"
-                      />
                     </div>
 
                     <div className="sticky bottom-0 bg-[#F6F1E7] pt-2 pb-1">
@@ -686,7 +599,7 @@ function Maraphon() {
             </h1>
             <div className="flex justify-between mt-3">
               <p className="text-[hsl(var(--accent))] font-medium text-sm">
-                 30 Апреля
+                30 Апреля
               </p>
               <p className="text-foreground/60 text-sm">система Вим Хофа</p>
             </div>
@@ -826,7 +739,7 @@ function Maraphon() {
             transition={{ duration: 0.5 }}
             className="text-[hsl(var(--muted-foreground))] italic mb-3 text-base"
           >
-             30 Апреля
+            30 Апреля
           </motion.p>
 
           <motion.button

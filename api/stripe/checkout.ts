@@ -11,13 +11,10 @@ type Body = {
   name?: string;
   contact?: string;
   country?: string;
-  comment?: string;
   pageUrl?: string;
   leadId?: string;
   stage?: "pre_payment" | "paid";
   amount?: string;
-  email?: string;
-  telegramUsername?: string;
   phone?: string;
 };
 
@@ -79,19 +76,6 @@ function esc(s: string) {
     .replace(/>/g, "&gt;");
 }
 
-function normalizeTelegramUsername(value: string) {
-  const v = String(value || "").trim().replace(/^@+/, "");
-  return v ? `@${v}` : "";
-}
-
-function isValidEmail(value: string) {
-  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(value || "").trim());
-}
-
-function isValidTelegramUsername(value: string) {
-  return /^@[a-zA-Z0-9_]{4,31}$/.test(String(value || "").trim());
-}
-
 export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse
@@ -115,14 +99,10 @@ export default async function handler(
     const offerTitle = (body.offerTitle ?? "").trim();
     const name = (body.name ?? "").trim();
     const contact = (body.contact ?? "").trim();
-    const comment = (body.comment ?? "").trim();
     const country = (body.country ?? "").trim();
     const pageUrl = (body.pageUrl ?? "").trim();
     const stage = body.stage ?? "pre_payment";
     const leadId = (body.leadId ?? "").trim() || makeLeadId();
-
-    const email = (body.email ?? "").trim();
-    const telegramUsername = normalizeTelegramUsername(body.telegramUsername ?? "");
     const phone = (body.phone ?? "").trim();
 
     if (!offerId || name.length < 2) {
@@ -147,7 +127,6 @@ export default async function handler(
         `\n<b>Name:</b> ${esc(name)}` +
         `\n<b>Contact:</b> ${esc(safeContact)}` +
         (country ? `\n<b>Country:</b> ${esc(country)}` : "") +
-        (comment ? `\n<b>Comment:</b> ${esc(comment)}` : "") +
         (pageUrl ? `\n<b>Page:</b> ${esc(pageUrl)}` : "") +
         `\n<b>LeadId:</b> ${esc(leadId)}`;
 
@@ -187,7 +166,6 @@ export default async function handler(
           country,
           name,
           contact,
-          comment,
           pageUrl,
           donationAmount: donation.toString(),
         },
@@ -203,12 +181,7 @@ export default async function handler(
     }
 
     if (offerId === "marathon") {
-      if (
-        !isValidEmail(email) ||
-        !isValidTelegramUsername(telegramUsername) ||
-        phone.length < 5 ||
-        country.length === 0
-      ) {
+      if (phone.length < 5 || country.length === 0) {
         return res.status(400).json({
           ok: false,
           error: "Validation failed for marathon",
@@ -226,7 +199,6 @@ export default async function handler(
       const session = await stripe.checkout.sessions.create({
         mode: "payment",
         line_items: [{ price: priceId, quantity: 1 }],
-        customer_email: email,
         metadata: {
           leadId,
           stage,
@@ -234,10 +206,7 @@ export default async function handler(
           offerTitle,
           country,
           name,
-          email,
-          telegramUsername,
           phone,
-          comment,
           pageUrl,
         },
         success_url: MARATHON_GROUP_URL,
@@ -277,7 +246,6 @@ export default async function handler(
         country,
         name,
         contact,
-        comment,
         pageUrl,
       },
       success_url: `${origin}/payment/${successPath}?session_id={CHECKOUT_SESSION_ID}&offerId=${encodeURIComponent(

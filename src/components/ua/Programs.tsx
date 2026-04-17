@@ -181,11 +181,8 @@ function createLeadId() {
   return `lead_${Date.now()}_${Math.random().toString(16).slice(2)}`;
 }
 
-function buildContact(phone: string, messenger: string) {
-  const parts: string[] = [];
-  if (phone.trim()) parts.push(`Телефон: ${phone.trim()}`);
-  if (messenger.trim()) parts.push(`Зв’язок: ${messenger.trim()}`);
-  return parts.join(" | ");
+function buildContact(phone: string) {
+  return phone.trim() ? `Телефон: ${phone.trim()}` : "";
 }
 
 function normalizeTelegramUsername(value: string) {
@@ -199,13 +196,6 @@ function isValidTelegramUsername(value: string) {
 
 function isValidEmail(value: string) {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value.trim());
-}
-
-function isMessengerValid(value: string) {
-  const v = value.trim();
-  const isTg = /^@[a-zA-Z0-9_]{4,31}$/.test(v);
-  const isPhone = /^\+?[0-9\s\-()]{7,}$/.test(v);
-  return isTg || isPhone;
 }
 
 const COUNTDOWN_TARGET = new Date(Date.now() + 10 * 24 * 60 * 60 * 1000);
@@ -453,7 +443,6 @@ export function LeadFormModal({
     const email = data.email.trim();
     const telegramUsername = normalizeTelegramUsername(data.telegramUsername);
     const phone = data.phone.trim();
-    const comment = data.comment.trim();
 
     setSubmitting(true);
 
@@ -493,7 +482,6 @@ export function LeadFormModal({
             telegramUsername,
             phone,
             country: data.country,
-            comment,
             pageUrl: window.location.href,
             price: offer.price,
           }),
@@ -518,7 +506,6 @@ export function LeadFormModal({
             telegramUsername,
             phone,
             country: data.country,
-            comment,
             pageUrl: window.location.href,
           }),
         });
@@ -542,8 +529,7 @@ export function LeadFormModal({
             offerId: offer.id,
             offerTitle: offer.title,
             name,
-            contact: buildContact(phone, data.messenger),
-            comment,
+            contact: buildContact(phone),
             country: data.country,
             pageUrl: window.location.href,
           }),
@@ -564,8 +550,7 @@ export function LeadFormModal({
             offerId: offer.id,
             offerTitle: offer.title,
             name,
-            contact: buildContact(phone, data.messenger),
-            comment,
+            contact: buildContact(phone),
             country: data.country,
             pageUrl: window.location.href,
             price: offer.price,
@@ -587,9 +572,8 @@ export function LeadFormModal({
           offerId: offer.id,
           offerTitle: offer.title,
           name,
-          contact: buildContact(phone, data.messenger),
+          contact: buildContact(phone),
           country: data.country,
-          comment,
           pageUrl: window.location.href,
           ...(offer.id === "ambassador" ? { amount: data.amount } : {}),
         }),
@@ -628,9 +612,7 @@ export function LeadFormModal({
       data.name.trim().length < 2 ||
       data.phone.trim().length < 5 ||
       data.country.trim().length === 0 ||
-      !isMessengerValid(data.messenger) ||
-      (isAmbassador && String(data.amount).trim().length === 0) ||
-      (offer?.id === "gift" && data.comment.trim().length < 20)
+      (isAmbassador && String(data.amount).trim().length === 0)
     );
   })();
 
@@ -774,45 +756,22 @@ export function LeadFormModal({
                         </div>
                       </>
                     ) : (
-                      <>
-                        <div>
-                          <label className="text-sm font-medium text-foreground">
-                            Телефон
-                          </label>
-                          <input
-                            type="tel"
-                            value={data.phone}
-                            onChange={(e) =>
-                              setData((p) => ({ ...p, phone: e.target.value }))
-                            }
-                            className={inputCls}
-                            placeholder="+49…"
-                            autoComplete="tel"
-                            inputMode="tel"
-                          />
-                        </div>
-
-                        <div>
-                          <label className="text-sm font-medium text-foreground">
-                            Telegram або WhatsApp
-                          </label>
-
-                          <input
-                            type="text"
-                            value={data.messenger}
-                            onChange={(e) =>
-                              setData((p) => ({ ...p, messenger: e.target.value }))
-                            }
-                            className={inputCls}
-                            placeholder="@username або +49..."
-                            autoComplete="off"
-                          />
-
-                          <p className="text-xs text-muted-foreground mt-1">
-                            Введіть @username або номер у міжнародному форматі
-                          </p>
-                        </div>
-                      </>
+                      <div>
+                        <label className="text-sm font-medium text-foreground">
+                          Телефон
+                        </label>
+                        <input
+                          type="tel"
+                          value={data.phone}
+                          onChange={(e) =>
+                            setData((p) => ({ ...p, phone: e.target.value }))
+                          }
+                          className={inputCls}
+                          placeholder="+49…"
+                          autoComplete="tel"
+                          inputMode="tel"
+                        />
+                      </div>
                     )}
 
                     <div>
@@ -875,31 +834,6 @@ export function LeadFormModal({
                         </p>
                       </div>
                     )}
-
-                    <div>
-                      <label className="text-sm font-medium text-foreground">
-                        {offer?.id === "gift"
-                          ? "Опишіть, чому ви можете претендувати на право безкоштовного проходження курсу"
-                          : isAmbassador
-                          ? "Опишіть свою ситуацію"
-                          : "Коментар"}
-                      </label>
-
-                      <textarea
-                        value={data.comment}
-                        onChange={(e) =>
-                          setData((p) => ({ ...p, comment: e.target.value }))
-                        }
-                        className="mt-2 w-full min-h-[80px] rounded-2xl p-4 bg-card/70 border border-border outline-none focus:ring-2 focus:ring-ring/20 resize-none text-foreground"
-                        placeholder={
-                          offer?.id === "gift"
-                            ? "Опишіть вашу ситуацію детально…"
-                            : isAmbassador
-                            ? "Напишіть кілька слів про вашу ситуацію…"
-                            : "За бажанням залиште коментар…"
-                        }
-                      />
-                    </div>
 
                     <button
                       type="submit"
@@ -1378,14 +1312,15 @@ export default function Programs() {
         id: "marathon",
         payType: "lead",
         title: "© Марафон\n«Гнучкість і ментальний фокус»",
-        longSubtitle: "Живий тренінг, на якому ти повернеш контроль. Позбудешся апатії та прокрастинації. Навчишся відновлювати енергію.",
+        longSubtitle:
+          "Живий тренінг, на якому ти повернеш контроль. Позбудешся апатії та прокрастинації. Навчишся відновлювати енергію.",
         highlightText: "30 Квітня • 19:00 за Ізраїлем",
         description:
           "Щотижневий марафон у живому форматі. Після заявки дані зберігаються в Google Sheet, потім відкривається сторінка оплати, а після успішної оплати стає доступною Telegram-група поточного марафону.",
         mobileDescription:
           "Живий марафон з актуальною датою та часом. Після заявки відкриється сторінка оплати, а потім Telegram-група поточного марафону.",
-       price: "9 €",
-oldPrice: "49 €",
+        price: "9 €",
+        oldPrice: "49 €",
         bullets: [
           "Живий марафон у Zoom",
           "30 Квітня",
@@ -1499,10 +1434,9 @@ oldPrice: "49 €",
     if (typeof window === "undefined") return;
 
     const applyFromUrl = () => {
-      const sp = new URLSearchParams(window.location.search);
-      const lead = sp.get("lead");
-      const details = sp.get("details");
-      const offerId = sp.get("offerId");
+      const lead = new URLSearchParams(window.location.search).get("lead");
+      const details = new URLSearchParams(window.location.search).get("details");
+      const offerId = new URLSearchParams(window.location.search).get("offerId");
 
       if (lead === "1" && offerId) {
         setActiveOfferId(offerId);

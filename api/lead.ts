@@ -2,12 +2,9 @@ type Body = {
   offerId?: string;
   offerTitle?: string;
   name?: string;
-  email?: string;
-  telegramUsername?: string;
   contact?: string;
   phone?: string;
   country?: string;
-  comment?: string;
   pageUrl?: string;
   price?: string;
 };
@@ -23,19 +20,6 @@ function setCors(res: any) {
   res.setHeader?.("Access-Control-Allow-Origin", "*");
   res.setHeader?.("Access-Control-Allow-Methods", "POST, OPTIONS, GET");
   res.setHeader?.("Access-Control-Allow-Headers", "Content-Type, Authorization");
-}
-
-function normalizeTelegramUsername(value: string) {
-  const v = String(value || "").trim().replace(/^@+/, "");
-  return v ? `@${v}` : "";
-}
-
-function isValidTelegramUsername(value: string) {
-  return /^@[a-zA-Z0-9_]{4,31}$/.test(value);
-}
-
-function isValidEmail(value: string) {
-  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value.trim());
 }
 
 export default async function handler(req: any, res: any) {
@@ -74,12 +58,9 @@ export default async function handler(req: any, res: any) {
     const offerId = (body.offerId ?? "").trim();
     const offerTitle = (body.offerTitle ?? "").trim();
     const name = (body.name ?? "").trim();
-    const email = (body.email ?? "").trim();
-    const telegramUsername = normalizeTelegramUsername(body.telegramUsername ?? "");
     const phone = (body.phone ?? "").trim();
     const contact = (body.contact ?? "").trim();
     const country = (body.country ?? "").trim();
-    const comment = (body.comment ?? "").trim();
     const pageUrl = (body.pageUrl ?? "").trim();
     const price = (body.price ?? "").trim();
 
@@ -87,8 +68,6 @@ export default async function handler(req: any, res: any) {
       if (
         name.length < 2 ||
         phone.length < 5 ||
-        !isValidEmail(email) ||
-        !isValidTelegramUsername(telegramUsername) ||
         country.length === 0
       ) {
         return res.status(400).json({
@@ -113,11 +92,8 @@ export default async function handler(req: any, res: any) {
           offer_id: offerId,
           offer_title: offerTitle,
           name,
-          email,
-          telegram_username: telegramUsername,
           phone,
           country,
-          comment,
           page_url: pageUrl,
           price,
         }),
@@ -171,7 +147,6 @@ export default async function handler(req: any, res: any) {
     lines.push(`👤 <b>Имя:</b> ${escapeHtml(name)}`);
     lines.push(`📞 <b>Контакт:</b> ${escapeHtml(contact)}`);
     if (country) lines.push(`🌍 <b>Страна:</b> ${escapeHtml(country)}`);
-    if (comment) lines.push(`💬 <b>Комментарий:</b> ${escapeHtml(comment)}`);
     if (pageUrl) lines.push(`🔗 <b>Страница:</b> ${escapeHtml(pageUrl)}`);
     lines.push(`🕒 <b>Время:</b> ${escapeHtml(new Date().toLocaleString("ru-RU"))}`);
 

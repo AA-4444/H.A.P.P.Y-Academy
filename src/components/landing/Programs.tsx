@@ -33,11 +33,7 @@ type Offer = {
 
 type LeadFormData = {
   name: string;
-  email: string;
-  telegramUsername: string;
   phone: string;
-  messenger: string;
-  comment: string;
   amount: string;
   country: string;
 };
@@ -182,31 +178,8 @@ function createLeadId() {
   return `lead_${Date.now()}_${Math.random().toString(16).slice(2)}`;
 }
 
-function buildContact(phone: string, messenger: string) {
-  const parts: string[] = [];
-  if (phone.trim()) parts.push(`Телефон: ${phone.trim()}`);
-  if (messenger.trim()) parts.push(`Связь: ${messenger.trim()}`);
-  return parts.join(" | ");
-}
-
-function normalizeTelegramUsername(value: string) {
-  const v = String(value || "").trim().replace(/^@+/, "");
-  return v ? `@${v}` : "";
-}
-
-function isValidTelegramUsername(value: string) {
-  return /^@[a-zA-Z0-9_]{4,31}$/.test(value.trim());
-}
-
-function isValidEmail(value: string) {
-  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value.trim());
-}
-
-function isMessengerValid(value: string) {
-  const v = value.trim();
-  const isTg = /^@[a-zA-Z0-9_]{4,31}$/.test(v);
-  const isPhone = /^\+?[0-9\s\-()]{7,}$/.test(v);
-  return isTg || isPhone;
+function buildContact(phone: string) {
+  return `Телефон: ${phone.trim()}`;
 }
 
 const COUNTDOWN_TARGET = new Date(Date.now() + 10 * 24 * 60 * 60 * 1000);
@@ -388,12 +361,8 @@ export function LeadFormModal({
 
   const [data, setData] = useState<LeadFormData>({
     name: "",
-    email: "",
-    telegramUsername: "",
     phone: "",
-    messenger: "",
     country: "",
-    comment: "",
     amount: "",
   });
 
@@ -433,12 +402,8 @@ export function LeadFormModal({
   const resetAndClose = () => {
     setData({
       name: "",
-      email: "",
-      telegramUsername: "",
       phone: "",
-      messenger: "",
       country: "",
-      comment: "",
       amount: "",
     });
     setSent(false);
@@ -451,10 +416,7 @@ export function LeadFormModal({
     if (submitting || !offer) return;
 
     const name = data.name.trim();
-    const email = data.email.trim();
-    const telegramUsername = normalizeTelegramUsername(data.telegramUsername);
     const phone = data.phone.trim();
-    const comment = data.comment.trim();
 
     setSubmitting(true);
 
@@ -471,8 +433,6 @@ export function LeadFormModal({
       if (offer.id === "marathon") {
         if (
           name.length < 2 ||
-          !isValidEmail(email) ||
-          !isValidTelegramUsername(telegramUsername) ||
           phone.length < 5 ||
           data.country.trim().length === 0
         ) {
@@ -490,11 +450,8 @@ export function LeadFormModal({
             offerId: offer.id,
             offerTitle: offer.title,
             name,
-            email,
-            telegramUsername,
             phone,
             country: data.country,
-            comment,
             pageUrl: window.location.href,
             price: offer.price,
           }),
@@ -515,11 +472,8 @@ export function LeadFormModal({
             offerId: offer.id,
             offerTitle: offer.title,
             name,
-            email,
-            telegramUsername,
             phone,
             country: data.country,
-            comment,
             pageUrl: window.location.href,
           }),
         });
@@ -543,8 +497,7 @@ export function LeadFormModal({
             offerId: offer.id,
             offerTitle: offer.title,
             name,
-            contact: buildContact(phone, data.messenger),
-            comment,
+            contact: buildContact(phone),
             country: data.country,
             pageUrl: window.location.href,
           }),
@@ -565,8 +518,7 @@ export function LeadFormModal({
             offerId: offer.id,
             offerTitle: offer.title,
             name,
-            contact: buildContact(phone, data.messenger),
-            comment,
+            contact: buildContact(phone),
             country: data.country,
             pageUrl: window.location.href,
             price: offer.price,
@@ -588,9 +540,8 @@ export function LeadFormModal({
           offerId: offer.id,
           offerTitle: offer.title,
           name,
-          contact: buildContact(phone, data.messenger),
+          contact: buildContact(phone),
           country: data.country,
-          comment,
           pageUrl: window.location.href,
           ...(offer.id === "ambassador" ? { amount: data.amount } : {}),
         }),
@@ -615,23 +566,11 @@ export function LeadFormModal({
   const isDisabled = (() => {
     if (submitting) return true;
 
-    if (isMarathon) {
-      return (
-        data.name.trim().length < 2 ||
-        !isValidEmail(data.email) ||
-        !isValidTelegramUsername(normalizeTelegramUsername(data.telegramUsername)) ||
-        data.phone.trim().length < 5 ||
-        data.country.trim().length === 0
-      );
-    }
-
     return (
       data.name.trim().length < 2 ||
       data.phone.trim().length < 5 ||
       data.country.trim().length === 0 ||
-      !isMessengerValid(data.messenger) ||
-      (isAmbassador && String(data.amount).trim().length === 0) ||
-      (offer?.id === "gift" && data.comment.trim().length < 20)
+      (isAmbassador && String(data.amount).trim().length === 0)
     );
   })();
 
@@ -717,104 +656,22 @@ export function LeadFormModal({
                       />
                     </div>
 
-                    {isMarathon ? (
-                      <>
-                        <div>
-                          <label className="text-sm font-medium text-foreground">
-                            Email
-                          </label>
-                          <input
-                            type="email"
-                            value={data.email}
-                            onChange={(e) =>
-                              setData((p) => ({ ...p, email: e.target.value }))
-                            }
-                            className={inputCls}
-                            placeholder="you@example.com"
-                            autoComplete="email"
-                          />
-                        </div>
-
-                        <div>
-                          <label className="text-sm font-medium text-foreground">
-                            Telegram username
-                          </label>
-                          <input
-                            type="text"
-                            value={data.telegramUsername}
-                            onChange={(e) =>
-                              setData((p) => ({
-                                ...p,
-                                telegramUsername: e.target.value,
-                              }))
-                            }
-                            className={inputCls}
-                            placeholder="@username"
-                            autoComplete="off"
-                          />
-                          <p className="text-xs text-muted-foreground mt-1">
-                            Введите username в Telegram, например @alex
-                          </p>
-                        </div>
-
-                        <div>
-                          <label className="text-sm font-medium text-foreground">
-                            Телефон
-                          </label>
-                          <input
-                            type="tel"
-                            value={data.phone}
-                            onChange={(e) =>
-                              setData((p) => ({ ...p, phone: e.target.value }))
-                            }
-                            className={inputCls}
-                            placeholder="+49..."
-                            autoComplete="tel"
-                            inputMode="tel"
-                          />
-                        </div>
-                      </>
-                    ) : (
-                      <>
-                        <div>
-                          <label className="text-sm font-medium text-foreground">
-                            Телефон
-                          </label>
-                          <input
-                            type="tel"
-                            value={data.phone}
-                            onChange={(e) =>
-                              setData((p) => ({ ...p, phone: e.target.value }))
-                            }
-                            className={inputCls}
-                            placeholder="+49…"
-                            autoComplete="tel"
-                            inputMode="tel"
-                          />
-                        </div>
-
-                        <div>
-                          <label className="text-sm font-medium text-foreground">
-                            Telegram или WhatsApp
-                          </label>
-
-                          <input
-                            type="text"
-                            value={data.messenger}
-                            onChange={(e) =>
-                              setData((p) => ({ ...p, messenger: e.target.value }))
-                            }
-                            className={inputCls}
-                            placeholder="@username или +49..."
-                            autoComplete="off"
-                          />
-
-                          <p className="text-xs text-muted-foreground mt-1">
-                            Введите @username или номер в международном формате
-                          </p>
-                        </div>
-                      </>
-                    )}
+                    <div>
+                      <label className="text-sm font-medium text-foreground">
+                        Телефон
+                      </label>
+                      <input
+                        type="tel"
+                        value={data.phone}
+                        onChange={(e) =>
+                          setData((p) => ({ ...p, phone: e.target.value }))
+                        }
+                        className={inputCls}
+                        placeholder="+49…"
+                        autoComplete="tel"
+                        inputMode="tel"
+                      />
+                    </div>
 
                     <div>
                       <label className="text-sm font-medium text-foreground">Страна</label>
@@ -876,31 +733,6 @@ export function LeadFormModal({
                         </p>
                       </div>
                     )}
-
-                    <div>
-                      <label className="text-sm font-medium text-foreground">
-                        {offer?.id === "gift"
-                          ? "Опишите почему вы можете претендовать на право бесплатного прохождения курса"
-                          : isAmbassador
-                          ? "Опишите свою ситуацию"
-                          : "Комментарий"}
-                      </label>
-
-                      <textarea
-                        value={data.comment}
-                        onChange={(e) =>
-                          setData((p) => ({ ...p, comment: e.target.value }))
-                        }
-                        className="mt-2 w-full min-h-[80px] rounded-2xl p-4 bg-card/70 border border-border outline-none focus:ring-2 focus:ring-ring/20 resize-none text-foreground"
-                        placeholder={
-                          offer?.id === "gift"
-                            ? "Опишите вашу ситуацию подробно…"
-                            : isAmbassador
-                            ? "Напишите несколько слов о вашей ситуации…"
-                            : "Если хотите, оставьте комментарий…"
-                        }
-                      />
-                    </div>
 
                     <button
                       type="submit"
@@ -1386,7 +1218,7 @@ export default function Programs() {
         mobileDescription:
           "Живой марафон с актуальной датой и временем. После заявки откроется страница оплаты, а затем Telegram-группа текущего марафона.",
         price: "9 €",
-oldPrice: "49 €",
+        oldPrice: "49 €",
         bullets: [
           "Живой марафон в Zoom",
           "30 Апреля",

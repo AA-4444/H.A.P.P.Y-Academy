@@ -378,13 +378,13 @@ export function LeadFormModal({
     : offer?.id === "club"
     ? "Заявка в мини-апп"
     : isMarathon
-    ? "Заявка на марафон"
+    ? "Заявка на эфир"
     : offer?.payType === "one_time"
     ? "Заявка на программу"
     : "Заявка";
 
   const subtitle = isMarathon
-    ? "Оставьте данные — заявка сохранится, затем откроется страница оплаты, а после оплаты станет доступна Telegram-группа марафона."
+    ? "Оставьте данные — заявка сохранится, затем откроется страница оплаты, а после оплаты станет доступна Telegram-группа эфира."
     : isLeadOnly
     ? "Оставьте контакты — мы свяжемся с вами."
     : isAmbassador
@@ -1000,6 +1000,12 @@ export function OfferCard({
         </div>
 
         <div className="mt-3 sm:mt-5 flex items-center gap-3 flex-wrap">
+          {offer.id === "club" && offer.priceAlt && (
+            <div className="inline-flex items-center justify-center rounded-xl bg-white px-4 py-2 text-sm font-bold text-[#E64B1E]">
+              {offer.priceAlt}
+            </div>
+          )}
+
           {offer.oldPrice && (
             <span className="relative inline-block text-[#1a1a1a] font-extrabold text-xl sm:text-3xl">
               {offer.oldPrice}
@@ -1009,6 +1015,7 @@ export function OfferCard({
               />
             </span>
           )}
+
           <span
             className={[
               "inline-flex items-baseline gap-2 rounded-2xl px-4 py-2 sm:px-5 sm:py-2.5 font-black leading-none",
@@ -1024,12 +1031,6 @@ export function OfferCard({
               </span>
             )}
           </span>
-
-          {offer.id === "club" && offer.priceAlt && (
-            <div className="mt-2 inline-flex items-center justify-center rounded-xl bg-white px-4 py-2 text-sm font-bold text-[#E64B1E]">
-              {offer.priceAlt}
-            </div>
-          )}
         </div>
 
         {offer.id === "marathon" ? (
@@ -1048,7 +1049,7 @@ export function OfferCard({
           </div>
         ) : offer.id === "club" ? (
           <div className="mt-4">
-            <div className="bg-[#16A34A] text-white px-4 py-3 rounded-xl text-sm font-semibold">
+            <div className="bg-[#16A34A] text-white px-4 py-3 rounded-xl text-sm font-semibold whitespace-pre-line">
               {offer.highlightText}
             </div>
           </div>
@@ -1210,34 +1211,35 @@ export default function Programs() {
       {
         id: "marathon",
         payType: "lead",
-        title: "© Марафон\n«Гибкость и ментальный фокус»",
-        longSubtitle: "Живой треннинг на котором ты вернешь контроль. Избавишся от апатии и прокрастенации. Научишься востанавливать энерегию.",
-        highlightText: "30 Апреля • 19:00 по Израилю",
+        title: "© Эфир 30 апреля\n«Почему умные женщины остаются несчастными»",
+        longSubtitle:
+          "Поймёте, почему предыдущие попытки не сработали.",
+        highlightText:
+          "30 Апреля • 19:00 по Израилю",
         description:
-          "Еженедельный марафон в живом формате. После заявки данные сохраняются в Google Sheet, затем открывается страница оплаты, а после успешной оплаты становится доступна Telegram-группа текущего марафона.",
+          "Специальный живой эфир 30 апреля. После заявки данные сохраняются, затем открывается страница оплаты, а после успешной оплаты становится доступна Telegram-группа эфира.",
         mobileDescription:
-          "Живой марафон с актуальной датой и временем. После заявки откроется страница оплаты, а затем Telegram-группа текущего марафона.",
+          "Тема эфира 30 апреля: «Почему умные женщины остаются несчастными». После заявки откроется страница оплаты, а затем Telegram-группа эфира.",
         price: "9 €",
         oldPrice: "49 €",
         bullets: [
-          "Живой марафон в Zoom",
-          "30 Апреля",
-          "19:00 по Израилю",
-          "Отдельная Telegram-группа под текущий марафон",
-          "Быстрый доступ после формы и оплаты",
-          "Удобный вход для участников",
+          "Поймёте, почему предыдущие попытки не сработали",
+          "Получите карту 10 элементов счастья",
+          "Уйдёте с одним конкретным решением, которое изменит ситуацию",
+          "Живой эфир 30 апреля в 19:00 по Израилю",
         ],
         cta: "Получить доступ",
         variant: "light",
         longDescription:
-          "После заполнения формы заявка сохраняется в Google Sheet. Затем открывается страница оплаты. После успешной оплаты участник получает доступ в Telegram-группу текущего марафона.",
-        badge: "Актуальная встреча",
+          "После заполнения формы заявка сохраняется. Затем открывается страница оплаты. После успешной оплаты участник получает доступ в Telegram-группу эфира 30 апреля.",
+        badge: "Эфир 30 апреля",
       },
       {
         id: "club",
         payType: "lead",
         title: "© Клуб\n«сильных решений» \n«Система выхода из кризиса за 30 дней»",
-        highlightText: "После заявки откроется мини-апп Happi10",
+        highlightText:
+          "Закрытые эфиры с Ицхаком Пинтосевичем.\nДетальное изучение системы «Архитектура счастья».",
         description:
           "Оставьте заявку и переходите в мини-апп Happi10 для дальнейшего доступа.",
         mobileDescription:
@@ -1246,16 +1248,13 @@ export default function Programs() {
         priceNote: "/ мес",
         priceAlt: "или 250 € / год (выгоднее)",
         bullets: [
-          "Курс Архитуктура счастья",
+          "Курс Архитектура счастья",
           "Видео-уроки и тренинги",
           "Доступ к материалам Happi10",
           "Полный спектр жизненного баланса",
           "Ясность мышления",
           "Понимание предназначения",
           "Счастливые отношения",
-          "Сообщество осознанных людей",
-          "Удобный вход через мини-апп",
-          "Ежемесячная или годовая подписка",
         ],
         cta: "Вступить в клуб",
         variant: "yellow",
@@ -1378,7 +1377,7 @@ export default function Programs() {
             Выберите формат участия
           </h2>
           <p className="mt-5 text-black/70 text-base sm:text-lg leading-relaxed">
-            Выберите удобный формат участия: живой марафон, мини-апп или специальная заявка.
+            Выберите удобный формат участия: живой эфир, мини-апп или специальная заявка.
           </p>
         </motion.div>
 

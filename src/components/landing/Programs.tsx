@@ -1244,7 +1244,7 @@ export default function Programs() {
           "Оставьте заявку и переходите в мини-апп Happi10 для дальнейшего доступа.",
         mobileDescription:
           "Оставьте заявку и переходите в мини-апп Happi10 для дальнейшего доступа.",
-        price: "или 250 €",
+        price: "250 €",
         priceNote: "/ год",
         priceAlt: "49€ / мес",
         bullets: [

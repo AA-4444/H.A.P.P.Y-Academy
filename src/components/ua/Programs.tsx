@@ -43,7 +43,7 @@ type LeadFormData = {
 };
 
 const SUPPORT_HREF = "https://t.me/TataZakzheva/";
-const MINI_APP_BOT_HREF = "https://t.me/happi10_app_bot";
+const MINI_APP_BOT_HREF = "https://t.me/tribute/app?startapp=sPxR";
 
 function useStableAppHeight(setIsGSA: (v: boolean) => void) {
   useEffect(() => {
@@ -381,9 +381,9 @@ export function LeadFormModal({
     telegramUsername: "",
     phone: "",
     messenger: "",
-    country: "",
     comment: "",
     amount: "",
+    country: "",
   });
 
   const [sent, setSent] = useState(false);
@@ -398,13 +398,13 @@ export function LeadFormModal({
     : offer?.id === "club"
     ? "Заявка в міні-ап"
     : isMarathon
-    ? "Заявка на марафон"
+    ? "Скоро анонс"
     : offer?.payType === "one_time"
     ? "Заявка на програму"
     : "Заявка";
 
   const subtitle = isMarathon
-    ? "Залиште дані — заявку буде збережено, потім відкриється сторінка оплати, а після оплати стане доступною Telegram-група марафону."
+    ? "Марафон тимчасово недоступний для оплати. Картку залишено на сайті, деталі та дату буде оголошено пізніше."
     : isLeadOnly
     ? "Залиште контакти — ми зв’яжемося з вами."
     : isAmbassador
@@ -412,7 +412,7 @@ export function LeadFormModal({
     : "Залиште контакти — ви перейдете в міні-ап.";
 
   const submitLabel = isMarathon
-    ? "Отримати доступ"
+    ? "Зрозуміло"
     : isLeadOnly
     ? "Залишити заявку"
     : isAmbassador
@@ -426,9 +426,9 @@ export function LeadFormModal({
       telegramUsername: "",
       phone: "",
       messenger: "",
-      country: "",
       comment: "",
       amount: "",
+      country: "",
     });
     setSent(false);
     setSubmitting(false);
@@ -439,9 +439,12 @@ export function LeadFormModal({
     e.preventDefault();
     if (submitting || !offer) return;
 
+    if (offer.id === "marathon") {
+      resetAndClose();
+      return;
+    }
+
     const name = data.name.trim();
-    const email = data.email.trim();
-    const telegramUsername = normalizeTelegramUsername(data.telegramUsername);
     const phone = data.phone.trim();
 
     setSubmitting(true);
@@ -454,71 +457,6 @@ export function LeadFormModal({
           setSubmitting(false);
           return;
         }
-      }
-
-      if (offer.id === "marathon") {
-        if (
-          name.length < 2 ||
-          !isValidEmail(email) ||
-          !isValidTelegramUsername(telegramUsername) ||
-          phone.length < 5 ||
-          data.country.trim().length === 0
-        ) {
-          alert("Будь ласка, заповніть усі обов’язкові поля коректно.");
-          setSubmitting(false);
-          return;
-        }
-
-        const leadId = createLeadId();
-
-        const leadRes = await fetch("/api/lead", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            offerId: offer.id,
-            offerTitle: offer.title,
-            name,
-            email,
-            telegramUsername,
-            phone,
-            country: data.country,
-            pageUrl: window.location.href,
-            price: offer.price,
-          }),
-        });
-
-        const leadJson = await leadRes.json().catch(() => ({}));
-
-        if (!leadRes.ok || !leadJson?.ok) {
-          throw new Error(`Marathon lead error: ${leadRes.status}`);
-        }
-
-        const checkoutRes = await fetch("/api/stripe/checkout", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            leadId,
-            stage: "pre_payment",
-            offerId: offer.id,
-            offerTitle: offer.title,
-            name,
-            email,
-            telegramUsername,
-            phone,
-            country: data.country,
-            pageUrl: window.location.href,
-          }),
-        });
-
-        const checkoutJson = await checkoutRes.json().catch(() => ({}));
-
-        if (!checkoutRes.ok || !checkoutJson?.url) {
-          throw new Error(`Marathon checkout error: ${checkoutRes.status}`);
-        }
-
-        setSent(true);
-        window.location.href = checkoutJson.url;
-        return;
       }
 
       if (offer.id === "gift") {
@@ -596,17 +534,8 @@ export function LeadFormModal({
     "mt-2 w-full h-12 rounded-2xl px-4 bg-card/70 border border-border outline-none focus:ring-2 focus:ring-ring/20 text-foreground";
 
   const isDisabled = (() => {
+    if (isMarathon) return false;
     if (submitting) return true;
-
-    if (isMarathon) {
-      return (
-        data.name.trim().length < 2 ||
-        !isValidEmail(data.email) ||
-        !isValidTelegramUsername(normalizeTelegramUsername(data.telegramUsername)) ||
-        data.phone.trim().length < 5 ||
-        data.country.trim().length === 0
-      );
-    }
 
     return (
       data.name.trim().length < 2 ||
@@ -658,7 +587,25 @@ export function LeadFormModal({
               </div>
 
               <div className="px-6 pb-6">
-                {sent ? (
+                {isMarathon ? (
+                  <div className="flex flex-col items-center text-center py-8">
+                    <div className="w-16 h-16 rounded-full bg-amber-100 flex items-center justify-center mb-4">
+                      <Check className="h-8 w-8 text-amber-600" strokeWidth={2.5} />
+                    </div>
+                    <h3 className="text-lg font-bold text-foreground mb-2">
+                      Анонс скоро з’явиться
+                    </h3>
+                    <p className="text-sm text-muted-foreground leading-relaxed">
+                      Ми тимчасово прибрали дату та оплату марафону. Картку залишено на сайті, а деталі буде додано пізніше.
+                    </p>
+                    <button
+                      onClick={resetAndClose}
+                      className="mt-6 rounded-full px-8 h-12 font-sans font-bold transition bg-[#FACC15] text-[#1a1a1a] hover:bg-[#e5b800]"
+                    >
+                      Зрозуміло
+                    </button>
+                  </div>
+                ) : sent ? (
                   <div className="flex flex-col items-center text-center py-8">
                     <div className="w-16 h-16 rounded-full bg-emerald-100 flex items-center justify-center mb-4">
                       <Check className="h-8 w-8 text-emerald-600" strokeWidth={2.5} />
@@ -669,8 +616,6 @@ export function LeadFormModal({
                     <p className="text-sm text-muted-foreground leading-relaxed">
                       {isLeadOnly
                         ? "Ми уважно розглянемо вашу заявку і зв’яжемося з вами найближчим часом."
-                        : isMarathon
-                        ? "Зараз відкриється сторінка оплати."
                         : "Зараз відкриється міні-ап."}
                     </p>
                     {isLeadOnly && (
@@ -698,81 +643,22 @@ export function LeadFormModal({
                       />
                     </div>
 
-                    {isMarathon ? (
-                      <>
-                        <div>
-                          <label className="text-sm font-medium text-foreground">
-                            Email
-                          </label>
-                          <input
-                            type="email"
-                            value={data.email}
-                            onChange={(e) =>
-                              setData((p) => ({ ...p, email: e.target.value }))
-                            }
-                            className={inputCls}
-                            placeholder="you@example.com"
-                            autoComplete="email"
-                          />
-                        </div>
-
-                        <div>
-                          <label className="text-sm font-medium text-foreground">
-                            Telegram username
-                          </label>
-                          <input
-                            type="text"
-                            value={data.telegramUsername}
-                            onChange={(e) =>
-                              setData((p) => ({
-                                ...p,
-                                telegramUsername: e.target.value,
-                              }))
-                            }
-                            className={inputCls}
-                            placeholder="@username"
-                            autoComplete="off"
-                          />
-                          <p className="text-xs text-muted-foreground mt-1">
-                            Введіть username у Telegram, наприклад @alex
-                          </p>
-                        </div>
-
-                        <div>
-                          <label className="text-sm font-medium text-foreground">
-                            Телефон
-                          </label>
-                          <input
-                            type="tel"
-                            value={data.phone}
-                            onChange={(e) =>
-                              setData((p) => ({ ...p, phone: e.target.value }))
-                            }
-                            className={inputCls}
-                            placeholder="+49..."
-                            autoComplete="tel"
-                            inputMode="tel"
-                          />
-                        </div>
-                      </>
-                    ) : (
-                      <div>
-                        <label className="text-sm font-medium text-foreground">
-                          Телефон
-                        </label>
-                        <input
-                          type="tel"
-                          value={data.phone}
-                          onChange={(e) =>
-                            setData((p) => ({ ...p, phone: e.target.value }))
-                          }
-                          className={inputCls}
-                          placeholder="+49…"
-                          autoComplete="tel"
-                          inputMode="tel"
-                        />
-                      </div>
-                    )}
+                    <div>
+                      <label className="text-sm font-medium text-foreground">
+                        Телефон
+                      </label>
+                      <input
+                        type="tel"
+                        value={data.phone}
+                        onChange={(e) =>
+                          setData((p) => ({ ...p, phone: e.target.value }))
+                        }
+                        className={inputCls}
+                        placeholder="+49…"
+                        autoComplete="tel"
+                        inputMode="tel"
+                      />
+                    </div>
 
                     <div>
                       <label className="text-sm font-medium text-foreground">Країна</label>
@@ -1312,28 +1198,24 @@ export default function Programs() {
         id: "marathon",
         payType: "lead",
         title: "© Марафон\n«Гнучкість і ментальний фокус»",
-        longSubtitle:
-          "Живий тренінг, на якому ти повернеш контроль. Позбудешся апатії та прокрастинації. Навчишся відновлювати енергію.",
-        highlightText: "30 Квітня • 19:00 за Ізраїлем",
+        longSubtitle: "Анонс марафону з’явиться пізніше",
+        highlightText: "Скоро повідомимо дату та деталі",
         description:
-          "Щотижневий марафон у живому форматі. Після заявки дані зберігаються в Google Sheet, потім відкривається сторінка оплати, а після успішної оплати стає доступною Telegram-група поточного марафону.",
+          "Картку марафону тимчасово залишено на сайті без конкретної дати та без оплати. Деталі буде додано пізніше.",
         mobileDescription:
-          "Живий марафон з актуальною датою та часом. Після заявки відкриється сторінка оплати, а потім Telegram-група поточного марафону.",
-        price: "9 €",
-        oldPrice: "49 €",
+          "Картка марафону тимчасово доступна без дати та без оплати. Деталі з’являться пізніше.",
+        price: "Скоро",
         bullets: [
-          "Живий марафон у Zoom",
-          "30 Квітня",
-          "19:00 за Ізраїлем",
-          "Окрема Telegram-група для поточного марафону",
-          "Швидкий доступ після форми та оплати",
-          "Зручний вхід для учасників",
+          "Тема марафону збережена на сайті",
+          "Дата буде оголошена пізніше",
+          "Оплата тимчасово вимкнена",
+          "Усі подробиці з’являться в наступному анонсі",
         ],
-        cta: "Отримати доступ",
+        cta: "Скоро анонс",
         variant: "light",
         longDescription:
-          "Після заповнення форми заявка зберігається в Google Sheet. Потім відкривається сторінка оплати. Після успішної оплати учасник отримує доступ до Telegram-групи поточного марафону.",
-        badge: "Актуальна зустріч",
+          "Зараз цей марафон тимчасово недоступний для оплати. Ми прибрали точну дату та вимкнули оплату, але картка залишилася на сайті.",
+        badge: "Скоро",
       },
       {
         id: "club",
@@ -1434,9 +1316,10 @@ export default function Programs() {
     if (typeof window === "undefined") return;
 
     const applyFromUrl = () => {
-      const lead = new URLSearchParams(window.location.search).get("lead");
-      const details = new URLSearchParams(window.location.search).get("details");
-      const offerId = new URLSearchParams(window.location.search).get("offerId");
+      const params = new URLSearchParams(window.location.search);
+      const lead = params.get("lead");
+      const details = params.get("details");
+      const offerId = params.get("offerId");
 
       if (lead === "1" && offerId) {
         setActiveOfferId(offerId);

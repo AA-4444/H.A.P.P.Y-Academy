@@ -39,7 +39,7 @@ type LeadFormData = {
 };
 
 const SUPPORT_HREF = "https://t.me/TataZakzheva/";
-const MINI_APP_BOT_HREF = "https://t.me/happi10_app_bot";
+const MINI_APP_BOT_HREF = "https://t.me/tribute/app?startapp=sPxR";
 
 function useStableAppHeight(setIsGSA: (v: boolean) => void) {
   useEffect(() => {
@@ -372,19 +372,20 @@ export function LeadFormModal({
   const isLeadOnly = offer?.id === "gift";
   const isAmbassador = offer?.id === "ambassador";
   const isMarathon = offer?.id === "marathon";
+  const isClub = offer?.id === "club";
 
   const title = isAmbassador
     ? "Поддержать донатом"
-    : offer?.id === "club"
+    : isClub
     ? "Заявка в мини-апп"
     : isMarathon
-    ? "Заявка на эфир"
+    ? "Скоро анонс"
     : offer?.payType === "one_time"
     ? "Заявка на программу"
     : "Заявка";
 
   const subtitle = isMarathon
-    ? "Оставьте данные — заявка сохранится, затем откроется страница оплаты, а после оплаты станет доступна Telegram-группа эфира."
+    ? "Этот эфир временно недоступен для оплаты. Карточка сохранена на сайте, подробности появятся позже."
     : isLeadOnly
     ? "Оставьте контакты — мы свяжемся с вами."
     : isAmbassador
@@ -392,7 +393,7 @@ export function LeadFormModal({
     : "Оставьте контакты — вы перейдёте в мини-апп.";
 
   const submitLabel = isMarathon
-    ? "Получить доступ"
+    ? "Понятно"
     : isLeadOnly
     ? "Оставить заявку"
     : isAmbassador
@@ -415,6 +416,11 @@ export function LeadFormModal({
     e.preventDefault();
     if (submitting || !offer) return;
 
+    if (offer.id === "marathon") {
+      resetAndClose();
+      return;
+    }
+
     const name = data.name.trim();
     const phone = data.phone.trim();
 
@@ -428,65 +434,6 @@ export function LeadFormModal({
           setSubmitting(false);
           return;
         }
-      }
-
-      if (offer.id === "marathon") {
-        if (
-          name.length < 2 ||
-          phone.length < 5 ||
-          data.country.trim().length === 0
-        ) {
-          alert("Пожалуйста, заполните все обязательные поля корректно.");
-          setSubmitting(false);
-          return;
-        }
-
-        const leadId = createLeadId();
-
-        const leadRes = await fetch("/api/lead", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            offerId: offer.id,
-            offerTitle: offer.title,
-            name,
-            phone,
-            country: data.country,
-            pageUrl: window.location.href,
-            price: offer.price,
-          }),
-        });
-
-        const leadJson = await leadRes.json().catch(() => ({}));
-
-        if (!leadRes.ok || !leadJson?.ok) {
-          throw new Error(`Marathon lead error: ${leadRes.status}`);
-        }
-
-        const checkoutRes = await fetch("/api/stripe/checkout", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            leadId,
-            stage: "pre_payment",
-            offerId: offer.id,
-            offerTitle: offer.title,
-            name,
-            phone,
-            country: data.country,
-            pageUrl: window.location.href,
-          }),
-        });
-
-        const checkoutJson = await checkoutRes.json().catch(() => ({}));
-
-        if (!checkoutRes.ok || !checkoutJson?.url) {
-          throw new Error(`Marathon checkout error: ${checkoutRes.status}`);
-        }
-
-        setSent(true);
-        window.location.href = checkoutJson.url;
-        return;
       }
 
       if (offer.id === "gift") {
@@ -564,6 +511,7 @@ export function LeadFormModal({
     "mt-2 w-full h-12 rounded-2xl px-4 bg-card/70 border border-border outline-none focus:ring-2 focus:ring-ring/20 text-foreground";
 
   const isDisabled = (() => {
+    if (isMarathon) return false;
     if (submitting) return true;
 
     return (
@@ -616,7 +564,25 @@ export function LeadFormModal({
               </div>
 
               <div className="px-6 pb-6">
-                {sent ? (
+                {isMarathon ? (
+                  <div className="flex flex-col items-center text-center py-8">
+                    <div className="w-16 h-16 rounded-full bg-amber-100 flex items-center justify-center mb-4">
+                      <Check className="h-8 w-8 text-amber-600" strokeWidth={2.5} />
+                    </div>
+                    <h3 className="text-lg font-bold text-foreground mb-2">
+                      Анонс скоро появится
+                    </h3>
+                    <p className="text-sm text-muted-foreground leading-relaxed">
+                      Мы временно убрали дату и оплату этого эфира. Карточка сохранена на сайте, детали появятся позже.
+                    </p>
+                    <button
+                      onClick={resetAndClose}
+                      className="mt-6 rounded-full px-8 h-12 font-sans font-bold transition bg-[#FACC15] text-[#1a1a1a] hover:bg-[#e5b800]"
+                    >
+                      Понятно
+                    </button>
+                  </div>
+                ) : sent ? (
                   <div className="flex flex-col items-center text-center py-8">
                     <div className="w-16 h-16 rounded-full bg-emerald-100 flex items-center justify-center mb-4">
                       <Check className="h-8 w-8 text-emerald-600" strokeWidth={2.5} />
@@ -627,8 +593,6 @@ export function LeadFormModal({
                     <p className="text-sm text-muted-foreground leading-relaxed">
                       {isLeadOnly
                         ? "Мы внимательно рассмотрим вашу заявку и свяжемся с вами в ближайшее время."
-                        : isMarathon
-                        ? "Сейчас откроется страница оплаты."
                         : "Сейчас откроется мини-апп."}
                     </p>
                     {isLeadOnly && (
@@ -1211,28 +1175,25 @@ export default function Programs() {
       {
         id: "marathon",
         payType: "lead",
-        title: "© Эфир 30 апреля\n«Почему умные женщины остаются несчастными»",
-        longSubtitle:
-          "Поймёте, почему предыдущие попытки не сработали.",
-        highlightText:
-          "30 Апреля • 19:00 по Израилю",
+        title: "© Эфир\n«Почему умные женщины остаются несчастными»",
+        longSubtitle: "Анонс эфира появится позже",
+        highlightText: "Скоро сообщим дату и детали",
         description:
-          "Специальный живой эфир 30 апреля. После заявки данные сохраняются, затем открывается страница оплаты, а после успешной оплаты становится доступна Telegram-группа эфира.",
+          "Карточка эфира временно сохранена на сайте без даты и без оплаты. Подробности и анонс будут добавлены позже.",
         mobileDescription:
-          "Тема эфира 30 апреля: «Почему умные женщины остаются несчастными». После заявки откроется страница оплаты, а затем Telegram-группа эфира.",
-        price: "9 €",
-        oldPrice: "49 €",
+          "Карточка эфира временно сохранена на сайте. Дата и детали появятся позже.",
+        price: "Скоро",
         bullets: [
-          "Поймёте, почему предыдущие попытки не сработали",
-          "Получите карту 10 элементов счастья",
-          "Уйдёте с одним конкретным решением, которое изменит ситуацию",
-          "Живой эфир 30 апреля в 19:00 по Израилю",
+          "Тема эфира сохранена на сайте",
+          "Дата будет объявлена позже",
+          "Оплата временно отключена",
+          "Подробности появятся в следующем анонсе",
         ],
-        cta: "Получить доступ",
+        cta: "Скоро анонс",
         variant: "light",
         longDescription:
-          "После заполнения формы заявка сохраняется. Затем открывается страница оплаты. После успешной оплаты участник получает доступ в Telegram-группу эфира 30 апреля.",
-        badge: "Эфир 30 апреля",
+          "Сейчас этот эфир временно не продаётся. Мы убрали точную дату и отключили оплату, но карточка сохранена на сайте.",
+        badge: "Скоро",
       },
       {
         id: "club",
@@ -1377,7 +1338,7 @@ export default function Programs() {
             Выберите формат участия
           </h2>
           <p className="mt-5 text-black/70 text-base sm:text-lg leading-relaxed">
-            Выберите удобный формат участия: живой эфир, мини-апп или специальная заявка.
+            Выберите удобный формат участия: эфир, мини-апп или специальная заявка.
           </p>
         </motion.div>
 
